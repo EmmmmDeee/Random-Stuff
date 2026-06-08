@@ -10,6 +10,7 @@ license = "MIT"
 aho-corasick = "1"   # single automaton, all patterns matched in one O(n) pass
 memchr = "2"         # used transitively; pinned intent: SIMD scanning
 walkdir = "2"        # recursive directory traversal
+memmap2 = "0.9"      # memory-map files so multi-GB inputs aren't read into the heap
 
 [dev-dependencies]
 # (tests + bench use std only — keeping the dep tree minimal on purpose)

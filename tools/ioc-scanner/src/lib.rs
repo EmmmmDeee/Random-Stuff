@@ -15,8 +15,12 @@ the chain-of-`String.equals` dispatch found in the malware it detects.
 - **Errors are values.** Every fallible operation returns [`Result`]; nothing is
   swallowed. Contrast the analysed RAT, whose every failure path is an empty
   `catch`.
-- **Streaming.** Files are read once into a buffer and scanned; large inputs do
-  not require holding N copies. (A future revision can `mmap` for huge files.)
+- **Memory-mapped I/O.** The CLI memory-maps each file (`memmap2`) and scans the
+  mapping as a `&[u8]`, avoiding the multi-gigabyte heap copy that a plain read
+  incurs; the pages are file-backed and reclaimable under pressure. (Measured: a
+  full scan still faults every page in, so peak RSS during a single scan is
+  comparable to a read — the gain is the avoided copy and reclaimable pages, not a
+  lower peak.) The library stays I/O-agnostic: [`Scanner::scan`] takes any `&[u8]`.
 
 [Aho-Corasick]: https://en.wikipedia.org/wiki/Aho%E2%80%93Corasick_algorithm
 */
@@ -66,16 +70,11 @@ impl std::error::Error for Error {}
 ///   indicator, including nested ones and case variants. Slower hot loop.
 /// - [`Mode::Fast`]: leftmost-longest, case-sensitive, non-overlapping. Fewer
 ///   reports, faster scan. Use when indicators are case-exact and disjoint.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum Mode {
+    #[default]
     Complete,
     Fast,
-}
-
-impl Default for Mode {
-    fn default() -> Self {
-        Mode::Complete
-    }
 }
 
 /// A compiled scanner: an Aho-Corasick automaton plus the indicator table.
