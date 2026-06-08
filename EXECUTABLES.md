@@ -85,7 +85,7 @@ characterise the economics, not to facilitate acquisition.
 - This is the financial signature of commodity cybercrime: low-cost, off-the-shelf
   RATs plus cracked legitimate software, aggregated and redistributed for free in a
   "bible." It is consumption, not capability — consistent with the code-quality and
-  tradecraft findings (`CODE_REVIEW_EXHAUSTIVE.md`, `AMATEUR_TRADECRAFT.md`): tools
+  tradecraft findings (`CODE_REVIEW.md`, `AMATEUR_TRADECRAFT.md`): tools
   bought or stolen by operators who did not build them.
 
 > All `.exe` hashes above are suitable for AV/EDR blocklists and VirusTotal
