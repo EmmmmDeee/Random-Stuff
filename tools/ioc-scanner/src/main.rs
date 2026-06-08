@@ -1,7 +1,7 @@
 //! CLI front-end for the IOC scanner.
 //!
 //! Usage:
-//!   ioc-scanner [--json] [--min-confidence low|medium|high] [--summary] <iocs.csv> <path> [path ...]
+//!   ioc-scanner [--json] [--min-confidence low|medium|high] [--summary] [--hashes] <iocs.csv> <path> [path ...]
 //!
 //! Walks each path, scans every regular file against the IOC feed, and prints
 //! `file:offset  <malware>  <kind>=<value>` for each hit (tab-separated). With
@@ -22,7 +22,8 @@
 
 use std::collections::BTreeMap;
 use std::fs::File;
-use std::io::{self, BufWriter, Write};
+use std::io::{self, BufWriter, Read, Write};
+use std::path::Path;
 use std::process::ExitCode;
 
 use ioc_scanner::{json_escape, Confidence, Hit, Scanner};
@@ -49,6 +50,16 @@ fn main() -> ExitCode {
         false
     };
 
+    // Optional `--hashes`: also SHA-256 each file and match the feed's hash IOCs.
+    // This catches samples whose indicators are not present as plaintext (e.g.
+    // compressed archives), which content scanning alone cannot detect.
+    let do_hashes = if let Some(i) = args.iter().position(|a| a == "--hashes") {
+        args.remove(i);
+        true
+    } else {
+        false
+    };
+
     // Optional `--min-confidence <low|medium|high>` filters the indicator set.
     let mut min_conf = Confidence::Low;
     if let Some(i) = args.iter().position(|a| a == "--min-confidence") {
@@ -65,7 +76,7 @@ fn main() -> ExitCode {
     }
 
     if args.len() < 2 {
-        eprintln!("usage: ioc-scanner [--json] [--min-confidence low|medium|high] [--summary] <iocs.csv> <path> [path ...]");
+        eprintln!("usage: ioc-scanner [--json] [--min-confidence low|medium|high] [--summary] [--hashes] <iocs.csv> <path> [path ...]");
         return ExitCode::from(2);
     }
     let (feed, paths) = (&args[0], &args[1..]);
@@ -84,7 +95,15 @@ fn main() -> ExitCode {
             return ExitCode::from(2);
         }
     };
-    eprintln!("loaded {} scannable indicators", scanner.len());
+    eprintln!(
+        "loaded {} scannable indicators{}",
+        scanner.len(),
+        if do_hashes {
+            format!(" + {} hash IOCs", scanner.hash_count())
+        } else {
+            String::new()
+        }
+    );
 
     // Lock stdout once and buffer; per-hit `println!` would lock on every write.
     let stdout = io::stdout();
@@ -104,44 +123,52 @@ fn main() -> ExitCode {
             }
             files_scanned += 1;
             let path = entry.path();
+            let mut flagged = false;
+
+            // 1) Content (substring) matching.
             match scan_file(&scanner, path) {
                 Ok(hits) => {
                     if !hits.is_empty() {
                         files_flagged += 1;
                     }
                     for hit in hits {
-                        any = true;
-                        total_hits += 1;
                         let ind = scanner.indicator(&hit);
-                        *by_malware.entry(ind.malware.clone()).or_insert(0) += 1;
-                        // Write errors here mean stdout is gone; bail cleanly.
-                        let res = if json {
-                            writeln!(
-                                out,
-                                r#"{{"file":"{}","offset":{},"malware":"{}","kind":"{}","value":"{}"}}"#,
-                                json_escape(&path.display().to_string()),
-                                hit.offset,
-                                json_escape(&ind.malware),
-                                json_escape(&ind.kind),
-                                json_escape(&ind.value)
-                            )
-                        } else {
-                            writeln!(
-                                out,
-                                "{}:{}\t{}\t{}={}",
-                                path.display(),
-                                hit.offset,
-                                ind.malware,
-                                ind.kind,
-                                ind.value
-                            )
-                        };
-                        if res.is_err() {
+                        if emit(&mut out, json, path, hit.offset, &ind.malware, &ind.kind, &ind.value)
+                            .is_err()
+                        {
                             return ExitCode::from(2);
                         }
+                        any = true;
+                        flagged = true;
+                        total_hits += 1;
+                        *by_malware.entry(ind.malware.clone()).or_insert(0) += 1;
                     }
                 }
                 Err(e) => eprintln!("warn: skipping {}: {e}", path.display()),
+            }
+
+            // 2) SHA-256 hash matching (opt-in) — catches compressed/opaque samples.
+            if do_hashes && scanner.hash_count() > 0 {
+                match file_sha256(path) {
+                    Ok(digest) => {
+                        if let Some(ind) = scanner.hash_lookup(&digest) {
+                            if emit(&mut out, json, path, 0, &ind.malware, "sha256", &ind.value)
+                                .is_err()
+                            {
+                                return ExitCode::from(2);
+                            }
+                            any = true;
+                            flagged = true;
+                            total_hits += 1;
+                            *by_malware.entry(ind.malware.clone()).or_insert(0) += 1;
+                        }
+                    }
+                    Err(e) => eprintln!("warn: hashing {}: {e}", path.display()),
+                }
+            }
+
+            if flagged {
+                files_flagged += 1;
             }
         }
     }
@@ -164,6 +191,47 @@ fn main() -> ExitCode {
     } else {
         ExitCode::SUCCESS
     }
+}
+
+/// Write one hit in the selected format (tab-separated or JSON Lines).
+fn emit(
+    out: &mut impl Write,
+    json: bool,
+    path: &Path,
+    offset: usize,
+    malware: &str,
+    kind: &str,
+    value: &str,
+) -> io::Result<()> {
+    if json {
+        writeln!(
+            out,
+            r#"{{"file":"{}","offset":{},"malware":"{}","kind":"{}","value":"{}"}}"#,
+            json_escape(&path.display().to_string()),
+            offset,
+            json_escape(malware),
+            json_escape(kind),
+            json_escape(value)
+        )
+    } else {
+        writeln!(out, "{}:{}\t{}\t{}={}", path.display(), offset, malware, kind, value)
+    }
+}
+
+/// Stream a file and return its lowercase SHA-256 hex digest.
+fn file_sha256(path: &Path) -> io::Result<String> {
+    use sha2::{Digest, Sha256};
+    let mut f = File::open(path)?;
+    let mut hasher = Sha256::new();
+    let mut buf = [0u8; 1 << 18];
+    loop {
+        let n = f.read(&mut buf)?;
+        if n == 0 {
+            break;
+        }
+        hasher.update(&buf[..n]);
+    }
+    Ok(format!("{:x}", hasher.finalize()))
 }
 
 /// Files at or above this size are streamed (bounded memory) instead of mapped.
