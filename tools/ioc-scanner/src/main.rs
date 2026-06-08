@@ -23,7 +23,7 @@ use std::fs::File;
 use std::io::{self, BufWriter, Write};
 use std::process::ExitCode;
 
-use ioc_scanner::{json_escape, Hit, Scanner};
+use ioc_scanner::{json_escape, Confidence, Hit, Scanner};
 use memmap2::Mmap;
 use walkdir::WalkDir;
 
@@ -39,8 +39,23 @@ fn main() -> ExitCode {
         false
     };
 
+    // Optional `--min-confidence <low|medium|high>` filters the indicator set.
+    let mut min_conf = Confidence::Low;
+    if let Some(i) = args.iter().position(|a| a == "--min-confidence") {
+        match args.get(i + 1).map(|s| s.to_ascii_lowercase()) {
+            Some(ref v) if v == "low" => min_conf = Confidence::Low,
+            Some(ref v) if v == "medium" => min_conf = Confidence::Medium,
+            Some(ref v) if v == "high" => min_conf = Confidence::High,
+            other => {
+                eprintln!("error: --min-confidence expects low|medium|high, got {other:?}");
+                return ExitCode::from(2);
+            }
+        }
+        args.drain(i..=i + 1);
+    }
+
     if args.len() < 2 {
-        eprintln!("usage: ioc-scanner [--json] <iocs.csv> <path> [path ...]");
+        eprintln!("usage: ioc-scanner [--json] [--min-confidence low|medium|high] <iocs.csv> <path> [path ...]");
         return ExitCode::from(2);
     }
     let (feed, paths) = (&args[0], &args[1..]);
@@ -52,7 +67,7 @@ fn main() -> ExitCode {
             return ExitCode::from(2);
         }
     };
-    let scanner = match Scanner::from_csv(&csv) {
+    let scanner = match Scanner::from_csv_min(&csv, min_conf) {
         Ok(s) => s,
         Err(e) => {
             eprintln!("error: {e}");

@@ -29,7 +29,12 @@ fn indicators() -> Vec<Indicator> {
                 (Some(k), Some(v), Some(m))
                     if matches!(k, "domain" | "url" | "string" | "package" | "filemarker") =>
                 {
-                    Some(Indicator { value: v.into(), kind: k.into(), malware: m.into() })
+                    Some(Indicator {
+                        value: v.into(),
+                        kind: k.into(),
+                        malware: m.into(),
+                        confidence: ioc_scanner::Confidence::High,
+                    })
                 }
                 _ => None,
             }

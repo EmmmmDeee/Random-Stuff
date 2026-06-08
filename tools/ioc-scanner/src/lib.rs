@@ -30,12 +30,34 @@ use std::io::Read;
 
 use aho_corasick::{AhoCorasick, AhoCorasickBuilder, MatchKind};
 
+/// Confidence grade of an indicator (from the feed's `confidence` column).
+///
+/// Ordered `Low < Medium < High`; unknown/missing grades parse as `Low`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub enum Confidence {
+    Low,
+    Medium,
+    High,
+}
+
+impl Confidence {
+    /// Parse a grade string; anything unrecognised (incl. empty) is `Low`.
+    pub fn parse(s: &str) -> Confidence {
+        match s.trim().to_ascii_lowercase().as_str() {
+            "high" => Confidence::High,
+            "medium" => Confidence::Medium,
+            _ => Confidence::Low,
+        }
+    }
+}
+
 /// A single indicator of compromise: the literal to match and its metadata.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Indicator {
     pub value: String,
     pub kind: String,
     pub malware: String,
+    pub confidence: Confidence,
 }
 
 /// One detection: which indicator matched, and at what byte offset.
@@ -128,23 +150,36 @@ impl Scanner {
     /// This is a deliberately tiny, allocation-light CSV reader: the feed is
     /// trusted, simple, and unquoted. It is *not* a general CSV parser.
     pub fn from_csv(text: &str) -> Result<Self, Error> {
+        Self::from_csv_min(text, Confidence::Low)
+    }
+
+    /// Like [`Scanner::from_csv`], but keeps only indicators whose confidence is
+    /// at least `min` (the feed's 5th column, `confidence`).
+    ///
+    /// # Errors
+    /// Same as [`Scanner::new`] (including [`Error::NoIndicators`] if the filter
+    /// leaves nothing).
+    pub fn from_csv_min(text: &str, min: Confidence) -> Result<Self, Error> {
         const SCANNABLE: &[&str] =
-            &["domain", "url", "string", "package", "filemarker"];
+            &["domain", "url", "string", "package", "section", "filemarker"];
         let mut out = Vec::new();
         for (n, line) in text.lines().enumerate() {
             if n == 0 || line.trim().is_empty() {
                 continue; // header / blank
             }
-            let mut f = line.splitn(4, ',');
-            let (kind, value, malware) = match (f.next(), f.next(), f.next()) {
-                (Some(k), Some(v), Some(m)) => (k.trim(), v.trim(), m.trim()),
-                _ => continue,
-            };
-            if SCANNABLE.contains(&kind) && !value.is_empty() {
+            // type,value,malware,context,confidence
+            let parts: Vec<&str> = line.splitn(5, ',').collect();
+            if parts.len() < 3 {
+                continue;
+            }
+            let (kind, value, malware) = (parts[0].trim(), parts[1].trim(), parts[2].trim());
+            let confidence = Confidence::parse(parts.get(4).copied().unwrap_or(""));
+            if SCANNABLE.contains(&kind) && !value.is_empty() && confidence >= min {
                 out.push(Indicator {
                     value: value.to_string(),
                     kind: kind.to_string(),
                     malware: malware.to_string(),
+                    confidence,
                 });
             }
         }
