@@ -16,6 +16,10 @@ and handling guidance.
 | [`FILE_MANIFEST.md`](FILE_MANIFEST.md) | Per-file SHA-256, type, active-content verdict, category |
 | [`ANALYSIS_INDEX.md`](ANALYSIS_INDEX.md) | Index of the per-file deep-dive docs |
 | [`analysis/`](analysis/) | One document per file: identity, classification, function, handling |
+| [`DISPARITY.md`](DISPARITY.md) | **Start here for the critique** — amateur offense vs. professional engineering/defense, organized |
+| [`AMATEUR_TRADECRAFT.md`](AMATEUR_TRADECRAFT.md) | Methods & functionality critique (tradecraft) |
+| [`CODE_REVIEW.md`](CODE_REVIEW.md) | Code-style critique (19 findings) |
+| [`RUST_PERSPECTIVE.md`](RUST_PERSPECTIVE.md) | Defects ranked + idiomatic-Rust contrast + measured benchmark |
 | [`MALWARE_ANALYSIS.md`](MALWARE_ANALYSIS.md) | Deep dive: Blackshades & DroidJack RATs (hashes, capabilities, C2) |
 | [`SOURCE_LEVEL_ANALYSIS.md`](SOURCE_LEVEL_ANALYSIS.md) | Annotated decompiled behavior of the Android RAT |
 | [`ATTACK_MAPPING.md`](ATTACK_MAPPING.md) | MITRE ATT&CK technique mapping for both RATs |
