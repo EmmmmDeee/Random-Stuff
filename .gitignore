@@ -6,3 +6,5 @@ PASSWORD.txt
 decompiled/
 *_src/
 tools/ioc-scanner/target/
+__pycache__/
+*.pyc
