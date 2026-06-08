@@ -60,14 +60,33 @@ impl fmt::Display for Error {
 
 impl std::error::Error for Error {}
 
+/// Scan thoroughness vs. speed — a *measured* tradeoff, not a guess.
+///
+/// - [`Mode::Complete`]: overlapping + ASCII case-insensitive. Reports every
+///   indicator, including nested ones and case variants. Slower hot loop.
+/// - [`Mode::Fast`]: leftmost-longest, case-sensitive, non-overlapping. Fewer
+///   reports, faster scan. Use when indicators are case-exact and disjoint.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Mode {
+    Complete,
+    Fast,
+}
+
+impl Default for Mode {
+    fn default() -> Self {
+        Mode::Complete
+    }
+}
+
 /// A compiled scanner: an Aho-Corasick automaton plus the indicator table.
 pub struct Scanner {
     ac: AhoCorasick,
     indicators: Vec<Indicator>,
+    mode: Mode,
 }
 
 impl Scanner {
-    /// Build a scanner from a list of indicators.
+    /// Build a scanner with the default [`Mode::Complete`].
     ///
     /// Only string-literal-scannable indicators should be passed here (hashes,
     /// imphashes, ports, etc. are matched elsewhere, not by content scanning).
@@ -76,17 +95,28 @@ impl Scanner {
     /// Returns [`Error::NoIndicators`] if `indicators` is empty, or
     /// [`Error::Build`] if the automaton cannot be constructed.
     pub fn new(indicators: Vec<Indicator>) -> Result<Self, Error> {
+        Self::with_mode(indicators, Mode::default())
+    }
+
+    /// Build a scanner with an explicit [`Mode`].
+    ///
+    /// # Errors
+    /// Same as [`Scanner::new`].
+    pub fn with_mode(indicators: Vec<Indicator>, mode: Mode) -> Result<Self, Error> {
         if indicators.is_empty() {
             return Err(Error::NoIndicators);
         }
+        let match_kind = match mode {
+            // Standard semantics are required for overlapping search.
+            Mode::Complete => MatchKind::Standard,
+            Mode::Fast => MatchKind::LeftmostLongest,
+        };
         let ac = AhoCorasickBuilder::new()
-            // Standard semantics: required for overlapping search, so every
-            // indicator is reported even when one IOC is a substring of another.
-            .match_kind(MatchKind::Standard)
-            .ascii_case_insensitive(true)
+            .match_kind(match_kind)
+            .ascii_case_insensitive(mode == Mode::Complete)
             .build(indicators.iter().map(|i| i.value.as_bytes()))
             .map_err(Error::Build)?;
-        Ok(Scanner { ac, indicators })
+        Ok(Scanner { ac, indicators, mode })
     }
 
     /// Parse indicators from an `intel/iocs.csv`-style reader.
@@ -121,12 +151,21 @@ impl Scanner {
         Scanner::new(out)
     }
 
-    /// Scan a byte haystack, returning every (indicator, offset) hit.
+    /// Scan a byte haystack, returning (indicator, offset) hits.
+    ///
+    /// In [`Mode::Complete`] this reports overlapping matches; in [`Mode::Fast`]
+    /// it reports non-overlapping leftmost-longest matches.
     pub fn scan(&self, haystack: &[u8]) -> Vec<Hit> {
-        self.ac
-            .find_overlapping_iter(haystack)
-            .map(|m| Hit { indicator: m.pattern().as_usize(), offset: m.start() })
-            .collect()
+        let to_hit = |m: aho_corasick::Match| Hit {
+            indicator: m.pattern().as_usize(),
+            offset: m.start(),
+        };
+        match self.mode {
+            Mode::Complete => {
+                self.ac.find_overlapping_iter(haystack).map(to_hit).collect()
+            }
+            Mode::Fast => self.ac.find_iter(haystack).map(to_hit).collect(),
+        }
     }
 
     /// Look up the [`Indicator`] behind a [`Hit`].

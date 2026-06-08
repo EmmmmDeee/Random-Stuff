@@ -7,7 +7,7 @@
 
 use std::time::Instant;
 
-use ioc_scanner::Scanner;
+use ioc_scanner::{Indicator, Mode, Scanner};
 
 const FEED: &str = "\
 type,value,malware,context,confidence
@@ -18,11 +18,45 @@ domain,bshades.eu,Blackshades,C2,medium
 string,DownloadExecute.bss,Blackshades,stub,medium
 ";
 
-fn main() {
-    let scanner = Scanner::from_csv(FEED).expect("feed builds");
+fn indicators() -> Vec<Indicator> {
+    Scanner::from_csv(FEED).expect("feed builds");
+    // Re-parse into raw indicators so we can build both modes from the same set.
+    FEED.lines()
+        .skip(1)
+        .filter_map(|l| {
+            let mut f = l.splitn(4, ',');
+            match (f.next(), f.next(), f.next()) {
+                (Some(k), Some(v), Some(m))
+                    if matches!(k, "domain" | "url" | "string" | "package" | "filemarker") =>
+                {
+                    Some(Indicator { value: v.into(), kind: k.into(), malware: m.into() })
+                }
+                _ => None,
+            }
+        })
+        .collect()
+}
 
-    // Build a representative haystack: mostly benign bytes with sparse hits,
-    // ~16 MiB, which is far larger than any single file in the target corpus.
+fn bench(label: &str, scanner: &Scanner, hay: &[u8], runs: usize) {
+    let _ = scanner.scan(hay); // warmup
+    let start = Instant::now();
+    let mut hits = 0usize;
+    for _ in 0..runs {
+        hits += scanner.scan(hay).len();
+    }
+    let secs = start.elapsed().as_secs_f64();
+    let gibps = (hay.len() * runs) as f64 / secs / (1u64 << 30) as f64;
+    eprintln!(
+        "{label:9} {:.1} MiB x {runs} in {secs:.3}s => {gibps:.2} GiB/s ({hits} hits)",
+        hay.len() as f64 / (1u64 << 20) as f64,
+    );
+}
+
+fn main() {
+    let inds = indicators();
+    let complete = Scanner::with_mode(inds.clone(), Mode::Complete).unwrap();
+    let fast = Scanner::with_mode(inds, Mode::Fast).unwrap();
+
     let mut hay = Vec::with_capacity(16 << 20);
     let filler = b"the quick brown fox jumps over the lazy dog 0123456789 ";
     while hay.len() < (16 << 20) {
@@ -32,26 +66,7 @@ fn main() {
         }
     }
 
-    // Warmup.
-    let _ = scanner.scan(&hay);
-
     let runs = 20;
-    let start = Instant::now();
-    let mut total_hits = 0usize;
-    for _ in 0..runs {
-        total_hits += scanner.scan(&hay).len();
-    }
-    let elapsed = start.elapsed();
-
-    let bytes = (hay.len() * runs) as f64;
-    let secs = elapsed.as_secs_f64();
-    let gibps = bytes / secs / (1u64 << 30) as f64;
-    eprintln!(
-        "scanned {:.1} MiB x {} runs in {:.3}s  =>  {:.2} GiB/s  ({} hits)",
-        hay.len() as f64 / (1u64 << 20) as f64,
-        runs,
-        secs,
-        gibps,
-        total_hits
-    );
+    bench("Complete", &complete, &hay, runs);
+    bench("Fast", &fast, &hay, runs);
 }
