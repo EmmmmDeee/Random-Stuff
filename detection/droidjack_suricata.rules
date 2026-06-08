@@ -1,0 +1,18 @@
+# Suricata/Snort signatures — DroidJack / SandroRat C2
+# Defensive. IOCs from static analysis (see MALWARE_ANALYSIS.md).
+# SIDs in the local range (>1,000,000). Tune thresholds for your environment.
+
+# HTTP report channel: www.droidjack.net/storeReport.php
+alert http $HOME_NET any -> $EXTERNAL_NET any (msg:"MALWARE DroidJack Android RAT report channel"; flow:established,to_server; http.method; content:"POST"; http.uri; content:"/storeReport.php"; http.host; content:"droidjack.net"; classtype:trojan-activity; sid:1000001; rev:1;)
+
+# HTTP access path: /Access/DJ
+alert http $HOME_NET any -> $EXTERNAL_NET any (msg:"MALWARE DroidJack Android RAT access path"; flow:established,to_server; http.uri; content:"/Access/DJ"; http.host; content:"droidjack.net"; classtype:trojan-activity; sid:1000002; rev:1;)
+
+# DNS lookup of C2 domain
+alert dns $HOME_NET any -> any any (msg:"MALWARE DroidJack C2 DNS lookup droidjack.net"; dns.query; content:"droidjack.net"; nocase; classtype:trojan-activity; sid:1000003; rev:1;)
+
+# KryoNet command token observed on the wire (default control port 1337)
+alert tcp $HOME_NET any -> $EXTERNAL_NET any (msg:"MALWARE DroidJack KryoNet disconnect token"; flow:established; content:"DJ_GooDbYe:|3a 28|"; classtype:trojan-activity; sid:1000004; rev:1;)
+
+# Blackshades dynamic-DNS C2 family (no-ip / bshades.eu)
+alert dns $HOME_NET any -> any any (msg:"MALWARE Blackshades C2 DNS lookup bshades.eu"; dns.query; content:"bshades.eu"; nocase; classtype:trojan-activity; sid:1000005; rev:1;)

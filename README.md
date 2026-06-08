@@ -9,16 +9,60 @@ and handling guidance.
 
 ## Contents
 
+**Reference (read first)**
+| Document | Purpose |
+|---|---|
+| [`DEFINITIONS.md`](DEFINITIONS.md) | Methodology, provenance, glossary, confidence/severity scales, scope & limitations — the lens for everything else |
+
+**Inventory**
 | Document | Purpose |
 |---|---|
 | [`CATEGORISED_LIST.md`](CATEGORISED_LIST.md) | All 64 files grouped into 16 threat categories (names only) |
 | [`FILE_STRUCTURE.md`](FILE_STRUCTURE.md) | Directory structure with sizes and detected types |
 | [`FILE_MANIFEST.md`](FILE_MANIFEST.md) | Per-file SHA-256, type, active-content verdict, category |
-| [`ANALYSIS_INDEX.md`](ANALYSIS_INDEX.md) | Index of the per-file deep-dive docs |
-| [`analysis/`](analysis/) | One document per file: identity, classification, function, handling |
+| [`ANALYSIS_INDEX.md`](ANALYSIS_INDEX.md) + [`analysis/`](analysis/) | One document per file: identity, classification, function, handling |
+
+**Analysis (evidence)**
+| Document | Purpose |
+|---|---|
 | [`MALWARE_ANALYSIS.md`](MALWARE_ANALYSIS.md) | Deep dive: Blackshades & DroidJack RATs (hashes, capabilities, C2) |
+| [`EXECUTABLES.md`](EXECUTABLES.md) | Every `.exe` in the archives: inventory, hashes, function + typical/historical market value |
+| [`EXECUTABLES_ANALYSIS.md`](EXECUTABLES_ANALYSIS.md) | Per-`.exe` static behavioral analysis: imports, packing, the crack-bundled-malware finding |
 | [`SOURCE_LEVEL_ANALYSIS.md`](SOURCE_LEVEL_ANALYSIS.md) | Annotated decompiled behavior of the Android RAT |
-| [`tools/`](tools/) | Scripts to rebuild the encrypted sample archive on an isolated host |
+
+**Critique**
+| Document | Purpose |
+|---|---|
+| [`DISPARITY.md`](DISPARITY.md) | **Start here** — amateur offense vs. professional engineering/defense, organized |
+| [`AMATEUR_TRADECRAFT.md`](AMATEUR_TRADECRAFT.md) | Methods & functionality critique (tradecraft) |
+| [`CODE_REVIEW.md`](CODE_REVIEW.md) | Code-style critique (19 findings) |
+| [`CODE_REVIEW_EXHAUSTIVE.md`](CODE_REVIEW_EXHAUSTIVE.md) | Full 15-category teardown (~35 findings, severity-rated, citation-backed) |
+| [`RUST_PERSPECTIVE.md`](RUST_PERSPECTIVE.md) | Defects ranked + idiomatic-Rust contrast + measured benchmark |
+
+**Detection & defense**
+| Document | Purpose |
+|---|---|
+| [`DETECTION_PLAYBOOK.md`](DETECTION_PLAYBOOK.md) | **Layered defenses that catch it** — host/network/mobile/intel + the BurntSushi-style scanning approach |
+| [`ATTACK_MAPPING.md`](ATTACK_MAPPING.md) | MITRE ATT&CK technique mapping for both RATs |
+| [`detection/`](detection/) | YARA rules + Suricata/Snort signatures (validated against the samples) |
+| [`intel/`](intel/) | Machine-readable IOC feed: `iocs.csv` and STIX 2.1 `iocs_stix.json` |
+
+**Tooling**
+| Document | Purpose |
+|---|---|
+| [`tools/ioc-scanner/`](tools/ioc-scanner/) | Rust Aho-Corasick IOC scanner (typed errors, tests, benchmark) |
+| [`tools/sweep.sh`](tools/sweep.sh) | ripgrep literal-IOC sweep for fast hunting |
+| [`tools/mega_folder_dl.py`](tools/mega_folder_dl.py), [`tools/termux_fetch_and_package.sh`](tools/termux_fetch_and_package.sh) | Rebuild the encrypted sample archive on an isolated host |
+
+## Detection & threat-intel package
+
+- **Host detection:** `detection/droidjack.yar`, `detection/blackshades.yar` —
+  tested to match the real samples and to *not* false-positive on these docs.
+- **Network detection:** `detection/droidjack_suricata.rules` — C2 domain, URIs,
+  KryoNet token, dynamic-DNS family.
+- **Intel feeds:** `intel/iocs.csv` (18 indicators) and `intel/iocs_stix.json`
+  (STIX 2.1 bundle, ready for MISP/TAXII import).
+- **Coverage map:** `ATTACK_MAPPING.md` ties every capability to a MITRE ATT&CK ID.
 
 ## Key findings
 

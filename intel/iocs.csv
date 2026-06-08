@@ -1,0 +1,27 @@
+type,value,malware,context,confidence
+sha256,5b239d680aac3e49d722a6859e397d327cd6b9dcbfd8eb09c3ccfaa007bbb95e,Blackshades,client.exe (controller/builder),high
+md5,6eff4657d417c4a1393cb8f63849b4e5,Blackshades,client.exe,high
+imphash,e22efc208b0220bae4bf4bd600a00c70,Blackshades,VB6 build import hash,medium
+sha256,837d78e992cc53a6f125f486e3991975145d546c5f320e34df2af7c516f61e93,Blackshades,Blackshades.5.5.1.zip,high
+sha256,30aa2eeeb8401e4a312a7e99462432769a7c569114180aaedbfcbef18b6db268,DroidJack,SandroRat.apk,high
+sha256,fcac2275c833038982ed5bf3f27715bb1991f679d398a125661df15821737a1e,DroidJack,classes.dex,high
+sha256,ba01b036c8386af1b62263a8e29a47f6898b210efee985e299e8d3e5b79c1bf5,DroidJack,DroidJack.4.4.zip,high
+domain,droidjack.net,DroidJack,C2 report/access host,high
+url,http://www.droidjack.net/storeReport.php,DroidJack,exfil report endpoint,high
+url,http://www.droidjack.net/Access/DJ,DroidJack,access endpoint,high
+port,1337/tcp,DroidJack,default KryoNet C2 port,medium
+string,DJ_GooDbYe:(,DroidJack,server disconnect/kill command token,high
+package,net.droidjack.server,DroidJack,Android package name,high
+domain,bshades.eu,Blackshades,vendor/C2 host,medium
+domain,no-ip.info,Blackshades,dynamic-DNS C2 family (sample test subdomains),low
+filemarker,DownloadExecute.bss,Blackshades,stub/config artifact,medium
+regkey,Software\Microsoft\Windows\CurrentVersion\Run,Blackshades,persistence,medium
+regkey,Software\Microsoft\Windows NT\CurrentVersion\Winlogon,Blackshades,persistence,medium
+sha256,9cf361a5e3f8e3176ba3e3002316753d635d0c674abf40cccfda708a0496eb1f,Blackshades,BlackShades Emulator.exe (license crack),high
+sha256,71894e21a2d7ecd52ed8ee06c8634b5565cbe2cd7ca16305772c00af3a4e7efb,Blackshades,Registrator.exe (OCX registrar),medium
+sha256,1573c2646f63d27dba8686205ae3343a5d3786768241557ea36d11cb45c5ea49,CrackBundledMalware,vcscore.exe (crack w/ injection imports),high
+sha256,caf8652a1f1b1ec1a58b35a446271f9255d7c3133ea76a339a11f7235c860193,PiratedSoftware,VCS_Diamond installer,medium
+sha256,72e443e0127649a840d22b2ae1223ff47019117d8402e65349514bd111dbb5a4,FakeIDTool,AIDC Enterprise Setup.exe,medium
+sha256,11c03bdb2a8ea3cfd45c6f96da2032ecc8329b23e14cf6ebebb4e3a0d9ac83f1,FakeIDTool,Advanced ID Creator.exe (cracked),medium
+sha256,6ff90c64e5ad9386071857fd6edf429a6d7d92e4276d8def57173a1e44b586d0,FakeIDTool,CLiPW.exe (crack/patcher),medium
+section,.mackt,SharedProtector,non-standard PE section shared by RAT + crack,medium
