@@ -12,6 +12,7 @@ and handling guidance.
 **Reference (read first)**
 | Document | Purpose |
 |---|---|
+| [`EXECUTIVE_SUMMARY.md`](EXECUTIVE_SUMMARY.md) | One-page distillation — what was found, top findings, defensive output |
 | [`DEFINITIONS.md`](DEFINITIONS.md) | Methodology, provenance, glossary, confidence/severity scales, scope & limitations — the lens for everything else |
 
 **Inventory**
