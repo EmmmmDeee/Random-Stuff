@@ -35,11 +35,19 @@ Tells: shipping `upx.exe` shows the operator's intended pack-the-stub workflow; 
 | `VCS_Diamond.7.0.29.exe` | 17,463,616 | `caf8652a1f1b1ec1a58b35a446271f92` | Installer |
 | `Crack/vcscore.exe` | 1,005,733 | `1573c2646f63d27dba8686205ae3343a` | Crack |
 
-### Receipt pack.rar — fake-receipt fraud tools
-| File | Size | SHA-256 | Role |
-|---|---|---|---|
-| `Amazon Receipt Generator.exe` | 3,450,880 | *(extraction failed — hash N/A)* | Forge Amazon receipts |
-| `PayPal Generator/PRG.exe` | 399,872 | *(extraction failed — hash N/A)* | Forge PayPal receipts |
+### Receipt pack.rar — fake-receipt fraud kit (password-protected)
+This RAR is **encrypted** (`Encrypted = +`, RAR 2.9): headers/filenames are
+readable but file *data* is password-protected, so the executables cannot be
+extracted or hashed without the password. The readable inventory shows a
+template-driven fake-receipt fraud kit:
+- `Amazon Reciept Generator/Amazon Receipt Generator.exe` (3,450,880 B) — hash N/A (encrypted)
+- `PayPal Generator/PRG.exe` (399,872 B) — hash N/A (encrypted)
+- Cloned PayPal page assets: `paypal.css`, `paypal_logo.gif`, `pp_main.js`,
+  `regnet.htm` (a spoofed PayPal "registration/transaction" page)
+- `Microsoft PID/pidback.psd` (Photoshop template), `Receipt Template.docx/.pdf`
+
+Purpose: generate forged Amazon/PayPal/Microsoft receipts for refund / chargeback /
+"item not received" fraud, using the bundled HTML/PSD/DOCX templates.
 
 ### MOff16ProP.rar — pirated Microsoft Office
 - `Office_2016_..._by_Ratiborus.iso` (2.72 GB). No loose `.exe`; the ISO bundles the

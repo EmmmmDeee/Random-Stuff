@@ -22,8 +22,8 @@ recovery of malware/crack/fraud tooling is out of scope.
 | `CLiPW.exe` | `6ff90c64…b586d0` | `f34d5f2d…f5a744` | yes (.text 7.29) | Crack / patcher |
 | `VCS_Diamond.7.0.29.exe` | `caf8652a…860193` | `a604c6ea…81f77` | yes (.rsrc 8.00) | Installer for voice-changer |
 | `vcscore.exe` | `1573c264…c5ea49` | `57468a4a…6bf159` | yes (.texta 8.00) | **"Crack" with injection capability** ⚠ |
-| `Amazon Receipt Generator.exe` | *(extract failed)* | — | — | Fake-receipt fraud tool |
-| `PRG.exe` | *(extract failed)* | — | — | Fake PayPal-receipt fraud tool |
+| `Amazon Receipt Generator.exe` | *(encrypted RAR — N/A)* | — | — | Fake-receipt fraud tool |
+| `PRG.exe` | *(encrypted RAR — N/A)* | — | — | Fake PayPal-receipt fraud tool |
 
 ---
 
@@ -71,6 +71,15 @@ produced by the same toolchain/stub — useful for clustering.
 imphash `e22efc20…00c70`, `msvbvm60`-only imports (APIs resolved at runtime through
 the VB runtime, hiding them from the import table), and the tampered section layout
 (`.mackt`, unnamed first section). Full capability map in `MALWARE_ANALYSIS.md`.
+
+### ⚠ 8. The receipt fraud kit is the only password-protected archive
+`Receipt pack.rar` alone is **encrypted** (RAR 2.9, `Encrypted = +`) — its file data
+is password-locked, so the two generator exes can't be extracted or hashed.
+Filenames remain readable and reveal a template-driven forgery kit: cloned **PayPal**
+page assets (`paypal.css`, `paypal_logo.gif`, `pp_main.js`, a spoofed `regnet.htm`),
+a Microsoft receipt PSD (`pidback.psd`), and `Receipt Template.docx/.pdf`. That the
+fraud tooling — and *only* the fraud tooling — is password-protected suggests it was
+the "paid"/gated item in the pack, distributed more carefully than the free RAT.
 
 ### 7. `upx.exe` — the packer itself
 The standard open-source UPX executable (UPX0/UPX1 at 8.00, `VirtualProtect` unpack
