@@ -5,3 +5,4 @@ QUARANTINE_fraudbible_samples.7z
 PASSWORD.txt
 decompiled/
 *_src/
+tools/ioc-scanner/target/
