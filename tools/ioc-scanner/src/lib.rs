@@ -26,6 +26,7 @@ the chain-of-`String.equals` dispatch found in the malware it detects.
 */
 
 use std::fmt;
+use std::io::Read;
 
 use aho_corasick::{AhoCorasick, AhoCorasickBuilder, MatchKind};
 
@@ -165,6 +166,29 @@ impl Scanner {
             }
             Mode::Fast => self.ac.find_iter(haystack).map(to_hit).collect(),
         }
+    }
+
+    /// Scan from a streaming reader without holding the whole input in memory.
+    ///
+    /// Uses Aho-Corasick streaming search, so peak memory is `O(internal buffer +
+    /// longest pattern)` — *independent of input length*. This is the right tool
+    /// for multi-gigabyte files: unlike scanning an mmap (which faults every page
+    /// in), a stream scan keeps resident size bounded by the buffer.
+    ///
+    /// Streaming search reports **non-overlapping** matches regardless of
+    /// [`Mode`]; case-insensitivity (a build-time property of [`Mode::Complete`])
+    /// is preserved. For IOC literals, which do not nest, non-overlapping is
+    /// equivalent in practice.
+    ///
+    /// # Errors
+    /// Propagates any I/O error from the reader.
+    pub fn scan_reader<R: Read>(&self, reader: R) -> std::io::Result<Vec<Hit>> {
+        let mut hits = Vec::new();
+        for m in self.ac.stream_find_iter(reader) {
+            let m = m?;
+            hits.push(Hit { indicator: m.pattern().as_usize(), offset: m.start() });
+        }
+        Ok(hits)
     }
 
     /// Look up the [`Indicator`] behind a [`Hit`].
