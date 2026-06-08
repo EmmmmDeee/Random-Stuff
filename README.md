@@ -23,6 +23,7 @@ and handling guidance.
 | [`MALWARE_ANALYSIS.md`](MALWARE_ANALYSIS.md) | Deep dive: Blackshades & DroidJack RATs (hashes, capabilities, C2) |
 | [`SOURCE_LEVEL_ANALYSIS.md`](SOURCE_LEVEL_ANALYSIS.md) | Annotated decompiled behavior of the Android RAT |
 | [`ATTACK_MAPPING.md`](ATTACK_MAPPING.md) | MITRE ATT&CK technique mapping for both RATs |
+| [`DETECTION_PLAYBOOK.md`](DETECTION_PLAYBOOK.md) | **Layered defenses that catch it** — host/network/mobile/intel + the BurntSushi-style scanning approach |
 | [`detection/`](detection/) | YARA rules + Suricata/Snort signatures (validated against the samples) |
 | [`intel/`](intel/) | Machine-readable IOC feed: `iocs.csv` and STIX 2.1 `iocs_stix.json` |
 | [`tools/`](tools/) | Scripts to rebuild the encrypted sample archive on an isolated host |
