@@ -1,11 +1,13 @@
 //! CLI front-end for the IOC scanner.
 //!
 //! Usage:
-//!   ioc-scanner <iocs.csv> <path> [path ...]
+//!   ioc-scanner [--json] <iocs.csv> <path> [path ...]
 //!
 //! Walks each path, scans every regular file against the IOC feed, and prints
-//! `file:offset  <malware>  <kind>=<value>` for each hit. Exit code is 1 if any
-//! hit was found (useful in CI/pipelines), 0 if clean, 2 on error.
+//! `file:offset  <malware>  <kind>=<value>` for each hit (tab-separated). With
+//! `--json`, emits one JSON object per hit (JSON Lines) for SIEM/pipeline intake.
+//! Exit code is 1 if any hit was found (useful in CI/pipelines), 0 if clean,
+//! 2 on error.
 //!
 //! Scanning strategy is chosen by file size (measured, not assumed). Large files
 //! (>= 16 MiB) are streamed in fixed-size chunks, so peak resident memory stays
@@ -21,14 +23,24 @@ use std::fs::File;
 use std::io::{self, BufWriter, Write};
 use std::process::ExitCode;
 
-use ioc_scanner::{Hit, Scanner};
+use ioc_scanner::{json_escape, Hit, Scanner};
 use memmap2::Mmap;
 use walkdir::WalkDir;
 
 fn main() -> ExitCode {
-    let args: Vec<String> = std::env::args().skip(1).collect();
+    let mut args: Vec<String> = std::env::args().skip(1).collect();
+
+    // Optional `--json` flag (anywhere before the positional args) selects JSON
+    // Lines output instead of the default tab-separated format.
+    let json = if let Some(i) = args.iter().position(|a| a == "--json") {
+        args.remove(i);
+        true
+    } else {
+        false
+    };
+
     if args.len() < 2 {
-        eprintln!("usage: ioc-scanner <iocs.csv> <path> [path ...]");
+        eprintln!("usage: ioc-scanner [--json] <iocs.csv> <path> [path ...]");
         return ExitCode::from(2);
     }
     let (feed, paths) = (&args[0], &args[1..]);
@@ -66,17 +78,28 @@ fn main() -> ExitCode {
                         any = true;
                         let ind = scanner.indicator(&hit);
                         // Write errors here mean stdout is gone; bail cleanly.
-                        if writeln!(
-                            out,
-                            "{}:{}\t{}\t{}={}",
-                            path.display(),
-                            hit.offset,
-                            ind.malware,
-                            ind.kind,
-                            ind.value
-                        )
-                        .is_err()
-                        {
+                        let res = if json {
+                            writeln!(
+                                out,
+                                r#"{{"file":"{}","offset":{},"malware":"{}","kind":"{}","value":"{}"}}"#,
+                                json_escape(&path.display().to_string()),
+                                hit.offset,
+                                json_escape(&ind.malware),
+                                json_escape(&ind.kind),
+                                json_escape(&ind.value)
+                            )
+                        } else {
+                            writeln!(
+                                out,
+                                "{}:{}\t{}\t{}={}",
+                                path.display(),
+                                hit.offset,
+                                ind.malware,
+                                ind.kind,
+                                ind.value
+                            )
+                        };
+                        if res.is_err() {
                             return ExitCode::from(2);
                         }
                     }

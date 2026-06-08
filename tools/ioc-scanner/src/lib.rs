@@ -206,3 +206,48 @@ impl Scanner {
         self.indicators.is_empty()
     }
 }
+
+/// Escape a string for embedding in a JSON string literal (RFC 8259 §7).
+///
+/// Handles the required escapes (`"`, `\`, the C0 control characters) so callers
+/// can build JSON output without pulling in a serializer. Note: input is already
+/// valid UTF-8 (`&str`); this does not perform any encoding conversion.
+pub fn json_escape(s: &str) -> String {
+    let mut out = String::with_capacity(s.len() + 2);
+    for c in s.chars() {
+        match c {
+            '"' => out.push_str("\\\""),
+            '\\' => out.push_str("\\\\"),
+            '\n' => out.push_str("\\n"),
+            '\r' => out.push_str("\\r"),
+            '\t' => out.push_str("\\t"),
+            '\u{08}' => out.push_str("\\b"),
+            '\u{0c}' => out.push_str("\\f"),
+            c if (c as u32) < 0x20 => out.push_str(&format!("\\u{:04x}", c as u32)),
+            c => out.push(c),
+        }
+    }
+    out
+}
+
+#[cfg(test)]
+mod json_tests {
+    use super::json_escape;
+
+    #[test]
+    fn escapes_quote_and_backslash() {
+        assert_eq!(json_escape(r#"a"b\c"#), r#"a\"b\\c"#);
+    }
+
+    #[test]
+    fn escapes_control_chars() {
+        assert_eq!(json_escape("x\ny\tz"), "x\\ny\\tz");
+        assert_eq!(json_escape("\u{01}"), "\\u0001");
+    }
+
+    #[test]
+    fn passes_through_plain_and_unicode() {
+        assert_eq!(json_escape("droidjack.net"), "droidjack.net");
+        assert_eq!(json_escape("café"), "café");
+    }
+}
