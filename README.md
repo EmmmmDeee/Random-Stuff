@@ -26,6 +26,7 @@ and handling guidance.
 | Document | Purpose |
 |---|---|
 | [`MALWARE_ANALYSIS.md`](MALWARE_ANALYSIS.md) | Deep dive: Blackshades & DroidJack RATs (hashes, capabilities, C2) |
+| [`EXECUTABLES.md`](EXECUTABLES.md) | Every `.exe` in the archives: inventory, hashes, function + typical/historical market value |
 | [`SOURCE_LEVEL_ANALYSIS.md`](SOURCE_LEVEL_ANALYSIS.md) | Annotated decompiled behavior of the Android RAT |
 
 **Critique**
