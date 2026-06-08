@@ -25,6 +25,7 @@ the chain-of-`String.equals` dispatch found in the malware it detects.
 [Aho-Corasick]: https://en.wikipedia.org/wiki/Aho%E2%80%93Corasick_algorithm
 */
 
+use std::collections::HashMap;
 use std::fmt;
 use std::io::Read;
 
@@ -100,11 +101,13 @@ pub enum Mode {
     Fast,
 }
 
-/// A compiled scanner: an Aho-Corasick automaton plus the indicator table.
+/// A compiled scanner: an Aho-Corasick automaton plus the indicator table,
+/// and a side table of SHA-256 hash indicators for hash-based matching.
 pub struct Scanner {
     ac: AhoCorasick,
     indicators: Vec<Indicator>,
     mode: Mode,
+    hashes: HashMap<String, Indicator>,
 }
 
 impl Scanner {
@@ -138,7 +141,7 @@ impl Scanner {
             .ascii_case_insensitive(mode == Mode::Complete)
             .build(indicators.iter().map(|i| i.value.as_bytes()))
             .map_err(Error::Build)?;
-        Ok(Scanner { ac, indicators, mode })
+        Ok(Scanner { ac, indicators, mode, hashes: HashMap::new() })
     }
 
     /// Parse indicators from an `intel/iocs.csv`-style reader.
@@ -163,6 +166,7 @@ impl Scanner {
         const SCANNABLE: &[&str] =
             &["domain", "url", "string", "package", "section", "filemarker"];
         let mut out = Vec::new();
+        let mut hashes: HashMap<String, Indicator> = HashMap::new();
         for (n, line) in text.lines().enumerate() {
             if n == 0 || line.trim().is_empty() {
                 continue; // header / blank
@@ -174,16 +178,35 @@ impl Scanner {
             }
             let (kind, value, malware) = (parts[0].trim(), parts[1].trim(), parts[2].trim());
             let confidence = Confidence::parse(parts.get(4).copied().unwrap_or(""));
-            if SCANNABLE.contains(&kind) && !value.is_empty() && confidence >= min {
-                out.push(Indicator {
-                    value: value.to_string(),
-                    kind: kind.to_string(),
-                    malware: malware.to_string(),
-                    confidence,
-                });
+            if value.is_empty() || confidence < min {
+                continue;
+            }
+            let ind = Indicator {
+                value: value.to_string(),
+                kind: kind.to_string(),
+                malware: malware.to_string(),
+                confidence,
+            };
+            if SCANNABLE.contains(&kind) {
+                out.push(ind);
+            } else if kind == "sha256" {
+                // Hash IOCs are matched by file digest, not content scanning.
+                hashes.insert(value.to_ascii_lowercase(), ind);
             }
         }
-        Scanner::new(out)
+        let mut scanner = Scanner::new(out)?;
+        scanner.hashes = hashes;
+        Ok(scanner)
+    }
+
+    /// Look up a SHA-256 hex digest (case-insensitive) among the feed's hash IOCs.
+    pub fn hash_lookup(&self, sha256_hex: &str) -> Option<&Indicator> {
+        self.hashes.get(&sha256_hex.to_ascii_lowercase())
+    }
+
+    /// Number of SHA-256 hash indicators loaded.
+    pub fn hash_count(&self) -> usize {
+        self.hashes.len()
     }
 
     /// Scan a byte haystack, returning (indicator, offset) hits.
