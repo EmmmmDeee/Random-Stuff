@@ -1,13 +1,14 @@
 //! CLI front-end for the IOC scanner.
 //!
 //! Usage:
-//!   ioc-scanner [--json] <iocs.csv> <path> [path ...]
+//!   ioc-scanner [--json] [--min-confidence low|medium|high] [--summary] <iocs.csv> <path> [path ...]
 //!
 //! Walks each path, scans every regular file against the IOC feed, and prints
 //! `file:offset  <malware>  <kind>=<value>` for each hit (tab-separated). With
 //! `--json`, emits one JSON object per hit (JSON Lines) for SIEM/pipeline intake.
-//! Exit code is 1 if any hit was found (useful in CI/pipelines), 0 if clean,
-//! 2 on error.
+//! `--min-confidence` drops indicators below the given grade; `--summary` prints a
+//! files/hits/by-malware tally to stderr at the end. Exit code is 1 if any hit was
+//! found (useful in CI/pipelines), 0 if clean, 2 on error.
 //!
 //! Scanning strategy is chosen by file size (measured, not assumed). Large files
 //! (>= 16 MiB) are streamed in fixed-size chunks, so peak resident memory stays
@@ -19,6 +20,7 @@
 //! so a 2.5 GB mapping ends up ~2.5 GB resident (verified by measurement). Only
 //! streaming keeps a multi-gigabyte input from sitting fully resident.
 
+use std::collections::BTreeMap;
 use std::fs::File;
 use std::io::{self, BufWriter, Write};
 use std::process::ExitCode;
@@ -33,6 +35,14 @@ fn main() -> ExitCode {
     // Optional `--json` flag (anywhere before the positional args) selects JSON
     // Lines output instead of the default tab-separated format.
     let json = if let Some(i) = args.iter().position(|a| a == "--json") {
+        args.remove(i);
+        true
+    } else {
+        false
+    };
+
+    // Optional `--summary`: print a tally to stderr at the end (keeps stdout clean).
+    let summary = if let Some(i) = args.iter().position(|a| a == "--summary") {
         args.remove(i);
         true
     } else {
@@ -55,7 +65,7 @@ fn main() -> ExitCode {
     }
 
     if args.len() < 2 {
-        eprintln!("usage: ioc-scanner [--json] [--min-confidence low|medium|high] <iocs.csv> <path> [path ...]");
+        eprintln!("usage: ioc-scanner [--json] [--min-confidence low|medium|high] [--summary] <iocs.csv> <path> [path ...]");
         return ExitCode::from(2);
     }
     let (feed, paths) = (&args[0], &args[1..]);
@@ -81,17 +91,29 @@ fn main() -> ExitCode {
     let mut out = BufWriter::new(stdout.lock());
     let mut any = false;
 
+    // Summary counters (cheap; only reported when `--summary` is set).
+    let mut files_scanned = 0usize;
+    let mut files_flagged = 0usize;
+    let mut total_hits = 0usize;
+    let mut by_malware: BTreeMap<String, usize> = BTreeMap::new();
+
     for root in paths {
         for entry in WalkDir::new(root).into_iter().filter_map(|e| e.ok()) {
             if !entry.file_type().is_file() {
                 continue;
             }
+            files_scanned += 1;
             let path = entry.path();
             match scan_file(&scanner, path) {
                 Ok(hits) => {
+                    if !hits.is_empty() {
+                        files_flagged += 1;
+                    }
                     for hit in hits {
                         any = true;
+                        total_hits += 1;
                         let ind = scanner.indicator(&hit);
+                        *by_malware.entry(ind.malware.clone()).or_insert(0) += 1;
                         // Write errors here mean stdout is gone; bail cleanly.
                         let res = if json {
                             writeln!(
@@ -127,6 +149,16 @@ fn main() -> ExitCode {
     if out.flush().is_err() {
         return ExitCode::from(2);
     }
+
+    if summary {
+        eprintln!(
+            "summary: scanned {files_scanned} files, {files_flagged} flagged, {total_hits} hits"
+        );
+        for (malware, count) in &by_malware {
+            eprintln!("  {malware}: {count}");
+        }
+    }
+
     if any {
         ExitCode::from(1)
     } else {
