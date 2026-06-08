@@ -7,13 +7,15 @@
 //! `file:offset  <malware>  <kind>=<value>` for each hit. Exit code is 1 if any
 //! hit was found (useful in CI/pipelines), 0 if clean, 2 on error.
 //!
-//! Files are **memory-mapped** rather than read into the heap. Measured benefit
-//! (not assumed): this avoids a multi-gigabyte `malloc`+copy that `fs::read`
-//! incurs, and the pages are clean and file-backed, so the kernel can reclaim
-//! them under memory pressure. Note a *full* scan still faults every page in, so
-//! peak resident size during one scan is comparable to reading the file — the win
-//! is the avoided copy and reclaimable (not heap-pinned) pages, not lower peak RSS.
-//! Empty files and map failures fall back to a plain read.
+//! Scanning strategy is chosen by file size (measured, not assumed). Large files
+//! (>= 16 MiB) are streamed in fixed-size chunks, so peak resident memory stays
+//! bounded by the buffer regardless of file size; small files are memory-mapped
+//! and scanned whole, preserving full overlapping-match fidelity without per-file
+//! heap copies. Empty files yield no hits; an mmap failure falls back to a read.
+//!
+//! Why streaming and not mmap-only: a full scan of an mmap faults every page in,
+//! so a 2.5 GB mapping ends up ~2.5 GB resident (verified by measurement). Only
+//! streaming keeps a multi-gigabyte input from sitting fully resident.
 
 use std::fs::File;
 use std::io::{self, BufWriter, Write};
@@ -94,15 +96,26 @@ fn main() -> ExitCode {
     }
 }
 
-/// Scan a single file, memory-mapping it when possible.
+/// Files at or above this size are streamed (bounded memory) instead of mapped.
+const STREAM_THRESHOLD: u64 = 16 * 1024 * 1024;
+
+/// Scan a single file, choosing the right strategy for its size.
 ///
-/// Empty files yield no hits. If mmap is unavailable (e.g. some virtual
-/// filesystems), fall back to reading the file into memory.
+/// - **Large files (>= 16 MiB):** streamed via [`Scanner::scan_reader`], so peak
+///   memory stays bounded by the stream buffer rather than the file size. This is
+///   what keeps a multi-GB input from sitting fully resident.
+/// - **Small files:** memory-mapped and scanned whole, preserving full
+///   (overlapping) match fidelity.
+///
+/// Empty files yield no hits; an mmap failure falls back to a plain read.
 fn scan_file(scanner: &Scanner, path: &std::path::Path) -> io::Result<Vec<Hit>> {
     let file = File::open(path)?;
     let len = file.metadata()?.len();
     if len == 0 {
         return Ok(Vec::new());
+    }
+    if len >= STREAM_THRESHOLD {
+        return scanner.scan_reader(io::BufReader::new(file));
     }
     // SAFETY: read-only mapping. As with ripgrep, we accept that a file mutated
     // by another process mid-scan is undefined behavior; for triage scanning of
