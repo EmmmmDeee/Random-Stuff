@@ -12,7 +12,11 @@ memchr = "2"         # used transitively; pinned intent: SIMD scanning
 walkdir = "2"        # recursive directory traversal
 
 [dev-dependencies]
-# (tests use std only)
+# (tests + bench use std only — keeping the dep tree minimal on purpose)
+
+[[bench]]
+name = "scan"
+harness = false   # custom harness; no criterion dep pulled in
 
 [profile.release]
 lto = true
