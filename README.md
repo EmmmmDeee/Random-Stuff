@@ -27,6 +27,7 @@ and handling guidance.
 |---|---|
 | [`MALWARE_ANALYSIS.md`](MALWARE_ANALYSIS.md) | Deep dive: Blackshades & DroidJack RATs (hashes, capabilities, C2) |
 | [`EXECUTABLES.md`](EXECUTABLES.md) | Every `.exe` in the archives: inventory, hashes, function + typical/historical market value |
+| [`EXECUTABLES_ANALYSIS.md`](EXECUTABLES_ANALYSIS.md) | Per-`.exe` static behavioral analysis: imports, packing, the crack-bundled-malware finding |
 | [`SOURCE_LEVEL_ANALYSIS.md`](SOURCE_LEVEL_ANALYSIS.md) | Annotated decompiled behavior of the Android RAT |
 
 **Critique**
