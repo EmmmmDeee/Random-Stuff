@@ -35,8 +35,7 @@ and handling guidance.
 |---|---|
 | [`DISPARITY.md`](DISPARITY.md) | **Start here** — amateur offense vs. professional engineering/defense, organized |
 | [`AMATEUR_TRADECRAFT.md`](AMATEUR_TRADECRAFT.md) | Methods & functionality critique (tradecraft) |
-| [`CODE_REVIEW.md`](CODE_REVIEW.md) | Code-style critique (19 findings) |
-| [`CODE_REVIEW_EXHAUSTIVE.md`](CODE_REVIEW_EXHAUSTIVE.md) | Full 15-category teardown (~35 findings, severity-rated, citation-backed) |
+| [`CODE_REVIEW.md`](CODE_REVIEW.md) | Full 15-category code-quality teardown (~35 findings, severity-rated, citation-backed) |
 | [`RUST_PERSPECTIVE.md`](RUST_PERSPECTIVE.md) | Defects ranked + idiomatic-Rust contrast + measured benchmark |
 
 **Detection & defense**
