@@ -18,7 +18,20 @@ and handling guidance.
 | [`analysis/`](analysis/) | One document per file: identity, classification, function, handling |
 | [`MALWARE_ANALYSIS.md`](MALWARE_ANALYSIS.md) | Deep dive: Blackshades & DroidJack RATs (hashes, capabilities, C2) |
 | [`SOURCE_LEVEL_ANALYSIS.md`](SOURCE_LEVEL_ANALYSIS.md) | Annotated decompiled behavior of the Android RAT |
+| [`ATTACK_MAPPING.md`](ATTACK_MAPPING.md) | MITRE ATT&CK technique mapping for both RATs |
+| [`detection/`](detection/) | YARA rules + Suricata/Snort signatures (validated against the samples) |
+| [`intel/`](intel/) | Machine-readable IOC feed: `iocs.csv` and STIX 2.1 `iocs_stix.json` |
 | [`tools/`](tools/) | Scripts to rebuild the encrypted sample archive on an isolated host |
+
+## Detection & threat-intel package
+
+- **Host detection:** `detection/droidjack.yar`, `detection/blackshades.yar` —
+  tested to match the real samples and to *not* false-positive on these docs.
+- **Network detection:** `detection/droidjack_suricata.rules` — C2 domain, URIs,
+  KryoNet token, dynamic-DNS family.
+- **Intel feeds:** `intel/iocs.csv` (18 indicators) and `intel/iocs_stix.json`
+  (STIX 2.1 bundle, ready for MISP/TAXII import).
+- **Coverage map:** `ATTACK_MAPPING.md` ties every capability to a MITRE ATT&CK ID.
 
 ## Key findings
 
