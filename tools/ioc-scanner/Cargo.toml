@@ -3,7 +3,7 @@ name = "ioc-scanner"
 version = "0.1.0"
 edition = "2021"
 description = "Fast multi-pattern IOC scanner for malware triage (defensive)."
-license = "MIT OR Apache-2.0"
+license = "MIT"
 
 # Minimal, auditable dependency tree — every crate earns its place.
 [dependencies]
