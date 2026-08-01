@@ -165,6 +165,16 @@ impl Scanner {
     pub fn from_csv_min(text: &str, min: Confidence) -> Result<Self, Error> {
         const SCANNABLE: &[&str] =
             &["domain", "url", "string", "package", "section", "filemarker"];
+        // Cap indicator length. Real content IOCs (domains, URLs, byte strings)
+        // are short — comfortably under a few hundred bytes. Automaton
+        // construction cost is superlinear in the *longest* pattern (aho-corasick
+        // auto-selects a DFA, whose build is ~O(n^2) in pattern length: a 20 KiB
+        // pattern takes ~30 s, a 1 MiB pattern effectively never finishes), so a
+        // single pathologically long row would hang startup. A malformed row that
+        // long is not a usable indicator anyway; skip it, as we already skip empty
+        // values and unknown kinds. Keeps the DFA's fast scan for real feeds while
+        // bounding worst-case build time.
+        const MAX_INDICATOR_LEN: usize = 4096;
         let mut out = Vec::new();
         let mut hashes: HashMap<String, Indicator> = HashMap::new();
         for (n, line) in text.lines().enumerate() {
@@ -178,7 +188,7 @@ impl Scanner {
             }
             let (kind, value, malware) = (parts[0].trim(), parts[1].trim(), parts[2].trim());
             let confidence = Confidence::parse(parts.get(4).copied().unwrap_or(""));
-            if value.is_empty() || confidence < min {
+            if value.is_empty() || value.len() > MAX_INDICATOR_LEN || confidence < min {
                 continue;
             }
             let ind = Indicator {
@@ -286,6 +296,41 @@ pub fn json_escape(s: &str) -> String {
         }
     }
     out
+}
+
+#[cfg(test)]
+mod csv_tests {
+    use super::{Confidence, Scanner};
+
+    #[test]
+    fn skips_overlong_indicator_values() {
+        // A pathologically long row must not reach the automaton builder (its
+        // build is superlinear in the longest pattern). Here the only content row
+        // is over-length, so it is skipped and the feed yields no indicators.
+        let feed = format!("type,value,malware\ndomain,{},m\n", "a".repeat(10_000));
+        assert!(matches!(
+            Scanner::from_csv(&feed),
+            Err(super::Error::NoIndicators)
+        ));
+
+        // A normal-length row alongside an over-length one keeps the good one.
+        let feed = format!(
+            "type,value,malware\ndomain,evil.example,M\nstring,{},N\n",
+            "b".repeat(10_000)
+        );
+        let s = Scanner::from_csv(&feed).unwrap();
+        assert_eq!(s.len(), 1);
+        assert!(!s.scan(b"go to evil.example now").is_empty());
+    }
+
+    #[test]
+    fn confidence_filter_still_applies() {
+        let feed = "type,value,malware,context,confidence\n\
+                    domain,low.example,M,,low\n\
+                    domain,high.example,M,,high\n";
+        let s = Scanner::from_csv_min(feed, Confidence::High).unwrap();
+        assert_eq!(s.len(), 1);
+    }
 }
 
 #[cfg(test)]
