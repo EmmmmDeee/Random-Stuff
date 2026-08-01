@@ -44,10 +44,13 @@ pub enum Confidence {
 impl Confidence {
     /// Parse a grade string; anything unrecognised (incl. empty) is `Low`.
     pub fn parse(s: &str) -> Confidence {
-        match s.trim().to_ascii_lowercase().as_str() {
-            "high" => Confidence::High,
-            "medium" => Confidence::Medium,
-            _ => Confidence::Low,
+        let s = s.trim();
+        if s.eq_ignore_ascii_case("high") {
+            Confidence::High
+        } else if s.eq_ignore_ascii_case("medium") {
+            Confidence::Medium
+        } else {
+            Confidence::Low
         }
     }
 }
@@ -281,7 +284,13 @@ pub fn json_escape(s: &str) -> String {
             '\t' => out.push_str("\\t"),
             '\u{08}' => out.push_str("\\b"),
             '\u{0c}' => out.push_str("\\f"),
-            c if (c as u32) < 0x20 => out.push_str(&format!("\\u{:04x}", c as u32)),
+            c if (c as u32) < 0x20 => {
+                // Stack-local formatting avoids a heap allocation per control char.
+                let n = c as u32;
+                out.push_str("\\u00");
+                out.push(char::from_digit(n >> 4, 16).unwrap());
+                out.push(char::from_digit(n & 0xf, 16).unwrap());
+            }
             c => out.push(c),
         }
     }

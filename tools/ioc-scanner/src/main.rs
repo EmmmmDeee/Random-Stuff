@@ -128,9 +128,6 @@ fn main() -> ExitCode {
             // 1) Content (substring) matching.
             match scan_file(&scanner, path) {
                 Ok(hits) => {
-                    if !hits.is_empty() {
-                        files_flagged += 1;
-                    }
                     for hit in hits {
                         let ind = scanner.indicator(&hit);
                         if emit(&mut out, json, path, hit.offset, &ind.malware, &ind.kind, &ind.value)
