@@ -17,6 +17,11 @@ This framework provides:
 3. **Incident Response Drills** - Automated testing of detection, response, and recovery capabilities
 4. **Detection Gap Analysis** - Identifies blindspots in current security controls
 5. **Remediation Tracking** - Prioritized fixes for detected gaps
+6. **Intelligence-Led Testing (TLPT)** - Emulate the *specific* threat actors that
+   target your sector, using their real documented TTPs — see
+   [`intelligence-led/`](intelligence-led/README.md). This is the maturity
+   upgrade over generic red teaming (the TIBER-EU / CBEST model): the adversary
+   you emulate is chosen from evidence, not imagination.
 
 ### Current Scenarios
 
