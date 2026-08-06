@@ -80,7 +80,14 @@ intelligence-led/
 ├── threat-actors.json         (adversary profiles: goals, sectors, TTPs)
 ├── targeting-model.json       (sector → likely-adversary mapping + scoring)
 ├── tti-report-template.md     (Targeted Threat Intelligence report template)
-└── derive-scenario.py         (turn a threat actor profile into a test scenario)
+├── derive-scenario.py         (turn a threat actor profile into a test scenario)
+├── reconnaissance/            (Recon phase / OSINT — MITRE TA0043)
+│   ├── README.md              (authorized-recon method + footprint reduction)
+│   ├── attack-surface.json    (recon techniques ↔ defensive counters)
+│   └── recon-plan.py          (plan generator + defensive report; no collection)
+└── detection-mapping/         (the purple-team payoff — detection content)
+    ├── hunt-queries.md        (single-TTP hunts, actor-mapped)
+    └── correlation-and-coverage.md  (kill-chain + blind-spot + baseline queries)
 ```
 
 ### Workflow
