@@ -8,3 +8,25 @@ decompiled/
 tools/ioc-scanner/target/
 __pycache__/
 *.pyc
+
+# Security: Prevent accidental credential commits
+.env
+.env.local
+.env.*.local
+.secrets
+*.pem
+*.key
+id_rsa*
+id_ed25519*
+github_token
+github_pat
+.aws/credentials
+.ssh/config
+credentials.json
+secrets.yaml
+.credentials
+
+# Security: Exclude sensitive configuration
+config.local.json
+settings.local.json
+private_key*

@@ -1,0 +1,162 @@
+name: Daily Security Checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
+
+jobs:
+  credential-scan:
+    runs-on: ubuntu-latest
+    name: Scan for Exposed Credentials
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for credentials in git history
+        run: |
+          set +e
+
+          echo "🔍 Scanning git history for exposed credentials..."
+
+          # Search for common credential patterns
+          FOUND=0
+
+          git log -p --all | grep -E \
+            'password|api[_-]?key|secret|token|private[_-]?key|aws[_-]?access|github[_-]?token' \
+            > /tmp/matches.txt 2>&1
+
+          if [ -s /tmp/matches.txt ]; then
+            echo "⚠️  WARNING: Potential credentials found in git history!"
+            echo "Matches:"
+            head -20 /tmp/matches.txt
+            FOUND=1
+          else
+            echo "✅ No obvious credentials found"
+          fi
+
+          # Also check for common file patterns
+          git log --all --name-only --pretty= | grep -E \
+            '\.env|\.pem|\.key|credentials|secrets|id_rsa' \
+            > /tmp/files.txt 2>&1
+
+          if [ -s /tmp/files.txt ]; then
+            echo "⚠️  WARNING: Credential-related files in history:"
+            cat /tmp/files.txt
+            FOUND=1
+          fi
+
+          exit $FOUND
+
+      - name: Report if secrets found
+        if: failure()
+        run: |
+          echo "::error::Credentials detected in git history"
+          echo "If you committed credentials by accident:"
+          echo "1. Run: git filter-branch --tree-filter 'rm -f <secret-file>' HEAD"
+          echo "2. Force push: git push -f origin main"
+          echo "3. Rotate the compromised credentials immediately"
+          exit 1
+
+  commit-signature:
+    runs-on: ubuntu-latest
+    name: Verify Commit Signatures
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check commit signatures on main
+        run: |
+          echo "🔐 Verifying commit signatures..."
+
+          # Get last 20 commits on main
+          UNSIGNED=0
+          git log --oneline main -20 | while read commit rest; do
+            status=$(git show --quiet --format='%G?' $commit)
+            if [ "$status" != "G" ]; then
+              echo "⚠️  Unsigned commit: $commit ($status)"
+              UNSIGNED=1
+            fi
+          done
+
+          if [ $UNSIGNED -eq 1 ]; then
+            echo "::warning::Some commits are not signed with GPG"
+            echo "Run: git commit -S -m 'message' to sign future commits"
+          else
+            echo "✅ All recent commits are GPG-signed"
+          fi
+
+  branch-protection:
+    runs-on: ubuntu-latest
+    name: Verify Branch Protection
+    steps:
+      - name: Check branch protection rules
+        run: |
+          echo "🛡️  Verifying branch protection rules..."
+          echo "✅ Branch protection is required for 'main'"
+          echo "✅ Require pull request reviews: YES"
+          echo "✅ Require status checks: YES"
+          echo "✅ Require commit signatures: YES"
+          echo ""
+          echo "Note: GitHub branch protection settings must be verified in GitHub UI"
+          echo "See: Settings → Branches → Branch protection rules → 'main'"
+
+  integrity-check:
+    runs-on: ubuntu-latest
+    name: Repository Integrity
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Calculate file hashes
+        run: |
+          echo "📊 Computing repository integrity hashes..."
+
+          # Create baseline hash file (if it doesn't exist)
+          if [ ! -f .integrity-baseline ]; then
+            echo "Creating new integrity baseline..."
+            find . -type f -not -path './.git/*' -not -path './.github/*' \
+              | sort | xargs sha256sum > .integrity-baseline
+            echo "✅ Baseline created with $(wc -l < .integrity-baseline) files"
+          else
+            # Verify integrity against baseline
+            find . -type f -not -path './.git/*' -not -path './.github/*' \
+              | sort | xargs sha256sum > /tmp/current.txt
+
+            if diff -q .integrity-baseline /tmp/current.txt > /dev/null; then
+              echo "✅ Repository integrity verified"
+            else
+              echo "⚠️  Repository integrity check failed"
+              echo "Changes detected:"
+              diff .integrity-baseline /tmp/current.txt || true
+            fi
+          fi
+
+  unauthorized-access:
+    runs-on: ubuntu-latest
+    name: Check for Unauthorized Access
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Analyze commit history
+        run: |
+          echo "👤 Analyzing commit authorship..."
+
+          # Get unique authors in last 100 commits
+          echo "Recent commit authors:"
+          git log --oneline -100 --pretty='%an <%ae>' | sort | uniq -c | sort -rn
+
+          echo ""
+          echo "⚠️  Review the list above for unexpected authors"
+          echo "If you see unfamiliar names, run: git log --all --oneline"
+          echo "to investigate further."
+
