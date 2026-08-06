@@ -9,26 +9,36 @@ on:
     # Run daily at 2 AM UTC
     - cron: '0 2 * * *'
 
+# Cancel a superseded run when new commits are pushed, so queued runs don't
+# pile up and compete for scarce runners.
+concurrency:
+  group: security-check-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  credential-scan:
+  # All checks run as sequential steps in ONE job so the whole suite needs only
+  # a single runner. Splitting these into 5 parallel jobs requires 5 concurrent
+  # runners; on runner-constrained accounts the extra jobs sit queued and get
+  # cancelled, failing the run for reasons unrelated to the checks themselves.
+  security-checks:
     runs-on: ubuntu-latest
-    name: Scan for Exposed Credentials
+    name: Security Checks
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Check for credentials in recent history
+      # --- 1. Credential scan ------------------------------------------------
+      - name: Scan for exposed credentials
         run: |
           set +e
 
           echo "🔍 Scanning recent git history for exposed credentials..."
 
-          # Search for common credential patterns.
-          # NOTE: this is a lightweight heuristic scan, not a substitute for a
-          # dedicated secret scanner (e.g. gitleaks/trufflehog). We limit the
-          # scan to the most recent commits to keep CI fast and avoid the
-          # OOM/timeout risk of `git log -p --all` on large histories.
+          # Lightweight heuristic scan, not a substitute for a dedicated secret
+          # scanner (e.g. gitleaks/trufflehog). Limited to recent commits to
+          # keep CI fast and avoid the OOM/timeout risk of `git log -p --all`
+          # on large histories.
           FOUND=0
           SCAN_DEPTH=200
 
@@ -45,8 +55,8 @@ jobs:
             echo "✅ No obvious credentials found"
           fi
 
-          # Also check for common file patterns
-          git log --all --name-only --pretty= | grep -E \
+          # Also check for common credential file patterns in recent history
+          git log -n "$SCAN_DEPTH" --name-only --pretty= | grep -E \
             '\.env|\.pem|\.key|credentials|secrets|id_rsa' \
             > /tmp/files.txt 2>&1
 
@@ -56,32 +66,24 @@ jobs:
             FOUND=1
           fi
 
+          if [ "$FOUND" -ne 0 ]; then
+            echo "::error::Credentials detected in git history"
+            echo "If you committed credentials by accident:"
+            echo "1. Rotate the compromised credentials IMMEDIATELY (assume exposed)."
+            echo "2. Remove the secret from history with git-filter-repo:"
+            echo "     git filter-repo --path <secret-file> --invert-paths"
+            echo "   (git filter-branch is deprecated; prefer git-filter-repo.)"
+            echo "3. Coordinate the history rewrite with repo admins — the protected"
+            echo "   'main' branch disallows direct force pushes, so this requires an"
+            echo "   admin-run rewrite or a temporary protection bypass, not a"
+            echo "   'git push -f origin main' from a contributor."
+          fi
+
           exit $FOUND
 
-      - name: Report if secrets found
-        if: failure()
-        run: |
-          echo "::error::Credentials detected in git history"
-          echo "If you committed credentials by accident:"
-          echo "1. Rotate the compromised credentials IMMEDIATELY (assume exposed)."
-          echo "2. Remove the secret from history with git-filter-repo:"
-          echo "     git filter-repo --path <secret-file> --invert-paths"
-          echo "   (git filter-branch is deprecated; prefer git-filter-repo.)"
-          echo "3. Coordinate the history rewrite with repo admins — the protected"
-          echo "   'main' branch disallows direct force pushes, so this requires an"
-          echo "   admin-run rewrite or a temporary protection bypass, not a"
-          echo "   'git push -f origin main' from a contributor."
-          exit 1
-
-  commit-signature:
-    runs-on: ubuntu-latest
-    name: Verify Commit Signatures
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Check commit signatures
+      # --- 2. Commit signatures ---------------------------------------------
+      - name: Verify commit signatures
+        if: always()
         run: |
           echo "🔐 Verifying commit signatures..."
 
@@ -116,30 +118,18 @@ jobs:
             echo "✅ All recent commits are GPG-signed"
           fi
 
-  branch-protection:
-    runs-on: ubuntu-latest
-    name: Verify Branch Protection
-    steps:
-      - name: Check branch protection rules
+      # --- 3. Branch protection (advisory) ----------------------------------
+      - name: Verify branch protection
+        if: always()
         run: |
           echo "🛡️  Verifying branch protection rules..."
-          echo "✅ Branch protection is required for 'main'"
-          echo "✅ Require pull request reviews: YES"
-          echo "✅ Require status checks: YES"
-          echo "✅ Require commit signatures: YES"
-          echo ""
-          echo "Note: GitHub branch protection settings must be verified in GitHub UI"
+          echo "Expected for 'main': PR reviews, status checks, commit signatures."
+          echo "Note: GitHub branch protection settings must be verified in the UI"
           echo "See: Settings → Branches → Branch protection rules → 'main'"
 
-  integrity-check:
-    runs-on: ubuntu-latest
-    name: Repository Integrity
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Calculate file hashes
+      # --- 4. Repository integrity ------------------------------------------
+      - name: Repository integrity
+        if: always()
         run: |
           echo "📊 Computing repository integrity hashes..."
 
@@ -153,21 +143,17 @@ jobs:
               | sort | xargs sha256sum
           }
 
-          # NOTE: the baseline is only meaningful if `.integrity-baseline` is
-          # committed to the repo (or restored from a cache/artifact). A fresh
-          # GitHub runner starts without it, so the first run just records a
-          # baseline — real enforcement requires committing that file. To turn
-          # this into a hard gate, commit .integrity-baseline and fail the job
-          # when the diff below is non-empty.
+          # The baseline is only meaningful if `.integrity-baseline` is committed
+          # to the repo (or restored from a cache/artifact). A fresh runner
+          # starts without it, so the first run just records a baseline — real
+          # enforcement requires committing that file.
           if [ ! -f .integrity-baseline ]; then
             echo "Creating new integrity baseline..."
             hash_files > .integrity-baseline
             echo "✅ Baseline created with $(wc -l < .integrity-baseline) files"
             echo "ℹ️  Commit .integrity-baseline to enable comparison on future runs."
           else
-            # Verify integrity against baseline
             hash_files > /tmp/current.txt
-
             if diff -q .integrity-baseline /tmp/current.txt > /dev/null; then
               echo "✅ Repository integrity verified"
             else
@@ -177,24 +163,13 @@ jobs:
             fi
           fi
 
-  unauthorized-access:
-    runs-on: ubuntu-latest
-    name: Check for Unauthorized Access
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Analyze commit history
+      # --- 5. Unauthorized access -------------------------------------------
+      - name: Check for unauthorized access
+        if: always()
         run: |
           echo "👤 Analyzing commit authorship..."
-
-          # Get unique authors in last 100 commits
           echo "Recent commit authors:"
           git log --oneline -100 --pretty='%an <%ae>' | sort | uniq -c | sort -rn
-
           echo ""
           echo "⚠️  Review the list above for unexpected authors"
-          echo "If you see unfamiliar names, run: git log --all --oneline"
-          echo "to investigate further."
-
+          echo "If you see unfamiliar names, run: git log --all --oneline to investigate."
