@@ -1,0 +1,26 @@
+[package]
+name = "ioc-scanner"
+version = "0.1.0"
+edition = "2021"
+description = "Fast multi-pattern IOC scanner for malware triage (defensive)."
+license = "MIT"
+
+# Minimal, auditable dependency tree — every crate earns its place.
+[dependencies]
+aho-corasick = "1"   # single automaton, all patterns matched in one O(n) pass
+memchr = "2"         # used transitively; pinned intent: SIMD scanning
+walkdir = "2"        # recursive directory traversal
+memmap2 = "0.9"      # memory-map files so multi-GB inputs aren't read into the heap
+sha2 = "0.10"        # SHA-256 file hashing for hash-based IOC matching
+
+[dev-dependencies]
+# (tests + bench use std only — keeping the dep tree minimal on purpose)
+
+[[bench]]
+name = "scan"
+harness = false   # custom harness; no criterion dep pulled in
+
+[profile.release]
+lto = true
+codegen-units = 1
+panic = "abort"
