@@ -167,7 +167,7 @@
         "Centralized logging: If logs copied before clearing, gap would be obvious"
       ],
       "prevention": [
-        "Centralized log collection (CUT OFF before local clearing)",
+        "Centralized log collection (ships logs off-host before local clearing can hide them)",
         "Immutable logging (cloud-based, offline backup)",
         "File integrity monitoring on event log files",
         "Alert on Log Clear events with automatic incident escalation"

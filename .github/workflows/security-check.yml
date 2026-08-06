@@ -18,16 +18,21 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Check for credentials in git history
+      - name: Check for credentials in recent history
         run: |
           set +e
 
-          echo "🔍 Scanning git history for exposed credentials..."
+          echo "🔍 Scanning recent git history for exposed credentials..."
 
-          # Search for common credential patterns
+          # Search for common credential patterns.
+          # NOTE: this is a lightweight heuristic scan, not a substitute for a
+          # dedicated secret scanner (e.g. gitleaks/trufflehog). We limit the
+          # scan to the most recent commits to keep CI fast and avoid the
+          # OOM/timeout risk of `git log -p --all` on large histories.
           FOUND=0
+          SCAN_DEPTH=200
 
-          git log -p --all | grep -E \
+          git log -p -n "$SCAN_DEPTH" | grep -E \
             'password|api[_-]?key|secret|token|private[_-]?key|aws[_-]?access|github[_-]?token' \
             > /tmp/matches.txt 2>&1
 
@@ -58,9 +63,14 @@ jobs:
         run: |
           echo "::error::Credentials detected in git history"
           echo "If you committed credentials by accident:"
-          echo "1. Run: git filter-branch --tree-filter 'rm -f <secret-file>' HEAD"
-          echo "2. Force push: git push -f origin main"
-          echo "3. Rotate the compromised credentials immediately"
+          echo "1. Rotate the compromised credentials IMMEDIATELY (assume exposed)."
+          echo "2. Remove the secret from history with git-filter-repo:"
+          echo "     git filter-repo --path <secret-file> --invert-paths"
+          echo "   (git filter-branch is deprecated; prefer git-filter-repo.)"
+          echo "3. Coordinate the history rewrite with repo admins — the protected"
+          echo "   'main' branch disallows direct force pushes, so this requires an"
+          echo "   admin-run rewrite or a temporary protection bypass, not a"
+          echo "   'git push -f origin main' from a contributor."
           exit 1
 
   commit-signature:
@@ -71,21 +81,35 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Check commit signatures on main
+      - name: Check commit signatures
         run: |
           echo "🔐 Verifying commit signatures..."
 
-          # Get last 20 commits on main
+          # On pull_request events actions/checkout leaves us on the PR merge
+          # ref, and a local `main` branch may not exist. Resolve a ref that is
+          # actually present: prefer origin/main, fall back to HEAD.
+          if git rev-parse --verify --quiet origin/main >/dev/null; then
+            REF=origin/main
+          elif git rev-parse --verify --quiet main >/dev/null; then
+            REF=main
+          else
+            REF=HEAD
+          fi
+          echo "Checking last 20 commits on: $REF"
+
+          # Feed the loop via process substitution rather than a pipe so that
+          # UNSIGNED set inside the loop persists (a piped `while` runs in a
+          # subshell and would discard the assignment).
           UNSIGNED=0
-          git log --oneline main -20 | while read commit rest; do
-            status=$(git show --quiet --format='%G?' $commit)
+          while read -r commit rest; do
+            status=$(git show --quiet --format='%G?' "$commit")
             if [ "$status" != "G" ]; then
               echo "⚠️  Unsigned commit: $commit ($status)"
               UNSIGNED=1
             fi
-          done
+          done < <(git log --oneline "$REF" -20)
 
-          if [ $UNSIGNED -eq 1 ]; then
+          if [ "$UNSIGNED" -eq 1 ]; then
             echo "::warning::Some commits are not signed with GPG"
             echo "Run: git commit -S -m 'message' to sign future commits"
           else
@@ -119,16 +143,30 @@ jobs:
         run: |
           echo "📊 Computing repository integrity hashes..."
 
-          # Create baseline hash file (if it doesn't exist)
+          # Exclude .integrity-baseline itself so it never appears in its own
+          # hash set (which would guarantee a spurious diff every run).
+          hash_files() {
+            find . -type f \
+              -not -path './.git/*' \
+              -not -path './.github/*' \
+              -not -name '.integrity-baseline' \
+              | sort | xargs sha256sum
+          }
+
+          # NOTE: the baseline is only meaningful if `.integrity-baseline` is
+          # committed to the repo (or restored from a cache/artifact). A fresh
+          # GitHub runner starts without it, so the first run just records a
+          # baseline — real enforcement requires committing that file. To turn
+          # this into a hard gate, commit .integrity-baseline and fail the job
+          # when the diff below is non-empty.
           if [ ! -f .integrity-baseline ]; then
             echo "Creating new integrity baseline..."
-            find . -type f -not -path './.git/*' -not -path './.github/*' \
-              | sort | xargs sha256sum > .integrity-baseline
+            hash_files > .integrity-baseline
             echo "✅ Baseline created with $(wc -l < .integrity-baseline) files"
+            echo "ℹ️  Commit .integrity-baseline to enable comparison on future runs."
           else
             # Verify integrity against baseline
-            find . -type f -not -path './.git/*' -not -path './.github/*' \
-              | sort | xargs sha256sum > /tmp/current.txt
+            hash_files > /tmp/current.txt
 
             if diff -q .integrity-baseline /tmp/current.txt > /dev/null; then
               echo "✅ Repository integrity verified"

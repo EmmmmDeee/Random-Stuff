@@ -6,11 +6,31 @@ Runs attack scenarios and generates incident response drill data.
 """
 
 import json
-import sys
 import argparse
 from datetime import datetime
 from pathlib import Path
-import subprocess
+
+
+def _duration_display(meta):
+    """Return a human-readable duration regardless of whether the scenario
+    expresses it in hours or days."""
+    if meta.get('estimated_duration_hours') is not None:
+        return f"{meta['estimated_duration_hours']} hours"
+    if meta.get('estimated_duration_days') is not None:
+        return f"{meta['estimated_duration_days']} days"
+    return "Unknown"
+
+
+def _to_hours(analysis, base_name):
+    """Read a metric that may be expressed as <base_name>_hours or
+    <base_name>_days and return it normalized to hours (or None)."""
+    hours = analysis.get(f"{base_name}_hours")
+    if hours is not None:
+        return hours
+    days = analysis.get(f"{base_name}_days")
+    if days is not None:
+        return days * 24
+    return None
 
 
 class ScenarioRunner:
@@ -63,10 +83,13 @@ class ScenarioRunner:
             with open(scenario_file, 'r') as f:
                 scenario = json.load(f)
                 meta = scenario.get('metadata', {})
-                print(f"  📌 {meta.get('scenario_id', 'UNKNOWN')}")
+                # The --scenario flag takes the file stem, so surface it
+                # alongside the metadata ID to avoid copy/paste confusion.
+                print(f"  📌 {meta.get('scenario_id', 'UNKNOWN')} "
+                      f"(run with: --scenario {scenario_file.stem})")
                 print(f"     Name: {meta.get('name', 'Unknown')}")
                 print(f"     Difficulty: {meta.get('difficulty', 'Unknown')}")
-                print(f"     Duration: {meta.get('estimated_duration_hours', 'Unknown')} hours")
+                print(f"     Duration: {_duration_display(meta)}")
                 print(f"     Success Rate: {meta.get('realistic_success_rate', 'Unknown')}\n")
 
     def run_scenario(self, scenario_id, record_traffic=False, capture_logs=False):
@@ -75,10 +98,19 @@ class ScenarioRunner:
         if not scenario:
             return False
 
+        # Traffic/log capture are not yet wired up; surface that clearly
+        # rather than silently ignoring the flags.
+        if record_traffic:
+            print("ℹ️  --record-traffic requested (not yet implemented; "
+                  "capture traffic externally, e.g. tcpdump/Wireshark)")
+        if capture_logs:
+            print("ℹ️  --capture-logs requested (not yet implemented; "
+                  "collect logs externally during the run)")
+
         meta = scenario.get('metadata', {})
         print(f"\n🎯 Running Scenario: {meta.get('name')}")
         print(f"   ID: {meta.get('scenario_id')}")
-        print(f"   Duration: {meta.get('estimated_duration_hours')} hours")
+        print(f"   Duration: {_duration_display(meta)}")
         print(f"   Expected Success Rate: {meta.get('realistic_success_rate')}\n")
 
         # Simulate scenario stages
@@ -117,12 +149,14 @@ class ScenarioRunner:
         attack_chain = scenario.get('attack_chain', {})
         analysis = scenario.get('cross_kill_chain_analysis', {})
 
+        # Scenarios express timing in hours (fast attacks) or days (long
+        # campaigns); normalize everything to hours for consistent reporting.
         report['metrics'] = {
             "total_stages": len(attack_chain),
             "detection_gaps": len(analysis.get('critical_detection_gaps', [])),
-            "time_to_detection_hours": analysis.get('time_to_detection_hours'),
-            "time_to_response_hours": analysis.get('time_to_response_hours'),
-            "attacker_dwell_time_advantage_hours": analysis.get('dwell_time_advantage_hours')
+            "time_to_detection_hours": _to_hours(analysis, 'time_to_detection'),
+            "time_to_response_hours": _to_hours(analysis, 'time_to_response'),
+            "attacker_dwell_time_advantage_hours": _to_hours(analysis, 'dwell_time_advantage')
         }
 
         # Save report

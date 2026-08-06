@@ -250,15 +250,22 @@ git diff main origin/main
 ### If Malicious Commit Is Detected
 
 1. **Immediate**:
+   `main` is protected and does not accept direct pushes, so revert through an
+   expedited pull request rather than pushing to `main`:
    ```bash
+   git checkout -b hotfix/revert-<short-hash> origin/main
    git revert <malicious-commit-hash>
-   git push origin main
+   git push -u origin hotfix/revert-<short-hash>
+   # Open a PR against main and fast-track review/merge.
    ```
+   If the situation requires bypassing the PR flow, an org admin must perform
+   an explicit, time-boxed branch-protection bypass — this is an admin-only
+   emergency action, not a normal contributor push.
 
 2. **Urgent**:
    - Force all users to pull latest version
    - Revoke all access tokens/SSH keys
-   - Re-enable all branch protection rules
+   - Re-confirm branch protection rules are intact (and remove any temporary bypass)
 
 3. **Investigation**:
    - Analyze commit metadata (author, timestamp, IP)
