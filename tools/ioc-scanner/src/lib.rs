@@ -295,10 +295,11 @@ pub fn json_escape(s: &str) -> String {
             '\u{08}' => out.push_str("\\b"),
             '\u{0c}' => out.push_str("\\f"),
             c if (c as u32) < 0x20 => {
+                const HEX: &[u8] = b"0123456789abcdef";
                 let n = c as u32;
                 out.push_str("\\u00");
-                out.push(char::from_digit(n >> 4, 16).unwrap());
-                out.push(char::from_digit(n & 0xf, 16).unwrap());
+                out.push(HEX[(n >> 4) as usize] as char);
+                out.push(HEX[(n & 0xf) as usize] as char);
             }
             c => out.push(c),
         }
