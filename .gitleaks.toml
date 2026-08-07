@@ -1,20 +1,18 @@
 # Gitleaks configuration for the repository.
-# This excludes files from secret scanning that are known to produce false positives
-# (e.g., security analysis documentation containing keywords like "credentials", "secrets").
+# Excludes files and patterns known to produce false positives
+# (analysis directory contains security research with keywords like those below).
 
 [[allowlist]]
-description = "Exclude analysis directory (contains security documentation, not secrets)"
+description = "Exclude analysis directory (contains security research documentation)"
 paths = [
   "analysis/.*",
 ]
 regexes = [
-  # Documentation keywords that appear in malware/security analysis
-  # These are legitimate content, not exposed secrets.
+  # Documentation keywords that appear in security research analysis
+  # These are legitimate research content, not exposed data.
   "what_it_reveals",
   "defensive_counter",
   "detection_signal",
-  "credentials",
-  "secrets",
   "carding",
   "ransomware",
 ]
