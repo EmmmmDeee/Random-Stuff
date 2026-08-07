@@ -19,8 +19,6 @@ string,DownloadExecute.bss,Blackshades,stub,medium
 ";
 
 fn indicators() -> Vec<Indicator> {
-    Scanner::from_csv(FEED).expect("feed builds");
-    // Re-parse into raw indicators so we can build both modes from the same set.
     FEED.lines()
         .skip(1)
         .filter_map(|l| {

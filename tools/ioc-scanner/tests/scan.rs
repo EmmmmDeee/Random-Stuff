@@ -1,4 +1,4 @@
-use ioc_scanner::Scanner;
+use ioc_scanner::{Confidence, Scanner};
 
 const FEED: &str = "\
 type,value,malware,context,confidence
@@ -43,4 +43,26 @@ fn empty_feed_is_an_error() {
 fn clean_input_has_no_hits() {
     let s = Scanner::from_csv(FEED).unwrap();
     assert!(s.scan(b"a perfectly innocent file about cats").is_empty());
+}
+
+#[test]
+fn min_confidence_filters_below_threshold() {
+    let s = Scanner::from_csv_min(FEED, Confidence::High).unwrap();
+    assert_eq!(s.len(), 2);
+    assert!(s.scan(b"bshades.eu").is_empty());
+    assert!(!s.scan(b"droidjack.net").is_empty());
+}
+
+#[test]
+fn hash_lookup_finds_and_misses() {
+    let feed = "\
+type,value,malware,context,confidence
+sha256,abc123def456,DroidJack,sample,high
+string,keepme,DroidJack,marker,high
+";
+    let s = Scanner::from_csv(feed).unwrap();
+    let hit = s.hash_lookup("ABC123DEF456");
+    assert!(hit.is_some());
+    assert_eq!(hit.unwrap().malware, "DroidJack");
+    assert!(s.hash_lookup("000000").is_none());
 }
