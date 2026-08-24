@@ -30,7 +30,7 @@ the analysis, code review, and detection work in this repository.
 | Errors | `catch (Exception) { printStackTrace() }` — swallow everything | Errors are values (`Result`); nothing is ignored |
 | State | `static` mutable shared across receivers; data races | Owned state; the compiler forbids the race |
 | Testing | "It ran on the victim" | Unit + integration + fuzz + benchmark |
-| Audience | Optimizes for one undefended target | Optimizes for defenders at scale |
+| Audience | Optimizes for one unprotected target | Optimizes for blue teams at scale |
 | Honesty | Debug `println` shipped to production | Measured numbers, reported with their caveats |
 
 The pattern: the amateur assumes no one is watching; the professional *is* the one
@@ -133,7 +133,7 @@ professional's defense are the same problem, approached from opposite competence
 ## 6. Conclusion
 
 The disparity is not a matter of degree but of **stance**. The amateur writes for a
-world with no defenders: hardcoded, plaintext, untested, loud. The professional
+world with no one watching: hardcoded, plaintext, untested, loud. The professional
 writes for a world that is adversarial by default: correct by construction,
 measured, and aimed at detection at scale. The samples here are commodity malware —
 bought or cracked, run by operators who did not write them — and the professional
