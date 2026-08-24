@@ -1,0 +1,33 @@
+[package]
+name = "rt"
+version = "1.0.0"
+edition = "2021"
+description = "Unified Rust CLI for intelligence-led red-team framework"
+
+[[bin]]
+name = "rt"
+path = "src/main.rs"
+
+[lib]
+name = "rt"
+path = "src/lib.rs"
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+clap = { version = "4.4", features = ["derive"] }
+anyhow = "1.0"
+thiserror = "1.0"
+chrono = "0.4"
+walkdir = "2.4"
+colored = "2.1"
+rayon = "1.7"
+
+[dev-dependencies]
+tempfile = "3"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true
