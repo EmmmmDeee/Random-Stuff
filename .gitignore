@@ -33,3 +33,6 @@ private_key*
 
 # Red-team framework: generated scenario/drill reports
 red-team/reports/
+
+# HSE (Huntsman Search Engine) Rust build artifacts
+red-team/tools/hse/target/

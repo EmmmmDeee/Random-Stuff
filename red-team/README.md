@@ -37,10 +37,11 @@ This framework provides:
 ```
 red-team/
 ├── README.md (this file)
-├── tools/                       (unified CLI — one entrypoint, shared library)
-│   ├── rt.py                    (dispatcher: rt.py <scenario|derive|recon|navigator>)
+├── tools/                       (framework tooling)
+│   ├── rt.py                    (unified Python CLI: rt.py <scenario|derive|recon|navigator>)
 │   ├── attack.py                (shared: paths, JSON I/O, ATT&CK-ID helpers)
 │   ├── scenario.py  derive.py  recon.py  navigator.py   (command modules)
+│   └── hse/                     (Rust: Huntsman Search Engine — search the detection catalog)
 │
 ├── scenarios/
 │   ├── README.md (scenario overview)

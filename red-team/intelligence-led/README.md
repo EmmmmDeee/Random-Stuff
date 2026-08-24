@@ -85,7 +85,8 @@ intelligence-led/
 │   └── attack-surface.json    (recon techniques ↔ defensive counters)
 ├── detection-mapping/         (the purple-team payoff — detection content)
 │   ├── hunt-queries.md        (single-TTP hunts, actor-mapped)
-│   └── correlation-and-coverage.md  (kill-chain + blind-spot + baseline queries)
+│   ├── correlation-and-coverage.md  (kill-chain + blind-spot + baseline queries)
+│   └── detections.json        (machine-readable catalog — searched by tools/hse)
 └── campaigns/                 (documented ATT&CK campaigns, e.g. C0062)
 ```
 

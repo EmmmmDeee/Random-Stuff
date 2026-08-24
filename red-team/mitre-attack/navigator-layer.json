@@ -22,8 +22,8 @@
     },
     {
       "techniqueID": "T1003.001",
-      "score": 3,
-      "comment": "Referenced in: actor-TTP, detection (3 mention(s))",
+      "score": 5,
+      "comment": "Referenced in: actor-TTP, detection (5 mention(s))",
       "enabled": true,
       "metadata": [
         {
@@ -154,13 +154,13 @@
     },
     {
       "techniqueID": "T1041",
-      "score": 2,
-      "comment": "Referenced in: actor-TTP, coverage-map (2 mention(s))",
+      "score": 3,
+      "comment": "Referenced in: actor-TTP, coverage-map, detection (3 mention(s))",
       "enabled": true,
       "metadata": [
         {
           "name": "framework-source",
-          "value": "actor-TTP, coverage-map"
+          "value": "actor-TTP, coverage-map, detection"
         }
       ]
     },
@@ -226,8 +226,8 @@
     },
     {
       "techniqueID": "T1053.005",
-      "score": 10,
-      "comment": "Referenced in: actor-TTP, coverage-map, detection, other, scenario (10 mention(s))",
+      "score": 11,
+      "comment": "Referenced in: actor-TTP, coverage-map, detection, other, scenario (11 mention(s))",
       "enabled": true,
       "metadata": [
         {
@@ -286,8 +286,8 @@
     },
     {
       "techniqueID": "T1059.001",
-      "score": 5,
-      "comment": "Referenced in: actor-TTP, coverage-map, detection (5 mention(s))",
+      "score": 6,
+      "comment": "Referenced in: actor-TTP, coverage-map, detection (6 mention(s))",
       "enabled": true,
       "metadata": [
         {
@@ -346,13 +346,13 @@
     },
     {
       "techniqueID": "T1071",
-      "score": 1,
-      "comment": "Referenced in: coverage-map (1 mention(s))",
+      "score": 2,
+      "comment": "Referenced in: coverage-map, detection (2 mention(s))",
       "enabled": true,
       "metadata": [
         {
           "name": "framework-source",
-          "value": "coverage-map"
+          "value": "coverage-map, detection"
         }
       ]
     },
@@ -382,13 +382,13 @@
     },
     {
       "techniqueID": "T1074",
-      "score": 1,
-      "comment": "Referenced in: coverage-map (1 mention(s))",
+      "score": 2,
+      "comment": "Referenced in: coverage-map, detection (2 mention(s))",
       "enabled": true,
       "metadata": [
         {
           "name": "framework-source",
-          "value": "coverage-map"
+          "value": "coverage-map, detection"
         }
       ]
     },
@@ -406,8 +406,8 @@
     },
     {
       "techniqueID": "T1078",
-      "score": 6,
-      "comment": "Referenced in: actor-TTP, campaign, detection (6 mention(s))",
+      "score": 8,
+      "comment": "Referenced in: actor-TTP, campaign, detection (8 mention(s))",
       "enabled": true,
       "metadata": [
         {
@@ -466,8 +466,8 @@
     },
     {
       "techniqueID": "T1098.001",
-      "score": 3,
-      "comment": "Referenced in: actor-TTP, detection (3 mention(s))",
+      "score": 4,
+      "comment": "Referenced in: actor-TTP, detection (4 mention(s))",
       "enabled": true,
       "metadata": [
         {
@@ -478,8 +478,8 @@
     },
     {
       "techniqueID": "T1098.005",
-      "score": 3,
-      "comment": "Referenced in: actor-TTP, detection (3 mention(s))",
+      "score": 5,
+      "comment": "Referenced in: actor-TTP, detection (5 mention(s))",
       "enabled": true,
       "metadata": [
         {
@@ -514,13 +514,13 @@
     },
     {
       "techniqueID": "T1114",
-      "score": 1,
-      "comment": "Referenced in: coverage-map (1 mention(s))",
+      "score": 2,
+      "comment": "Referenced in: coverage-map, detection (2 mention(s))",
       "enabled": true,
       "metadata": [
         {
           "name": "framework-source",
-          "value": "coverage-map"
+          "value": "coverage-map, detection"
         }
       ]
     },
@@ -550,13 +550,13 @@
     },
     {
       "techniqueID": "T1119",
-      "score": 4,
-      "comment": "Referenced in: campaign (4 mention(s))",
+      "score": 5,
+      "comment": "Referenced in: campaign, detection (5 mention(s))",
       "enabled": true,
       "metadata": [
         {
           "name": "framework-source",
-          "value": "campaign"
+          "value": "campaign, detection"
         }
       ]
     },
@@ -610,8 +610,8 @@
     },
     {
       "techniqueID": "T1190",
-      "score": 8,
-      "comment": "Referenced in: actor-TTP, campaign, coverage-map, detection (8 mention(s))",
+      "score": 9,
+      "comment": "Referenced in: actor-TTP, campaign, coverage-map, detection (9 mention(s))",
       "enabled": true,
       "metadata": [
         {
@@ -706,8 +706,8 @@
     },
     {
       "techniqueID": "T1204",
-      "score": 3,
-      "comment": "Referenced in: coverage-map, detection, scenario (3 mention(s))",
+      "score": 5,
+      "comment": "Referenced in: coverage-map, detection, scenario (5 mention(s))",
       "enabled": true,
       "metadata": [
         {
@@ -718,8 +718,8 @@
     },
     {
       "techniqueID": "T1204.002",
-      "score": 3,
-      "comment": "Referenced in: actor-TTP, detection (3 mention(s))",
+      "score": 4,
+      "comment": "Referenced in: actor-TTP, detection (4 mention(s))",
       "enabled": true,
       "metadata": [
         {
@@ -766,8 +766,8 @@
     },
     {
       "techniqueID": "T1486",
-      "score": 12,
-      "comment": "Referenced in: actor-TTP, coverage-map, detection, other, scenario (12 mention(s))",
+      "score": 15,
+      "comment": "Referenced in: actor-TTP, coverage-map, detection, other, scenario (15 mention(s))",
       "enabled": true,
       "metadata": [
         {
@@ -778,8 +778,8 @@
     },
     {
       "techniqueID": "T1490",
-      "score": 2,
-      "comment": "Referenced in: detection (2 mention(s))",
+      "score": 4,
+      "comment": "Referenced in: detection (4 mention(s))",
       "enabled": true,
       "metadata": [
         {
@@ -802,8 +802,8 @@
     },
     {
       "techniqueID": "T1505.003",
-      "score": 6,
-      "comment": "Referenced in: actor-TTP, coverage-map, detection (6 mention(s))",
+      "score": 8,
+      "comment": "Referenced in: actor-TTP, coverage-map, detection (8 mention(s))",
       "enabled": true,
       "metadata": [
         {
@@ -814,8 +814,8 @@
     },
     {
       "techniqueID": "T1528",
-      "score": 3,
-      "comment": "Referenced in: actor-TTP, detection (3 mention(s))",
+      "score": 4,
+      "comment": "Referenced in: actor-TTP, detection (4 mention(s))",
       "enabled": true,
       "metadata": [
         {
@@ -994,8 +994,8 @@
     },
     {
       "techniqueID": "T1562.001",
-      "score": 4,
-      "comment": "Referenced in: actor-TTP, detection (4 mention(s))",
+      "score": 5,
+      "comment": "Referenced in: actor-TTP, detection (5 mention(s))",
       "enabled": true,
       "metadata": [
         {
@@ -1006,25 +1006,25 @@
     },
     {
       "techniqueID": "T1566",
-      "score": 1,
-      "comment": "Referenced in: coverage-map (1 mention(s))",
+      "score": 3,
+      "comment": "Referenced in: coverage-map, detection, other (3 mention(s))",
       "enabled": true,
       "metadata": [
         {
           "name": "framework-source",
-          "value": "coverage-map"
+          "value": "coverage-map, detection, other"
         }
       ]
     },
     {
       "techniqueID": "T1566.001",
-      "score": 4,
-      "comment": "Referenced in: actor-TTP, coverage-map, detection (4 mention(s))",
+      "score": 6,
+      "comment": "Referenced in: actor-TTP, coverage-map, detection, other (6 mention(s))",
       "enabled": true,
       "metadata": [
         {
           "name": "framework-source",
-          "value": "actor-TTP, coverage-map, detection"
+          "value": "actor-TTP, coverage-map, detection, other"
         }
       ]
     },
@@ -1078,8 +1078,8 @@
     },
     {
       "techniqueID": "T1567.002",
-      "score": 3,
-      "comment": "Referenced in: actor-TTP, detection (3 mention(s))",
+      "score": 4,
+      "comment": "Referenced in: actor-TTP, detection (4 mention(s))",
       "enabled": true,
       "metadata": [
         {
@@ -1438,8 +1438,8 @@
     },
     {
       "techniqueID": "T1621",
-      "score": 3,
-      "comment": "Referenced in: actor-TTP, detection (3 mention(s))",
+      "score": 4,
+      "comment": "Referenced in: actor-TTP, detection (4 mention(s))",
       "enabled": true,
       "metadata": [
         {
@@ -1468,7 +1468,7 @@
       "#b30000"
     ],
     "minValue": 0,
-    "maxValue": 12
+    "maxValue": 15
   },
   "legendItems": [
     {
@@ -1480,7 +1480,7 @@
       "color": "#ff6666"
     },
     {
-      "label": "12 refs (most reinforced)",
+      "label": "15 refs (most reinforced)",
       "color": "#b30000"
     }
   ],
