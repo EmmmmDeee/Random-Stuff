@@ -25,7 +25,7 @@ Before any recon activity:
 - [ ] **Rules of Engagement (RoE)** — passive vs. active limits, timing, contacts
 - [ ] **Passive by default** — active techniques (anything that touches target
       infrastructure, e.g. port/vuln scanning) require *explicit* written approval
-- [ ] **Legal review** where required (data-protection law governs personal-data handling)
+- [ ] **Conduct legal review** where applicable (data-protection law governs personal-data handling)
 
 Active scanning of systems you are not authorized to test is unlawful in most
 jurisdictions. Passive OSINT still carries privacy obligations. When in doubt,
@@ -48,12 +48,12 @@ pass the explicit authorization flag.
 
 ---
 
-## The dual-use principle (why this is defensively anchored)
+## The dual-use principle (why this is security-anchored)
 
 Every recon technique in [`attack-surface.json`](attack-surface.json) carries
 three fields beyond the offensive description:
 
-- **`defensive_counter`** — how the target reduces or removes that exposure
+- **`counter_measure`** — how the target reduces or removes that exposure
 - **`detection_signal`** — whether the target can even *see* this recon (mostly
   they can't — which is the teaching point: passive OSINT is countered by
   *footprint reduction*, not detection)

@@ -341,8 +341,8 @@ python3 tools/rt.py scenario --run scenario-01-phishing-to-ransomware --ir-drill
 - [ ] Set up isolated lab environment (or agreed test window)
 - [ ] Backup all production systems
 - [ ] Verify SIEM/EDR are recording
-- [ ] Prepare incident response runbook
-- [ ] Have management approval to proceed
+- [ ] Prepare and validate incident response runbook
+- [ ] Obtain management approval to proceed
 
 ### During Drill
 

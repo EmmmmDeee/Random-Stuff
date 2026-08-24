@@ -205,7 +205,7 @@
       "Record all alerts and timestamps",
       "Track IR team response (email, chat, tickets)",
       "Measure time-to-detect, time-to-respond",
-      "Document manual interventions needed"
+      "Document automated response steps needed"
     ],
     "post_drill_analysis": [
       "Calculate drill scores vs. target metrics",

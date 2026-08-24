@@ -3,7 +3,7 @@
 of an AUTHORIZED engagement.
 
 Performs NO collection: no network requests, no scraping, no queries against any
-target. It organizes what an authorized tester would review and the defensive
+target. It organizes what an authorized tester would review and the security
 fix for each item.
 """
 
@@ -61,11 +61,11 @@ def generate_plan(org, domain, authorize_active):
         for t in skipped:
             print(f"     • [{t['id']}] {t['name']} ({t['mitre_id']})")
         print()
-    print("  ℹ️  Every technique has a defensive counter-measure — run with "
-          "--defensive for the footprint-reduction report.")
+    print("  ℹ️  Every technique has a security counter-measure — run with "
+          "--footprint-reduction for the footprint-reduction report.")
 
 
-def generate_defensive(org, domain):
+def generate_footprint_reduction(org, domain):
     techniques = _techniques()
     print("=" * 70)
     print(f"  FOOTPRINT-REDUCTION REPORT — {org} ({domain})")
@@ -79,12 +79,12 @@ def generate_defensive(org, domain):
     for t in passive:
         print(f"  ▸ {t['name']}  [{t['mitre_id']}]")
         print(f"      Exposure: {t['what_it_reveals']}")
-        print(f"      FIX:      {t['defensive_counter']}\n")
+        print(f"      FIX:      {t['counter_measure']}\n")
 
     print("  ACTIVE RECON (detectable — verify your controls FIRE)\n")
     for t in active:
         print(f"  ▸ {t['name']}  [{t['mitre_id']}]")
-        print(f"      FIX:      {t['defensive_counter']}")
+        print(f"      FIX:      {t['counter_measure']}")
         print(f"      DETECT:   {t['detection_signal']}\n")
 
     print("  PRIORITY ORDER:")
@@ -101,17 +101,17 @@ def add_arguments(p):
     p.add_argument("--plan", action="store_true", help="Generate the recon plan")
     p.add_argument("--authorize-active", action="store_true",
                    help="Include active techniques (requires signed authorization)")
-    p.add_argument("--defensive", action="store_true",
+    p.add_argument("--footprint-reduction", action="store_true",
                    help="Footprint-reduction report for your own org")
 
 
 def handle(args):
-    if args.defensive:
-        generate_defensive(args.org, args.domain)
+    if args.footprint_reduction:
+        generate_footprint_reduction(args.org, args.domain)
     elif args.plan:
         generate_plan(args.org, args.domain, args.authorize_active)
     else:
-        print("Provide --plan or --defensive (with --org and --domain)")
+        print("Provide --plan or --footprint-reduction (with --org and --domain)")
 
 
 def register(subparsers):

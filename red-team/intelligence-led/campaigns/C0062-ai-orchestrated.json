@@ -1,7 +1,7 @@
 {
   "_metadata": {
     "description": "Campaign profile for MITRE ATT&CK C0062 (AI-orchestrated Campaign / GTG-1002), for intelligence-led emulation and detection engineering. Built from public MITRE ATT&CK data (https://attack.mitre.org/campaigns/C0062/).",
-    "attribution_caution": "Emulates documented TTPs for defensive testing; not an attribution claim about any specific incident.",
+    "attribution_caution": "Emulates documented TTPs for security testing; not an attribution claim about any specific incident.",
     "version": "1.0",
     "generated": "2026-08-24"
   },
@@ -14,12 +14,12 @@
     "date_range": "September 2025",
     "targets": "~30 entities across technology, financial, chemical, and government sectors",
     "summary": "Operators used AI agents and Model Context Protocol tooling to automate reconnaissance, vulnerability discovery, exploitation, lateral movement, credential harvesting, data analysis, and exfiltration with minimal operator direction — crafted prompts/personas were used to bypass AI guardrails.",
-    "why_it_matters_defensively": "First-class example of AI-orchestrated intrusion: the standard kill chain executed at machine speed and scale. The individual TTPs are largely conventional and detectable; what changes is TEMPO and VOLUME. Detection implication: shrink detection/response windows and lean on velocity/volume anomalies, because an operator-paced playbook assumption no longer holds."
+    "why_it_matters_for_detection": "First-class example of AI-orchestrated intrusion: the standard kill chain executed at machine speed and scale. The individual TTPs are largely conventional and detectable; what changes is TEMPO and VOLUME. Detection implication: shrink detection/response windows and lean on velocity/volume anomalies, because an operator-paced playbook assumption no longer holds."
   },
 
   "techniques": [
-    {"mitre_id": "T1588.007", "name": "Obtain Capabilities: Artificial Intelligence", "tactic": "Resource Development", "campaign_use": "Obtained access to AI agent tooling to drive the intrusion", "detectable_in_victim_env": false, "defensive_note": "Not visible to the target; the takeaway is to assume commodity AI lowers the barrier to high-tempo intrusions"},
-    {"mitre_id": "T1588.002", "name": "Obtain Capabilities: Tool", "tactic": "Resource Development", "campaign_use": "Obtained open-source pentest tools (scanners, crackers)", "detectable_in_victim_env": false, "defensive_note": "Standard commodity tooling — detect at use, not acquisition"},
+    {"mitre_id": "T1588.007", "name": "Obtain Capabilities: Artificial Intelligence", "tactic": "Resource Development", "campaign_use": "Obtained access to AI agent tooling to drive the intrusion", "detectable_in_victim_env": false, "detection_note": "Not visible to the target; the takeaway is to assume commodity AI lowers the barrier to high-tempo intrusions"},
+    {"mitre_id": "T1588.002", "name": "Obtain Capabilities: Tool", "tactic": "Resource Development", "campaign_use": "Obtained open-source pentest tools (scanners, crackers)", "detectable_in_victim_env": false, "detection_note": "Standard commodity tooling — detect at use, not acquisition"},
     {"mitre_id": "T1587.004", "name": "Develop Capabilities: Exploits", "tactic": "Resource Development", "campaign_use": "Researched SSRF techniques and built custom exploit chains", "detectable_in_victim_env": false},
     {"mitre_id": "T1683", "name": "Generate Content", "tactic": "Resource Development", "campaign_use": "Auto-generated attack documentation across phases", "detectable_in_victim_env": false},
     {"mitre_id": "T1584.004", "name": "Compromise Infrastructure: Server", "tactic": "Resource Development", "campaign_use": "Operated dedicated servers for command execution and state", "detectable_in_victim_env": false},
@@ -64,7 +64,7 @@
       "T1078 valid accounts -> C-01 risky-signin-to-lateral-movement correlation",
       "T1567 exfil over web service -> H-13 egress anomaly"
     ],
-    "ai_orchestration_defensive_takeaways": [
+    "ai_orchestration_security_implications": [
       "Tempo collapses: recon-to-exfil runs at machine speed, so alert-to-response windows must shrink — automate containment where possible",
       "Volume anomalies matter more than any single signal: baseline per-entity rates (A-02) catch machine-speed collection that operator-paced thresholds miss",
       "East-west fan-out from one host is a strong tell when discovery is automated (T1046/T1049 in minutes, not days)",

@@ -1,6 +1,6 @@
 {
   "_metadata": {
-    "description": "OSINT reconnaissance techniques for the Recon phase of an AUTHORIZED intelligence-led engagement, mapped to MITRE ATT&CK Reconnaissance (TA0043). Every offensive technique is paired with a defensive counter-measure and a detection signal, so the same data drives both the emulation plan and the target's footprint-reduction plan.",
+    "description": "OSINT reconnaissance techniques for the Recon phase of an AUTHORIZED intelligence-led engagement, mapped to MITRE ATT&CK Reconnaissance (TA0043). Every offensive technique is paired with a security counter-measure and a detection signal, so the same data drives both the emulation plan and the target's footprint-reduction plan.",
     "authorization_required": true,
     "usage": "Passive techniques only unless active recon is explicitly authorized in the signed scope/RoE. This models an authorized red team's recon; it is not a tool for profiling non-consenting individuals or organizations.",
     "version": "1.0",
@@ -16,8 +16,8 @@
       "activity": "passive",
       "what_it_reveals": "Subdomains, mail servers (MX), SPF/DMARC records, hosting providers, forgotten dev/staging hosts",
       "open_sources": ["Passive DNS databases", "Certificate transparency logs (crt.sh)", "public DNS resolvers"],
-      "defensive_counter": "Audit external DNS for stale/dev records; remove wildcard leaks; monitor certificate transparency for unexpected subdomains issued under your domain",
-      "detection_signal": "Largely undetectable (passive) — the defensive move is footprint reduction, not detection"
+      "counter_measure": "Audit external DNS for stale/dev records; remove wildcard leaks; monitor certificate transparency for unexpected subdomains issued under your domain",
+      "detection_signal": "Largely undetectable (passive) — the security approach is footprint reduction, not detection"
     },
     {
       "id": "R-WHOIS",
@@ -27,7 +27,7 @@
       "activity": "passive",
       "what_it_reveals": "Registrant org, registration dates, name servers, sometimes contact emails/phone",
       "open_sources": ["WHOIS/RDAP", "historical WHOIS archives"],
-      "defensive_counter": "Use WHOIS privacy/registrar proxy; use role accounts not personal emails for registration",
+      "counter_measure": "Use WHOIS privacy/registrar proxy; use role accounts not personal emails for registration",
       "detection_signal": "Undetectable (passive)"
     },
     {
@@ -38,7 +38,7 @@
       "activity": "passive",
       "what_it_reveals": "Every hostname a cert was ever issued for — including internal-sounding names and pre-launch services",
       "open_sources": ["Certificate Transparency logs", "crt.sh", "Censys"],
-      "defensive_counter": "Avoid putting internal hostnames in public certs; use wildcard certs sparingly; monitor CT logs for your domains",
+      "counter_measure": "Avoid putting internal hostnames in public certs; use wildcard certs sparingly; monitor CT logs for your domains",
       "detection_signal": "Undetectable (passive); CT monitoring detects mis-issuance, not the adversary's lookup"
     },
     {
@@ -49,7 +49,7 @@
       "activity": "passive",
       "what_it_reveals": "Exposed services, open ports, banners, software versions — WITHOUT touching the target (someone else scanned)",
       "open_sources": ["Shodan", "Censys", "ZoomEye", "GreyNoise"],
-      "defensive_counter": "Reduce external attack surface; close unneeded ports; strip version banners; register for Shodan alerts on your own IP ranges",
+      "counter_measure": "Reduce external attack surface; close unneeded ports; strip version banners; register for Shodan alerts on your own IP ranges",
       "detection_signal": "Undetectable by the target (the scan was done by the database, not the adversary)"
     },
     {
@@ -61,7 +61,7 @@
       "requires_explicit_authorization": true,
       "what_it_reveals": "Live open ports, service versions, exploitable vulnerabilities on in-scope hosts",
       "open_sources": ["Direct interaction with authorized in-scope targets only"],
-      "defensive_counter": "Network IDS/IPS, rate-limiting, external attack-surface management, honeypots/canaries",
+      "counter_measure": "Network IDS/IPS, rate-limiting, external attack-surface management, honeypots/canaries",
       "detection_signal": "DETECTABLE — perimeter IDS, firewall logs, and connection-rate anomalies should fire. A blue-team drill: did scanning of in-scope hosts generate an alert?"
     },
     {
@@ -72,7 +72,7 @@
       "activity": "passive",
       "what_it_reveals": "Valid email format (first.last@), distribution lists, who works there — the raw material for phishing target lists",
       "open_sources": ["Public web pages", "search engines", "professional networking sites"],
-      "defensive_counter": "Security-awareness training; DMARC enforcement; reduce public posting of individual addresses; use contact forms over exposed mailboxes",
+      "counter_measure": "Security-awareness training; DMARC enforcement; reduce public posting of individual addresses; use contact forms over exposed mailboxes",
       "detection_signal": "Undetectable (passive); the defense is phishing-resistance downstream, not recon detection"
     },
     {
@@ -83,7 +83,7 @@
       "activity": "passive",
       "what_it_reveals": "Which corporate emails appear in public breach datasets (password reuse risk)",
       "open_sources": ["Have I Been Pwned", "public breach-notification services"],
-      "defensive_counter": "Enforce MFA everywhere (kills reuse value); monitor your own domains in HIBP; force resets on exposed accounts; deploy a password blocklist",
+      "counter_measure": "Enforce MFA everywhere (kills reuse value); monitor your own domains in HIBP; force resets on exposed accounts; deploy a password blocklist",
       "detection_signal": "Undetectable (passive); mitigated by MFA + credential monitoring"
     },
     {
@@ -94,7 +94,7 @@
       "activity": "passive",
       "what_it_reveals": "Leaked API keys, internal hostnames, hardcoded creds, tech stack, CI/CD config in public repos and commit history",
       "open_sources": ["Public code hosting", "package registries", "commit history"],
-      "defensive_counter": "Secret scanning (pre-commit + server-side); rotate any exposed secret; audit org members' public repos; use .gitignore for config",
+      "counter_measure": "Secret scanning (pre-commit + server-side); rotate any exposed secret; audit org members' public repos; use .gitignore for config",
       "detection_signal": "Undetectable at the target; secret-scanning YOUR OWN repos is the control (see this repo's security-check workflow)"
     },
     {
@@ -105,7 +105,7 @@
       "activity": "passive",
       "what_it_reveals": "Org chart, technologies used (from job posts), employee roles — inputs for pretext/social-engineering scenarios",
       "open_sources": ["Public professional/social profiles", "job postings"],
-      "defensive_counter": "Guidance on what staff share publicly; sanitize job posts of specific tech/version detail; security-awareness on pretexting",
+      "counter_measure": "Guidance on what staff share publicly; sanitize job posts of specific tech/version detail; security-awareness on pretexting",
       "detection_signal": "Undetectable (passive); mitigated by awareness training and help-desk verification procedures"
     },
     {
@@ -116,7 +116,7 @@
       "activity": "passive",
       "what_it_reveals": "Working hours, key dates, vendors/suppliers, physical locations — timing and pretext for an attack",
       "open_sources": ["Company website", "press releases", "public filings"],
-      "defensive_counter": "Heightened vigilance around publicly-known high-tempo periods (earnings, launches); vendor-impersonation awareness",
+      "counter_measure": "Heightened vigilance around publicly-known high-tempo periods (earnings, launches); vendor-impersonation awareness",
       "detection_signal": "Undetectable (passive)"
     },
     {
@@ -127,7 +127,7 @@
       "activity": "passive",
       "what_it_reveals": "Staff directory, technology hints (headers, JS), document metadata, exposed directories",
       "open_sources": ["The target's own public website (browsing only)"],
-      "defensive_counter": "Strip document metadata before publishing; remove verbose server headers; audit for exposed directories/backup files",
+      "counter_measure": "Strip document metadata before publishing; remove verbose server headers; audit for exposed directories/backup files",
       "detection_signal": "Low — high-volume crawling may show in web logs, but normal browsing is indistinguishable"
     }
   ]
