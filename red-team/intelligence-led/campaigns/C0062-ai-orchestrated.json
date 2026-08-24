@@ -13,8 +13,8 @@
     "mitre_url": "https://attack.mitre.org/campaigns/C0062/",
     "date_range": "September 2025",
     "targets": "~30 entities across technology, financial, chemical, and government sectors",
-    "summary": "Human operators used AI agents and Model Context Protocol tooling to automate reconnaissance, vulnerability discovery, exploitation, lateral movement, credential harvesting, data analysis, and exfiltration with minimal human involvement — crafted prompts/personas were used to bypass AI guardrails.",
-    "why_it_matters_defensively": "First-class example of AI-orchestrated intrusion: the standard kill chain executed at machine speed and scale. The individual TTPs are largely conventional and detectable; what changes is TEMPO and VOLUME. Defensive implication: shrink detection/response windows and lean on velocity/volume anomalies, because a human-paced playbook assumption no longer holds."
+    "summary": "Operators used AI agents and Model Context Protocol tooling to automate reconnaissance, vulnerability discovery, exploitation, lateral movement, credential harvesting, data analysis, and exfiltration with minimal operator direction — crafted prompts/personas were used to bypass AI guardrails.",
+    "why_it_matters_defensively": "First-class example of AI-orchestrated intrusion: the standard kill chain executed at machine speed and scale. The individual TTPs are largely conventional and detectable; what changes is TEMPO and VOLUME. Detection implication: shrink detection/response windows and lean on velocity/volume anomalies, because an operator-paced playbook assumption no longer holds."
   },
 
   "techniques": [
@@ -46,7 +46,7 @@
     {"mitre_id": "T1016", "name": "System Network Configuration Discovery", "tactic": "Discovery", "campaign_use": "Gathered system network configurations", "detectable_in_victim_env": true},
     {"mitre_id": "T1049", "name": "System Network Connections Discovery", "tactic": "Discovery", "campaign_use": "Mapped internal architecture and access relationships", "detectable_in_victim_env": true},
 
-    {"mitre_id": "T1119", "name": "Automated Collection", "tactic": "Collection", "campaign_use": "Automatically collected/processed large data volumes without human direction", "detectable_in_victim_env": true, "detection_ref": "correlation A-02 (file-access spike above the account's own baseline) — the KEY AI-tempo signal"},
+    {"mitre_id": "T1119", "name": "Automated Collection", "tactic": "Collection", "campaign_use": "Automatically collected/processed large data volumes without operator direction", "detectable_in_victim_env": true, "detection_ref": "correlation A-02 (file-access spike above the account's own baseline) — the KEY AI-tempo signal"},
     {"mitre_id": "T1213.006", "name": "Data from Information Repositories: Databases", "tactic": "Collection", "campaign_use": "Queried internal DBs to extract proprietary/operational data", "detectable_in_victim_env": true, "detection_ref": "DB audit: bulk/rapid extraction volume anomaly"},
     {"mitre_id": "T1005", "name": "Data from Local System", "tactic": "Collection", "campaign_use": "Gathered credentials, configs, sensitive data locally", "detectable_in_victim_env": true},
     {"mitre_id": "T1074.001", "name": "Data Staged: Local Data Staging", "tactic": "Collection", "campaign_use": "Staged extracted data in structured markdown files before exfil", "detectable_in_victim_env": true, "detection_ref": "creation of large aggregated files prior to egress"},
@@ -66,7 +66,7 @@
     ],
     "ai_orchestration_defensive_takeaways": [
       "Tempo collapses: recon-to-exfil runs at machine speed, so alert-to-response windows must shrink — automate containment where possible",
-      "Volume anomalies matter more than any single signal: baseline per-entity rates (A-02) catch machine-speed collection that human-paced thresholds miss",
+      "Volume anomalies matter more than any single signal: baseline per-entity rates (A-02) catch machine-speed collection that operator-paced thresholds miss",
       "East-west fan-out from one host is a strong tell when discovery is automated (T1046/T1049 in minutes, not days)",
       "The TTPs are conventional and detectable — AI changes speed/scale, not the fundamentals. Existing detections still work; tighten their latency."
     ]

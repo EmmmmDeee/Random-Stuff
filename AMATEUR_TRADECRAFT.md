@@ -1,11 +1,11 @@
 # Amateur Tradecraft — Methods & Functionality Critique
 
-A defensive assessment of *how the provided malware actually works* and why its
+A security assessment of *how the provided malware actually works* and why its
 methods and functionality are amateurish. This is distinct from `CODE_REVIEW.md`
 (which critiques code style); here the focus is design and tradecraft.
 
-**Defensive framing:** the point of cataloguing these weaknesses is that they make
-the malware easy to detect, attribute, and defeat — useful to a defender. Where a
+**Security framing:** the point of cataloguing these weaknesses is that they make
+the malware easy to detect, attribute, and defeat — useful to a blue team. Where a
 "why it's weak" could double as "how to do it better," the analysis stops at the
 weakness and does not provide the upgrade.
 
@@ -118,7 +118,7 @@ means a larger, louder fingerprint, not capability discipline.
 
 ## Overall verdict
 Both samples share the same amateur signature: **everything important is hardcoded,
-in plaintext, in the most obvious place, with no assumption that defenders exist.**
+in plaintext, in the most obvious place, with no assumption that anyone is watching.**
 Brand names, C2, commands, persistence, and exfiltration are all out in the open;
 "stealth" features (call-log scrubbing, obfuscated class names) are superficial and
 generate their own tells. The functionality is broad but shallow — long feature

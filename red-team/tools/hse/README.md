@@ -8,7 +8,7 @@ form of the hunt (`H-*`), correlation (`C-*`), blind-spot (`B-*`), and baseline
 It answers "which detection covers X?" fast, from the terminal — the queryable
 counterpart to the prose in `hunt-queries.md` / `correlation-and-coverage.md`.
 
-> Defensive tooling. HSE searches detection *content*; it executes nothing
+> Security tooling. HSE searches detection *content*; it executes nothing
 > against any system.
 
 ## Build
@@ -22,6 +22,20 @@ cargo build --release
 The catalog is embedded at compile time, so the binary is self-contained. Editing
 `detections.json` requires a rebuild (or pass `--catalog <path>` to read a file at
 runtime).
+
+### Cross-platform (Android/Termux/aarch64)
+
+HSE uses only standard Rust (no platform-specific code or system calls). To build
+for aarch64 (Termux on Android, etc.):
+
+```bash
+rustup target add aarch64-unknown-linux-gnu
+cargo build --release --target aarch64-unknown-linux-gnu
+# binary at target/aarch64-unknown-linux-gnu/release/hse
+```
+
+No root required. The binary is portable and works in any userland environment
+(Termux, chroot, etc.).
 
 ## Usage
 
@@ -72,4 +86,4 @@ authoritative, human-readable reference with full context and caveats.
 
 ---
 
-**Status**: defensive detection-catalog search • **License**: MIT
+**Status**: security detection-catalog search • **License**: MIT

@@ -183,7 +183,7 @@
         {"tactic": "Impact", "technique": "T1486", "name": "Data Encrypted for Impact", "notes": "Deploys ALPHV/BlackCat ransomware"}
       ],
       "signature_behaviors": [
-        "Elite social engineering — targets the human help desk, not the perimeter",
+        "Elite social engineering — exploits help desk operators, not the perimeter",
         "SIM-swapping to defeat SMS-based MFA",
         "MFA-fatigue push bombing",
         "Native English speakers; convincing live phone pretexts"

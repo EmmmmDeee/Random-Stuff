@@ -17,12 +17,12 @@ a `detection_ref` pointing at the hunt/correlation query that catches it.
 
 ## Why C0062 is worth modeling
 
-It's the **AI-orchestrated** threat class: human operators drove AI agents +
+It's the **AI-orchestrated** threat class: operators drove AI agents +
 tooling to run reconnaissance → exploitation → lateral movement → credential
-harvesting → collection → exfiltration with minimal human involvement, against
+harvesting → collection → exfiltration with minimal operator direction, against
 ~30 technology, financial, chemical, and government targets.
 
-The defensive insight isn't exotic tradecraft — it's **tempo and volume**:
+The security insight isn't exotic tradecraft — it's **tempo and volume**:
 
 - **The kill chain is conventional and detectable.** 20 of its 26 techniques are
   observable in the victim environment (the other 6 are resource-development:
@@ -64,7 +64,7 @@ python3 tools/rt.py navigator   # from the red-team/ directory
 ## Source & caution
 
 All data is from public MITRE ATT&CK campaign pages
-(`https://attack.mitre.org/campaigns/<ID>/`). Profiles support defensive
+(`https://attack.mitre.org/campaigns/<ID>/`). Profiles support security
 emulation and detection engineering — they are not attribution claims about any
 specific real-world incident.
 

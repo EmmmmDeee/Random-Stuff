@@ -55,7 +55,7 @@
         "mfa_reregistration_required_percent": 0,
         "password_reset_enforced_percent": 0,
         "score": 12,
-        "gap_analysis": "Azure AD conditional access not configured; manual remediation only"
+        "gap_analysis": "Azure AD conditional access not configured; autonomous fix only"
       },
       "time_to_run_minutes": 45
     },
@@ -85,7 +85,7 @@
         "server_access_blocked_percent": 0,
         "ciso_notification_minutes": 240,
         "score": 5,
-        "gap_analysis": "Network monitoring disabled on many segments; manual containment process"
+        "gap_analysis": "Network monitoring disabled on many segments; autonomous containment process"
       },
       "time_to_run_minutes": 60
     },
@@ -212,7 +212,7 @@
       "Identify gaps in detection/response",
       "Review false positives and tuning opportunities",
       "Interview IR team for lessons learned",
-      "Generate remediation task list",
+      "Generate fix task list",
       "Schedule follow-up drills for failed areas"
     ]
   },
@@ -233,7 +233,7 @@
     "Q4": "Full kill chain drill combining all stages"
   },
 
-  "remediation_priorities": [
+  "fix_priorities": [
     {
       "priority": "P1",
       "gap": "EDR not detecting scheduled task creation",

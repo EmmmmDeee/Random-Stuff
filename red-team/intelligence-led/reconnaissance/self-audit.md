@@ -1,6 +1,6 @@
 # Personal Digital-Footprint Self-Audit
 
-The defensive companion to the footprint-reduction report. Every step here is
+The security companion to the footprint-reduction report. Every step here is
 something **you run against your own accounts and identifiers** — this is a
 self-audit, not reconnaissance on anyone. Each check names the fix and the
 ATT&CK technique (and this repo's detection ID) it shuts down, so reducing your
@@ -23,7 +23,7 @@ Everything below expands on these and adds the long tail.
 
 ---
 
-## 1. Breach & credential exposure  ·  defends: T1078 Valid Accounts, T1110 Brute Force
+## 1. Breach & credential exposure  ·  counters: T1078 Valid Accounts, T1110 Brute Force
 
 | Check | How | Fix |
 |-------|-----|-----|
@@ -35,7 +35,7 @@ Everything below expands on these and adds the long tail.
 **Level up:** move high-value accounts to **passkeys / hardware keys** where
 offered — phishing-resistant, nothing to reuse or breach.
 
-## 2. Secrets in your own code  ·  defends: T1552.001 Credentials In Files (see also the repo's secret-scan workflow)
+## 2. Secrets in your own code  ·  counters: T1552.001 Credentials In Files (see also the repo's secret-scan workflow)
 
 | Check | How | Fix |
 |-------|-----|-----|
@@ -46,7 +46,7 @@ offered — phishing-resistant, nothing to reuse or breach.
 Removing a secret without rotating is useless — assume it was scraped within
 minutes of being public.
 
-## 3. Search-engine & data-broker footprint  ·  defends: T1589 Gather Identity Info, pretext-building
+## 3. Search-engine & data-broker footprint  ·  counters: T1589 Gather Identity Info, pretext-building
 
 | Check | How | Fix |
 |-------|-----|-----|
@@ -55,7 +55,7 @@ minutes of being public.
 | People-search sites | Spokeo, WhitePages, BeenVerified, Radaris, Intelius, TruePeopleSearch | Opt out on each (they re-list — recheck), or automate with DeleteMe/Kanary |
 | Reverse image | Search your profile photo | Find accounts/impersonations reusing it |
 
-## 4. Social media exposure  ·  defends: T1593.001 Social Media recon, pretexting
+## 4. Social media exposure  ·  counters: T1593.001 Social Media recon, pretexting
 
 | Check | How | Fix |
 |-------|-----|-----|
@@ -65,7 +65,7 @@ minutes of being public.
 | Oversharing signals | Job title + tech stack + schedule = spear-phish fuel | Trim specifics; assume recruiters aren't the only readers |
 | Impersonation | Search for accounts using your name/photo | Report duplicates |
 
-## 5. Phone number & SIM  ·  defends: T1621 MFA request abuse / SIM-swap (Scattered Spider → H-03, C-01)
+## 5. Phone number & SIM  ·  counters: T1621 MFA request abuse / SIM-swap (Scattered Spider → H-03, C-01)
 
 | Check | How | Fix |
 |-------|-----|-----|
@@ -74,7 +74,7 @@ minutes of being public.
 | SMS as MFA | Inventory accounts using SMS 2FA | Move to an authenticator app / passkey; SMS is the weakest factor |
 | Voicemail PIN | Set a non-default PIN | Blocks voicemail-based reset tricks |
 
-## 6. Email security posture  ·  defends: BEC / mailbox persistence (T1114, inbox rules → C-03)
+## 6. Email security posture  ·  counters: BEC / mailbox persistence (T1114, inbox rules → C-03)
 
 | Check | How | Fix |
 |-------|-----|-----|
@@ -83,7 +83,7 @@ minutes of being public.
 | Recovery address | Confirm the recovery email is one you control + secured | A compromised recovery email unravels everything |
 | App passwords | Revoke legacy "app passwords" that bypass MFA | Modern OAuth instead |
 
-## 7. Account & device review  ·  defends: T1528 OAuth token theft (APT29 → H-01), session hijack
+## 7. Account & device review  ·  counters: T1528 OAuth token theft (APT29 → H-01), session hijack
 
 | Check | How | Fix |
 |-------|-----|-----|
@@ -92,7 +92,7 @@ minutes of being public.
 | **OAuth / app grants** | Review third-party apps connected to each account | **Revoke anything unused**, especially with mail/file scope — this is APT29's move |
 | MFA device list | Confirm only *your* MFA devices are registered | Remove unknown ones (attacker-registered MFA = persistence, H-04) |
 
-## 8. Financial & identity monitoring  ·  defends: downstream fraud from any of the above
+## 8. Financial & identity monitoring  ·  counters: downstream fraud from any of the above
 
 | Check | How | Fix |
 |-------|-----|-----|
@@ -101,7 +101,7 @@ minutes of being public.
 | Identity monitoring | Bank/card issuer alerts, or a monitoring service | Real-time notice of misuse |
 | Tax/gov accounts | Set an IRS IP-PIN / equivalent where available | Blocks refund fraud |
 
-## 9. Metadata & document leakage  ·  defends: T1592 host/identity info from files you share
+## 9. Metadata & document leakage  ·  counters: T1592 host/identity info from files you share
 
 | Check | How | Fix |
 |-------|-----|-----|
@@ -109,7 +109,7 @@ minutes of being public.
 | Document authorship | Check Office/PDF properties (author, org, path) | Clear document metadata before publishing |
 | Resume/CV | Look for home address, full DOB, personal email | Minimize PII; use a contact form |
 
-## 10. Home network & devices  ·  defends: exposed-service recon (your own perimeter)
+## 10. Home network & devices  ·  counters: exposed-service recon (your own perimeter)
 
 | Check | How | Fix |
 |-------|-----|-----|
@@ -118,16 +118,16 @@ minutes of being public.
 | IoT defaults | Inventory smart devices | Change default creds; segment onto a guest VLAN |
 | Wi-Fi | WPA3/WPA2, strong passphrase, guest network for visitors/IoT | Rotate a weak passphrase |
 
-## 11. Browser & endpoint hygiene  ·  defends: token/session theft, malicious extensions
+## 11. Browser & endpoint hygiene  ·  counters: token/session theft, malicious extensions
 
 | Check | How | Fix |
 |-------|-----|-----|
 | Extensions | Audit installed browser extensions + their permissions | Remove ones you don't use / that over-ask |
 | Saved passwords | Review browser-stored creds | Migrate to a real password manager |
 | OS & app updates | Confirm auto-update is on | Patch — most real intrusions use known, fixed bugs |
-| Disk encryption + screen lock | FileVault/BitLocker on; short auto-lock | Protects a lost/stolen device |
+| Disk encryption + screen lock | FileVault/BitLocker on; short auto-lock | Hardens a lost/stolen device |
 
-## 12. Recovery-path hardening  ·  defends: help-desk / recovery social engineering (Scattered Spider)
+## 12. Recovery-path hardening  ·  counters: help-desk / recovery social engineering (Scattered Spider)
 
 | Check | How | Fix |
 |-------|-----|-----|

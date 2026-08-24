@@ -1,10 +1,10 @@
 # Executive Summary
 
-One-page distillation of the defensive analysis. Full detail is indexed in
+One-page distillation of the security analysis. Full detail is indexed in
 [`README.md`](README.md); methodology and terms are in [`DEFINITIONS.md`](DEFINITIONS.md).
 
 ## What this is
-A static, **defensive** analysis of a 64-file malware/fraud collection ("Fraud
+A static, **security** analysis of a 64-file malware/fraud collection ("Fraud
 Bible 2020 / Methods Pack"). The repository contains **only analysis** — hashes,
 classifications, detection rules, and critique. No malware samples, recompilable
 decompiled source, or operational criminal instructions are included (all
@@ -33,7 +33,7 @@ gitignored). No sample was executed.
    item (~$40) and even it is a cracked copy; the expensive software (~$500–$700) is
    pirated. Nothing was paid for. *(`EXECUTABLES.md`)*
 
-## Defensive output (ready to deploy)
+## Security output (ready to deploy)
 - **Detection:** YARA (host) + Suricata (network), validated against the samples
   *(`detection/`)*.
 - **Intelligence:** IOC feed as CSV and STIX 2.1; MITRE ATT&CK mapping

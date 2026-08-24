@@ -10,16 +10,24 @@
 //!   hse actor <ID>
 //!   hse show <id>
 //!   hse stats
+//!   hse llm-analyze <event>
 
 use std::collections::BTreeMap;
 use std::process::ExitCode;
 
-use hse::{parse_catalog, search, Detection};
+use hse::{parse_attack_surface, parse_catalog, parse_catalogs, search, Detection, llm::OllamaClient};
 
-/// Catalog baked in at compile time (path relative to this crate's Cargo.toml).
-const EMBEDDED: &str = include_str!(concat!(
+const EMBEDDED_DETECTIONS: &str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/../../intelligence-led/detection-mapping/detections.json"
+));
+const EMBEDDED_SELF_AUDIT: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../intelligence-led/reconnaissance/self-audit.json"
+));
+const EMBEDDED_RECON: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../intelligence-led/reconnaissance/attack-surface.json"
 ));
 
 fn usage() {
@@ -32,8 +40,10 @@ fn usage() {
          hse tactic <name>\n  \
          hse actor <ID>\n  \
          hse show <detection-id>\n  \
-         hse stats\n\n\
-         Global: --catalog <path>   use a catalog file instead of the embedded one"
+         hse stats\n  \
+         hse llm-analyze <event>\n\n\
+         Global: --catalog <path>   use a catalog file instead of the embedded one\n  \
+         Global: --ollama <url>     Ollama endpoint (default: http://127.0.0.1:11434)"
     );
 }
 
@@ -45,14 +55,24 @@ fn brief(d: &Detection) {
     };
     println!(
         "  {:<5} [{:<11}] {:<11} {}{}",
-        d.id, d.tier, d.fidelity, d.name, extra
+        d.id, d.tier, d.label(), d.name, extra
     );
 }
 
 fn show(d: &Detection) {
+    let (ds_label, fix_label, q_label) = match d.tier.as_str() {
+        "self-audit" => ("tool", "fix", "how to check"),
+        "recon" => ("open sources", "counter-measure", "detail"),
+        _ => ("data source", "tuning", "query"),
+    };
     println!("{} — {}", d.id, d.name);
     println!("  tier:        {}", d.tier);
-    println!("  fidelity:    {}", d.fidelity);
+    if !d.fidelity.is_empty() {
+        println!("  fidelity:    {}", d.fidelity);
+    }
+    if !d.priority.is_empty() {
+        println!("  priority:    {}", d.priority);
+    }
     if !d.techniques.is_empty() {
         println!("  techniques:  {}", d.techniques.join(", "));
     }
@@ -62,28 +82,20 @@ fn show(d: &Detection) {
     if !d.actors.is_empty() {
         println!("  actors:      {}", d.actors.join(", "));
     }
-    println!("  data source: {}", d.data_source);
-    println!("  dialect:     {}", d.dialect);
-    println!("  summary:     {}", d.summary);
-    println!("  tuning:      {}", d.tuning);
-    println!("\n  {}\n", d.query);
-}
-
-/// Pull `--catalog <path>` (and its value) out of args; return the JSON to use.
-fn resolve_catalog(args: &mut Vec<String>) -> Result<String, String> {
-    if let Some(i) = args.iter().position(|a| a == "--catalog") {
-        let path = args
-            .get(i + 1)
-            .cloned()
-            .ok_or_else(|| "--catalog needs a path".to_string())?;
-        args.drain(i..=i + 1);
-        std::fs::read_to_string(&path).map_err(|e| format!("cannot read {path}: {e}"))
-    } else {
-        Ok(EMBEDDED.to_string())
+    if !d.data_source.is_empty() {
+        println!("  {ds_label:<12} {}", d.data_source);
+    }
+    if !d.summary.is_empty() {
+        println!("  summary:     {}", d.summary);
+    }
+    if !d.tuning.is_empty() {
+        println!("  {fix_label:<12} {}", d.tuning);
+    }
+    if !d.query.is_empty() {
+        println!("\n  [{q_label}]\n  {}\n", d.query);
     }
 }
 
-/// Pull `--flag <value>` out of args, returning the value if present.
 fn take_opt(args: &mut Vec<String>, flag: &str) -> Option<String> {
     args.iter().position(|a| a == flag).and_then(|i| {
         let v = args.get(i + 1).cloned();
@@ -101,8 +113,20 @@ fn run() -> Result<(), String> {
         return Err(String::new());
     }
 
-    let json = resolve_catalog(&mut args)?;
-    let catalog = parse_catalog(&json).map_err(|e| format!("bad catalog JSON: {e}"))?;
+    let ollama_endpoint = take_opt(&mut args, "--ollama").unwrap_or_else(|| "http://127.0.0.1:11434".to_string());
+
+    let catalog = if let Some(path) = take_opt(&mut args, "--catalog") {
+        let j = std::fs::read_to_string(&path).map_err(|e| format!("cannot read {path}: {e}"))?;
+        parse_catalog(&j).map_err(|e| format!("bad catalog JSON: {e}"))?
+    } else {
+        let mut c = parse_catalogs(&[EMBEDDED_DETECTIONS, EMBEDDED_SELF_AUDIT])
+            .map_err(|e| format!("bad embedded catalog: {e}"))?;
+        c.extend(
+            parse_attack_surface(EMBEDDED_RECON)
+                .map_err(|e| format!("bad recon catalog: {e}"))?,
+        );
+        c
+    };
 
     let command = args.remove(0);
     match command.as_str() {
@@ -189,6 +213,38 @@ fn run() -> Result<(), String> {
             for (a, n) in &by_actor {
                 println!("    {a:<18} {n}");
             }
+        }
+        "llm-analyze" => {
+            if args.is_empty() {
+                return Err("llm-analyze needs an event description".into());
+            }
+            let event = args.join(" ");
+            println!("  [LLM Analysis] Connecting to Ollama at {}...", ollama_endpoint);
+
+            let client = OllamaClient::with_endpoint(
+                ollama_endpoint,
+                "qwen2.5-coder:1.5b".to_string(),
+            );
+
+            tokio::runtime::Runtime::new()
+                .map_err(|e| format!("Failed to create async runtime: {}", e))?
+                .block_on(async {
+                    match client.analyze_security_event(&event, "Threat detection context").await {
+                        Ok(analysis) => {
+                            println!("  threat_type:    {}", analysis.threat_type);
+                            println!("  confidence:     {:.1}%", analysis.confidence * 100.0);
+                            println!("  reasoning:      {}", analysis.reasoning);
+                            println!("  recommended:");
+                            for action in analysis.recommended_actions {
+                                println!("    - {}", action);
+                            }
+                        }
+                        Err(e) => {
+                            return Err::<(), String>(format!("LLM analysis failed: {}", e));
+                        }
+                    }
+                    Ok(())
+                })?;
         }
         "-h" | "--help" | "help" => usage(),
         other => return Err(format!("unknown command: {other}")),
