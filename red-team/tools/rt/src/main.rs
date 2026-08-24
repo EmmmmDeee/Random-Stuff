@@ -39,6 +39,11 @@ enum Commands {
         #[command(subcommand)]
         subcommand: ValidateSubcommand,
     },
+    /// Local LLM integration for OSINT analysis
+    Llm {
+        #[command(subcommand)]
+        subcommand: LlmSubcommand,
+    },
 }
 
 #[derive(Subcommand)]
@@ -107,6 +112,56 @@ enum ValidateSubcommand {
     CrossReferences,
 }
 
+#[derive(Subcommand)]
+enum LlmSubcommand {
+    /// Check Ollama connectivity and model availability
+    Health,
+    /// Analyze an OSINT entity
+    Analyze {
+        /// Entity data as JSON string
+        entity: String,
+        /// Use lightweight model (default: detailed)
+        #[arg(long)]
+        lightweight: bool,
+    },
+    /// Correlate two entities
+    Correlate {
+        /// First entity as JSON string
+        entity1: String,
+        /// Second entity as JSON string
+        entity2: String,
+        /// Use lightweight model (default: detailed)
+        #[arg(long)]
+        lightweight: bool,
+    },
+    /// Assess threat level from OSINT data
+    Threat {
+        /// Entities data as JSON string
+        data: String,
+        /// Use lightweight model (default: detailed)
+        #[arg(long)]
+        lightweight: bool,
+    },
+    /// Get collection strategy recommendations
+    Strategy {
+        /// Target profile as JSON string
+        target: String,
+        /// Use lightweight model (default: detailed)
+        #[arg(long)]
+        lightweight: bool,
+    },
+    /// Validate OSINT data accuracy
+    Validate {
+        /// Data to validate as JSON string
+        data: String,
+        /// Data type classification
+        data_type: String,
+        /// Use lightweight model (default: detailed)
+        #[arg(long)]
+        lightweight: bool,
+    },
+}
+
 fn main() -> anyhow::Result<()> {
     FrameworkPaths::init()?;
 
@@ -119,6 +174,10 @@ fn main() -> anyhow::Result<()> {
         Commands::Index => handle_index()?,
         Commands::Navigator => handle_navigator()?,
         Commands::Validate { subcommand } => handle_validate(subcommand)?,
+        Commands::Llm { subcommand } => {
+            let rt = tokio::runtime::Runtime::new()?;
+            rt.block_on(handle_llm(subcommand))?;
+        }
     }
 
     Ok(())
@@ -194,5 +253,43 @@ fn handle_validate(subcommand: ValidateSubcommand) -> anyhow::Result<()> {
         ValidateSubcommand::Detections => cmd.validate_detections()?,
         ValidateSubcommand::CrossReferences => cmd.validate_cross_references()?,
     }
+    Ok(())
+}
+
+async fn handle_llm(subcommand: LlmSubcommand) -> anyhow::Result<()> {
+    let config = if matches!(&subcommand, LlmSubcommand::Health |
+                            LlmSubcommand::Analyze { lightweight: true, .. } |
+                            LlmSubcommand::Correlate { lightweight: true, .. } |
+                            LlmSubcommand::Threat { lightweight: true, .. } |
+                            LlmSubcommand::Strategy { lightweight: true, .. } |
+                            LlmSubcommand::Validate { lightweight: true, .. }) {
+        LocalLLMConfig::ollama_lightweight()
+    } else {
+        LocalLLMConfig::ollama_detailed()
+    };
+
+    let cmd = commands::LLMCommand::new(config);
+
+    match subcommand {
+        LlmSubcommand::Health => {
+            cmd.health_check().await?;
+        }
+        LlmSubcommand::Analyze { entity, .. } => {
+            cmd.analyze_entity(&entity).await?;
+        }
+        LlmSubcommand::Correlate { entity1, entity2, .. } => {
+            cmd.correlate_entities(&entity1, &entity2).await?;
+        }
+        LlmSubcommand::Threat { data, .. } => {
+            cmd.assess_threat(&data).await?;
+        }
+        LlmSubcommand::Strategy { target, .. } => {
+            cmd.collection_strategy(&target).await?;
+        }
+        LlmSubcommand::Validate { data, data_type, .. } => {
+            cmd.validate_data(&data, &data_type).await?;
+        }
+    }
+
     Ok(())
 }
