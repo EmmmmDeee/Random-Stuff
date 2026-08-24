@@ -13,6 +13,10 @@ pub mod client;
 pub mod cache;
 pub mod engine;
 pub mod integration;
+pub mod pool;
+pub mod metrics;
+pub mod batch;
+pub mod production;
 
 #[cfg(test)]
 mod integration_tests;
@@ -26,6 +30,10 @@ pub use client::OllamaClient;
 pub use cache::ResponseCache;
 pub use engine::AnalysisEngine;
 pub use integration::LLMIntegration;
+pub use pool::{ClientPool, PooledClient, PoolStats};
+pub use metrics::{Metrics, MetricsSnapshot, RequestTimer};
+pub use batch::BatchAnalyzer;
+pub use production::{ProductionConfig, DeploymentProfile};
 
 #[cfg(test)]
 mod tests {
