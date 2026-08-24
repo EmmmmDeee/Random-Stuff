@@ -88,7 +88,7 @@ its *presence* signals intent.
 
 ---
 
-## Defensive takeaways
+## Security takeaways
 - **Blocklist all hashes/imphashes above** (EDR/AV/VT). The imphashes catch
   recompiled or repacked variants better than file hashes alone.
 - **`vcscore.exe` is the highest-priority item after the RAT**: treat as a

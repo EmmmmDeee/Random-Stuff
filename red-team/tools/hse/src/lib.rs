@@ -1,7 +1,7 @@
 //! Huntsman Search Engine (HSE) — a small searchable index over the red-team
 //! detection catalog (`detection-mapping/detections.json`).
 //!
-//! Defensive tooling: it searches detection *content* (hunt/correlation/blind-spot/
+//! Security tooling: it searches detection *content* (hunt/correlation/blind-spot/
 //! baseline queries). It does not execute anything against any system.
 
 pub mod llm;

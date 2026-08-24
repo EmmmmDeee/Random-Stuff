@@ -8,7 +8,7 @@ adversary would, so the emulation is grounded in what an attacker could actually
 discover.
 
 This directory implements that phase as a **planner and footprint-reduction
-tool** — it produces the recon *plan* and the corresponding *defensive*
+tool** — it produces the recon *plan* and the corresponding *security*
 recommendations. It does **not** perform collection.
 
 ---
@@ -60,7 +60,7 @@ three fields beyond the offensive description:
 - **`mitre_id`** — the ATT&CK Reconnaissance technique it emulates
 
 So the same run produces two artifacts: the **recon checklist** (offensive plan)
-and the **footprint-reduction report** (defensive remediation). A blue team can
+and the **footprint-reduction report** (security remediation). A blue team can
 run this against their *own* org to find what they're leaking.
 
 ---
@@ -87,7 +87,7 @@ run this against their *own* org to find what they're leaking.
 
 The planner takes an **authorized scope** and emits a structured plan. It never
 contacts a target — it organizes *what an authorized tester would review* and the
-*defensive fixes* for each.
+*security fixes* for each.
 
 Run from the `red-team/` directory:
 
@@ -98,11 +98,11 @@ python3 tools/rt.py recon --org "Acme Corp" --domain acme.example --plan
 # Include active techniques (ONLY with signed authorization)
 python3 tools/rt.py recon --org "Acme Corp" --domain acme.example --plan --authorize-active
 
-# Defensive mode: generate the footprint-reduction report for your OWN org
-python3 tools/rt.py recon --org "Acme Corp" --domain acme.example --defensive
+# Security mode: generate the footprint-reduction report for your OWN org
+python3 tools/rt.py recon --org "Acme Corp" --domain acme.example --security
 ```
 
-The `--defensive` report is the recommended starting point if you own the
+The `--security` report is the recommended starting point if you own the
 domain: it tells you what you're leaking and how to close it, without planning
 any offensive activity at all.
 

@@ -1,6 +1,6 @@
 # Detection Playbook — Catching DroidJack & Blackshades
 
-Every realistic defensive measure that catches the provided samples, organized by
+Every realistic security measure that catches the provided samples, organized by
 control layer, with concrete rules/commands — and, where relevant, "the BurntSushi
 way": how a world-class search/systems engineer builds the detection so it is
 **correct, linear-time, tested, and fast at scale**.

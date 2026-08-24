@@ -5,7 +5,7 @@ provided samples (Blackshades, DroidJack) and **professional engineering**, usin
 the analysis, code review, and detection work in this repository.
 
 > **The correct axis of comparison.** The professional in this story is *not* a
-> better malware author — it's the defensive/systems engineer who makes the
+> better malware author — it's the security/systems engineer who makes the
 > malware findable. This document contrasts amateur offense with professional
 > **defense and engineering**. It does not describe a "professional" (stealthier,
 > more resilient) version of the malware; that would just be a better weapon, and
@@ -16,14 +16,14 @@ the analysis, code review, and detection work in this repository.
 - `CODE_REVIEW.md` — code-style critique (19 findings)
 - `RUST_PERSPECTIVE.md` — defects ranked by significance + language contrast
 - `MALWARE_ANALYSIS.md`, `SOURCE_LEVEL_ANALYSIS.md` — the underlying evidence
-- `detection/`, `intel/`, `ATTACK_MAPPING.md` — the professional defensive output
+- `detection/`, `intel/`, `ATTACK_MAPPING.md` — the professional security output
 - `tools/ioc-scanner/` — a working, tested detector
 
 ---
 
 ## 1. The thesis in one table
 
-| Dimension | Amateur (the malware author) | Professional (defensive/systems engineer) |
+| Dimension | Amateur (the malware author) | Professional (security/systems engineer) |
 |---|---|---|
 | Indicators | Hardcodes `droidjack.net`, `DJ_GooDbYe:(`, brand in package name | Turns those exact literals into instant, automated detections |
 | Matching | One-pass `String.equals` command loop, O(commands) | `aho-corasick`: all patterns in one O(input) automaton |
@@ -113,7 +113,7 @@ leaks, ignored errors, non-exhaustive dispatch) are removed by construction.
 
 (Artifacts: `detection/`, `intel/`, `ATTACK_MAPPING.md`, `tools/ioc-scanner/`.)
 
-Every amateur tell becomes a defensive win:
+Every amateur tell becomes a security win:
 
 | Amateur tell | Professional response |
 |---|---|
