@@ -7,8 +7,8 @@ the analysis, code review, and detection work in this repository.
 > **The correct axis of comparison.** The professional in this story is *not* a
 > better malware author — it's the security/systems engineer who makes the
 > malware findable. This document contrasts amateur offense with professional
-> **defense and engineering**. It does not describe a "professional" (stealthier,
-> more resilient) version of the malware; that would just be a better weapon, and
+> **engineering and detection**. It does not describe a "professional" (stealthier,
+> harder to detect) version of the malware; that would just be a better weapon, and
 > it is deliberately absent.
 
 **Supporting documents**
