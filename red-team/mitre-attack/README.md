@@ -8,13 +8,16 @@ Ties the whole framework to [MITRE ATT&CK](https://attack.mitre.org/) (Enterpris
 |------|-----------|
 | `framework.json` | Per-tactic coverage map: techniques implemented, detection methods, effectiveness/false-positive estimates, and gap analysis. |
 | `navigator-layer.json` | An ATT&CK **Navigator layer** — a coverage heatmap of every technique referenced across the framework. Generated; do not hand-edit. |
-| `build-navigator-layer.py` | Regenerates `navigator-layer.json` by scanning `red-team/` for technique IDs. |
+
+The generator lives in `red-team/tools/` (`rt navigator`, backed by
+`navigator.py`) and scans `red-team/` for technique IDs in `.json`/`.md` files.
 
 ## View the coverage heatmap
 
-1. Regenerate the layer (after any change to scenarios, actors, detections, recon):
+1. Regenerate the layer (after any change to scenarios, actors, detections,
+   recon, or campaigns) — from the `red-team/` directory:
    ```bash
-   python3 build-navigator-layer.py
+   python3 tools/rt.py navigator
    ```
 2. Open the official Navigator: <https://mitre-attack.github.io/attack-navigator/>
 3. **Open Existing Layer → Upload from local →** `navigator-layer.json`

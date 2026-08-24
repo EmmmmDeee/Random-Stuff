@@ -37,15 +37,17 @@ Each scenario includes:
 
 ## Running Scenarios
 
+Run from the `red-team/` directory via the unified CLI:
+
 ```bash
 # List available scenarios
-./run-scenario.sh --list
+python3 tools/rt.py scenario --list
 
-# Execute scenario with monitoring
-./run-scenario.sh --scenario <name> --record-traffic --capture-logs
+# Execute a scenario (optionally noting external traffic/log capture)
+python3 tools/rt.py scenario --run <stem> --record-traffic --capture-logs
 
-# Generate incident response drill from scenario
-./run-scenario.sh --scenario <name> --ir-drill
+# Generate an incident response drill from a scenario
+python3 tools/rt.py scenario --run <stem> --ir-drill
 ```
 
 ## Detection Coverage Matrix

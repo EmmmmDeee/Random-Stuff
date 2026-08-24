@@ -80,32 +80,40 @@ intelligence-led/
 ├── threat-actors.json         (adversary profiles: goals, sectors, TTPs)
 ├── targeting-model.json       (sector → likely-adversary mapping + scoring)
 ├── tti-report-template.md     (Targeted Threat Intelligence report template)
-├── derive-scenario.py         (turn a threat actor profile into a test scenario)
 ├── reconnaissance/            (Recon phase / OSINT — MITRE TA0043)
 │   ├── README.md              (authorized-recon method + footprint reduction)
-│   ├── attack-surface.json    (recon techniques ↔ defensive counters)
-│   └── recon-plan.py          (plan generator + defensive report; no collection)
-└── detection-mapping/         (the purple-team payoff — detection content)
-    ├── hunt-queries.md        (single-TTP hunts, actor-mapped)
-    └── correlation-and-coverage.md  (kill-chain + blind-spot + baseline queries)
+│   └── attack-surface.json    (recon techniques ↔ defensive counters)
+├── detection-mapping/         (the purple-team payoff — detection content)
+│   ├── hunt-queries.md        (single-TTP hunts, actor-mapped)
+│   └── correlation-and-coverage.md  (kill-chain + blind-spot + baseline queries)
+└── campaigns/                 (documented ATT&CK campaigns, e.g. C0062)
 ```
+
+The tooling lives in `red-team/tools/` (the unified `rt` CLI); the derive
+command reads `threat-actors.json` / `targeting-model.json` here.
 
 ### Workflow
 
+Run from the `red-team/` directory:
+
 ```bash
 # 1. Find out which actors most likely target your sector
-python3 derive-scenario.py --sector finance --rank
+python3 tools/rt.py derive --sector finance
 
 # 2. Generate a Targeted Threat Intelligence summary for an actor
-python3 derive-scenario.py --actor APT29 --tti
+python3 tools/rt.py derive --actor APT29 --tti
 
 # 3. Derive an executable test scenario from that actor's real TTPs
-python3 derive-scenario.py --actor FIN7 --build-scenario
+python3 tools/rt.py derive --actor FIN7 --build-scenario
 ```
 
-The derived scenario plugs into the existing `run-scenario.py` runner, so an
-intelligence-led scenario is tested exactly like the hand-authored APT-001/002
-scenarios — the difference is *where the scenario comes from*.
+The derived scenario plugs into the `scenario` runner, so an intelligence-led
+scenario is tested exactly like the hand-authored APT-001/002 scenarios — the
+difference is *where the scenario comes from*:
+
+```bash
+python3 tools/rt.py scenario --run scenario-tlpt-fin7
+```
 
 ---
 

@@ -89,15 +89,17 @@ The planner takes an **authorized scope** and emits a structured plan. It never
 contacts a target — it organizes *what an authorized tester would review* and the
 *defensive fixes* for each.
 
+Run from the `red-team/` directory:
+
 ```bash
 # Passive-only recon plan for an authorized scope
-python3 recon-plan.py --org "Acme Corp" --domain acme.example --plan
+python3 tools/rt.py recon --org "Acme Corp" --domain acme.example --plan
 
 # Include active techniques (ONLY with signed authorization)
-python3 recon-plan.py --org "Acme Corp" --domain acme.example --plan --authorize-active
+python3 tools/rt.py recon --org "Acme Corp" --domain acme.example --plan --authorize-active
 
 # Defensive mode: generate the footprint-reduction report for your OWN org
-python3 recon-plan.py --org "Acme Corp" --domain acme.example --defensive
+python3 tools/rt.py recon --org "Acme Corp" --domain acme.example --defensive
 ```
 
 The `--defensive` report is the recommended starting point if you own the
@@ -109,7 +111,7 @@ any offensive activity at all.
 ## Where recon feeds the rest of the framework
 
 ```
-reconnaissance/  ──►  threat-actors.json  ──►  derive-scenario.py  ──►  run-scenario.py
+reconnaissance/  ──►  threat-actors.json  ──►  rt derive  ──►  rt scenario --run
    (what the           (who targets us)        (build emulation)       (execute + measure)
     adversary
     can see)

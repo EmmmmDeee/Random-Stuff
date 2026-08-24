@@ -30,3 +30,6 @@ secrets.yaml
 config.local.json
 settings.local.json
 private_key*
+
+# Red-team framework: generated scenario/drill reports
+red-team/reports/

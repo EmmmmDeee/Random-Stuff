@@ -58,7 +58,7 @@ Adding a campaign's techniques automatically folds them into the ATT&CK
 Navigator coverage heatmap — regenerate it after adding one:
 
 ```bash
-python3 ../../mitre-attack/build-navigator-layer.py
+python3 tools/rt.py navigator   # from the red-team/ directory
 ```
 
 ## Source & caution

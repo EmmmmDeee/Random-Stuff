@@ -37,7 +37,10 @@ This framework provides:
 ```
 red-team/
 ├── README.md (this file)
-├── run-scenario.py (execution framework)
+├── tools/                       (unified CLI — one entrypoint, shared library)
+│   ├── rt.py                    (dispatcher: rt.py <scenario|derive|recon|navigator>)
+│   ├── attack.py                (shared: paths, JSON I/O, ATT&CK-ID helpers)
+│   ├── scenario.py  derive.py  recon.py  navigator.py   (command modules)
 │
 ├── scenarios/
 │   ├── README.md (scenario overview)
@@ -46,15 +49,20 @@ red-team/
 │   └── [additional scenarios]
 │
 ├── mitre-attack/
-│   └── framework.json (MITRE mappings, tactics, techniques)
+│   ├── framework.json (MITRE mappings, tactics, techniques)
+│   └── navigator-layer.json (generated ATT&CK Navigator coverage layer)
 │
 ├── incident-response/
-│   ├── drill-framework.json (6 IR drills mapped to scenarios)
-│   └── [drill execution templates]
+│   └── drill-framework.json (6 IR drills mapped to scenarios)
 │
-└── reports/
-    └── [generated scenario reports, drill results]
+├── intelligence-led/            (TLPT: actors, targeting, recon, detections, campaigns)
+│
+└── reports/                     (generated scenario/drill output — gitignored)
 ```
+
+All commands run from the `red-team/` directory via the unified CLI, e.g.
+`python3 tools/rt.py scenario --list`. Each module is also runnable standalone
+(`python3 tools/scenario.py --list`).
 
 ---
 
@@ -63,7 +71,7 @@ red-team/
 ### 1. List Available Scenarios
 
 ```bash
-python3 run-scenario.py --list
+python3 tools/rt.py scenario --list
 ```
 
 Output:
@@ -86,7 +94,7 @@ Output:
 ### 2. Run a Scenario
 
 ```bash
-python3 run-scenario.py --scenario scenario-01-phishing-to-ransomware
+python3 tools/rt.py scenario --run scenario-01-phishing-to-ransomware
 ```
 
 Output:
@@ -110,7 +118,7 @@ Output:
 ### 3. Generate Incident Response Drill
 
 ```bash
-python3 run-scenario.py --scenario scenario-01-phishing-to-ransomware --ir-drill
+python3 tools/rt.py scenario --run scenario-01-phishing-to-ransomware --ir-drill
 ```
 
 Output:
@@ -133,7 +141,7 @@ Output:
 ### 4. View MITRE ATT&CK Coverage
 
 ```bash
-python3 run-scenario.py --mitre-report
+python3 tools/rt.py scenario --mitre-report
 ```
 
 Output:
@@ -314,16 +322,16 @@ Six automated IR drills test detection, response, and recovery:
 
 ```bash
 # Option 1: Simulate scenario (analysis only, no real execution)
-python3 run-scenario.py --scenario scenario-01-phishing-to-ransomware
+python3 tools/rt.py scenario --run scenario-01-phishing-to-ransomware
 
 # Option 2: With network traffic capture (tcpdump/Wireshark)
-python3 run-scenario.py --scenario scenario-01-phishing-to-ransomware --record-traffic
+python3 tools/rt.py scenario --run scenario-01-phishing-to-ransomware --record-traffic
 
 # Option 3: With full log capture for forensics
-python3 run-scenario.py --scenario scenario-01-phishing-to-ransomware --capture-logs
+python3 tools/rt.py scenario --run scenario-01-phishing-to-ransomware --capture-logs
 
 # Option 4: Generate IR drill from scenario
-python3 run-scenario.py --scenario scenario-01-phishing-to-ransomware --ir-drill
+python3 tools/rt.py scenario --run scenario-01-phishing-to-ransomware --ir-drill
 ```
 
 ### Pre-Drill Checklist

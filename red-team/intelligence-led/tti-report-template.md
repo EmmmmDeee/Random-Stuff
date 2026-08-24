@@ -24,7 +24,7 @@ Which adversaries realistically target this organization, and why?
 - **Geographic / geopolitical factors**: _relevant nation-state interest, if any_
 - **Recent activity**: _campaigns in the last 12-24 months affecting peers_
 
-Use `derive-scenario.py --sector <sector> --rank` to seed this section.
+Use `rt derive --sector <sector>` to seed this section.
 
 ---
 
@@ -53,7 +53,7 @@ For each selected actor (top 1-3 by relevance):
 | Initial Access | _..._ | Txxxx | _..._ |
 | ... | ... | ... | ... |
 
-Use `derive-scenario.py --actor <ID> --tti` to populate this.
+Use `rt derive --actor <ID> --tti` to populate this.
 
 ---
 
@@ -66,7 +66,7 @@ Concrete, executable scenarios built from the actors above. Each should specify:
 - **Stage-by-stage TTP chain** (MITRE IDs)
 - **Expected detection opportunities** at each stage
 
-Use `derive-scenario.py --actor <ID> --build-scenario` to generate a scenario
+Use `rt derive --actor <ID> --build-scenario` to generate a scenario
 skeleton, then flesh out org-specific detail.
 
 ---
