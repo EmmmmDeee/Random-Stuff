@@ -14,6 +14,9 @@ pub mod cache;
 pub mod engine;
 pub mod integration;
 
+#[cfg(test)]
+mod integration_tests;
+
 // Re-export public API
 pub use error::{LLMError, LLMResult};
 pub use config::LocalLLMConfig;
