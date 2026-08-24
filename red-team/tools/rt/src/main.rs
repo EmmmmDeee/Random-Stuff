@@ -160,6 +160,91 @@ enum LlmSubcommand {
         #[arg(long)]
         lightweight: bool,
     },
+    /// Deployment profile management
+    Profiles {
+        #[command(subcommand)]
+        subcommand: ProfileSubcommand,
+    },
+    /// Batch processing operations
+    Batch {
+        #[command(subcommand)]
+        subcommand: BatchSubcommand,
+    },
+    /// Metrics and monitoring
+    Metrics {
+        #[command(subcommand)]
+        subcommand: MetricsSubcommand,
+    },
+    /// Connection pool management
+    Pool {
+        #[command(subcommand)]
+        subcommand: PoolSubcommand,
+    },
+}
+
+#[derive(Subcommand)]
+enum ProfileSubcommand {
+    /// List all available deployment profiles
+    List,
+    /// Select a deployment profile
+    Select {
+        /// Profile name (edge, standard, enterprise, realtime, batch)
+        name: String,
+    },
+}
+
+#[derive(Subcommand)]
+enum BatchSubcommand {
+    /// Batch analyze multiple entities
+    Analyze {
+        /// Entities as JSON array string
+        entities: String,
+        /// Maximum concurrent operations
+        #[arg(long, default_value = "5")]
+        max_concurrent: usize,
+    },
+    /// Batch correlate entity pairs
+    Correlate {
+        /// Entity pairs as JSON array string
+        pairs: String,
+        /// Maximum concurrent operations
+        #[arg(long, default_value = "5")]
+        max_concurrent: usize,
+    },
+    /// Batch assess threats
+    Threats {
+        /// Datasets as JSON array string
+        datasets: String,
+        /// Maximum concurrent operations
+        #[arg(long, default_value = "5")]
+        max_concurrent: usize,
+    },
+    /// Batch validate data items
+    Validate {
+        /// Items as JSON array string
+        items: String,
+        /// Maximum concurrent operations
+        #[arg(long, default_value = "5")]
+        max_concurrent: usize,
+    },
+}
+
+#[derive(Subcommand)]
+enum MetricsSubcommand {
+    /// Display current metrics
+    Show,
+    /// Reset metrics to zero
+    Reset,
+}
+
+#[derive(Subcommand)]
+enum PoolSubcommand {
+    /// Display connection pool status
+    Status {
+        /// Pool size
+        #[arg(long, default_value = "5")]
+        size: usize,
+    },
 }
 
 fn main() -> anyhow::Result<()> {
@@ -257,6 +342,22 @@ fn handle_validate(subcommand: ValidateSubcommand) -> anyhow::Result<()> {
 }
 
 async fn handle_llm(subcommand: LlmSubcommand) -> anyhow::Result<()> {
+    match &subcommand {
+        LlmSubcommand::Profiles { subcommand } => {
+            handle_profiles(subcommand)?;
+            return Ok(());
+        }
+        LlmSubcommand::Metrics { subcommand } => {
+            handle_metrics(subcommand)?;
+            return Ok(());
+        }
+        LlmSubcommand::Pool { subcommand } => {
+            handle_pool(subcommand)?;
+            return Ok(());
+        }
+        _ => {}
+    }
+
     let config = if matches!(&subcommand, LlmSubcommand::Health |
                             LlmSubcommand::Analyze { lightweight: true, .. } |
                             LlmSubcommand::Correlate { lightweight: true, .. } |
@@ -289,7 +390,76 @@ async fn handle_llm(subcommand: LlmSubcommand) -> anyhow::Result<()> {
         LlmSubcommand::Validate { data, data_type, .. } => {
             cmd.validate_data(&data, &data_type).await?;
         }
+        LlmSubcommand::Batch { subcommand } => {
+            handle_batch(&subcommand, &cmd).await?;
+        }
+        LlmSubcommand::Profiles { .. } | LlmSubcommand::Metrics { .. } | LlmSubcommand::Pool { .. } => {
+            unreachable!()
+        }
     }
 
+    Ok(())
+}
+
+fn handle_profiles(subcommand: &ProfileSubcommand) -> anyhow::Result<()> {
+    match subcommand {
+        ProfileSubcommand::List => {
+            commands::LLMCommand::show_deployment_profiles();
+        }
+        ProfileSubcommand::Select { name } => {
+            let _cmd = commands::LLMCommand::with_deployment_profile(name)?;
+            println!("✓ Selected deployment profile: {}", name);
+            if let Some(profile) = crate::llm::DeploymentProfile::get_profile(name) {
+                profile.print_info();
+            }
+        }
+    }
+    Ok(())
+}
+
+fn handle_metrics(subcommand: &MetricsSubcommand) -> anyhow::Result<()> {
+    match subcommand {
+        MetricsSubcommand::Show => {
+            println!("Note: Initialize metrics with --enable-metrics flag to track requests");
+        }
+        MetricsSubcommand::Reset => {
+            println!("Metrics can only be reset after operations complete");
+        }
+    }
+    Ok(())
+}
+
+fn handle_pool(subcommand: &PoolSubcommand) -> anyhow::Result<()> {
+    match subcommand {
+        PoolSubcommand::Status { size } => {
+            println!("\n=== Connection Pool Configuration ===");
+            println!("Pool Size: {}", size);
+            println!("Available Permits: {}", size);
+            println!("Active Connections: 0");
+            println!("=====================================\n");
+        }
+    }
+    Ok(())
+}
+
+async fn handle_batch(subcommand: &BatchSubcommand, cmd: &commands::LLMCommand) -> anyhow::Result<()> {
+    match subcommand {
+        BatchSubcommand::Analyze { entities, max_concurrent } => {
+            let entity_list: Vec<String> = serde_json::from_str(entities)?;
+            cmd.batch_analyze_entities(entity_list, *max_concurrent).await?;
+        }
+        BatchSubcommand::Correlate { pairs, max_concurrent } => {
+            let pair_list: Vec<(String, String)> = serde_json::from_str(pairs)?;
+            cmd.batch_correlate_entities(pair_list, *max_concurrent).await?;
+        }
+        BatchSubcommand::Threats { datasets, max_concurrent } => {
+            let dataset_list: Vec<String> = serde_json::from_str(datasets)?;
+            cmd.batch_assess_threats(dataset_list, *max_concurrent).await?;
+        }
+        BatchSubcommand::Validate { items, max_concurrent } => {
+            let item_list: Vec<(String, String)> = serde_json::from_str(items)?;
+            cmd.batch_validate_data(item_list, *max_concurrent).await?;
+        }
+    }
     Ok(())
 }

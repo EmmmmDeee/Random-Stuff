@@ -1,13 +1,94 @@
 use crate::llm::*;
+use crate::llm::batch::BatchResult;
 use anyhow::Result;
+use std::sync::Arc;
 
 pub struct LLMCommand {
     config: LocalLLMConfig,
+    pool: Option<Arc<ClientPool>>,
+    metrics: Option<Arc<Metrics>>,
 }
 
 impl LLMCommand {
     pub fn new(config: LocalLLMConfig) -> Self {
-        LLMCommand { config }
+        LLMCommand {
+            config,
+            pool: None,
+            metrics: None,
+        }
+    }
+
+    pub fn with_deployment_profile(profile_name: &str) -> Result<Self> {
+        let _profile = DeploymentProfile::get_profile(profile_name)
+            .ok_or_else(|| anyhow::anyhow!("Unknown profile: {}", profile_name))?;
+
+        let config = match profile_name.to_lowercase().as_str() {
+            "edge" => ProductionConfig::edge(),
+            "standard" => ProductionConfig::standard(),
+            "enterprise" => ProductionConfig::enterprise(),
+            "realtime" => ProductionConfig::realtime(),
+            "batch" => ProductionConfig::batch(),
+            _ => return Err(anyhow::anyhow!("Unknown profile: {}", profile_name)),
+        };
+
+        config.validate()?;
+        Ok(LLMCommand {
+            config,
+            pool: None,
+            metrics: None,
+        })
+    }
+
+    pub fn init_pool(&mut self, pool_size: usize) -> Result<()> {
+        let pool = ClientPool::new(self.config.clone(), pool_size)?;
+        self.pool = Some(Arc::new(pool));
+        Ok(())
+    }
+
+    pub fn init_metrics(&mut self) {
+        self.metrics = Some(Arc::new(Metrics::new()));
+    }
+
+    pub fn show_deployment_profiles() {
+        println!("\n=== Available Deployment Profiles ===\n");
+        for profile_name in DeploymentProfile::all_profiles() {
+            if let Some(profile) = DeploymentProfile::get_profile(profile_name) {
+                profile.print_info();
+            }
+        }
+    }
+
+    pub fn show_metrics(&self) -> Result<()> {
+        if let Some(metrics) = &self.metrics {
+            let stats = metrics.get_stats();
+            stats.print_summary();
+            Ok(())
+        } else {
+            Err(anyhow::anyhow!("Metrics not initialized"))
+        }
+    }
+
+    pub fn reset_metrics(&self) -> Result<()> {
+        if let Some(metrics) = &self.metrics {
+            metrics.reset();
+            Ok(())
+        } else {
+            Err(anyhow::anyhow!("Metrics not initialized"))
+        }
+    }
+
+    pub fn show_pool_stats(&self) -> Result<()> {
+        if let Some(pool) = &self.pool {
+            let stats = pool.stats();
+            println!("\n=== Connection Pool Status ===");
+            println!("Pool Size: {}", stats.pool_size);
+            println!("Available Permits: {}", stats.available_permits);
+            println!("Active Connections: {}", stats.pool_size - stats.available_permits);
+            println!("==============================\n");
+            Ok(())
+        } else {
+            Err(anyhow::anyhow!("Connection pool not initialized"))
+        }
     }
 
     pub async fn health_check(&self) -> Result<()> {
@@ -182,6 +263,94 @@ impl LLMCommand {
             }
         }
 
+        Ok(())
+    }
+
+    pub async fn batch_analyze_entities(&self, entities: Vec<String>, max_concurrent: usize) -> Result<()> {
+        let engine = AnalysisEngine::from_config(&self.config)?;
+        let analyzer = BatchAnalyzer::new(engine, max_concurrent);
+
+        if let Some(metrics) = &self.metrics {
+            let _timer = metrics.record_request_start();
+        }
+
+        let results = analyzer.analyze_entities_batch(entities).await;
+
+        let mut batch_result = BatchResult::new();
+        for (idx, result) in results.into_iter().enumerate() {
+            match result {
+                Ok(analysis) => batch_result.successful.push(analysis),
+                Err(e) => batch_result.failed.push((idx, e)),
+            }
+        }
+
+        batch_result.print_summary();
+        Ok(())
+    }
+
+    pub async fn batch_correlate_entities(&self, pairs: Vec<(String, String)>, max_concurrent: usize) -> Result<()> {
+        let engine = AnalysisEngine::from_config(&self.config)?;
+        let analyzer = BatchAnalyzer::new(engine, max_concurrent);
+
+        if let Some(metrics) = &self.metrics {
+            let _timer = metrics.record_request_start();
+        }
+
+        let results = analyzer.correlate_entities_batch(pairs).await;
+
+        let mut batch_result = BatchResult::new();
+        for (idx, result) in results.into_iter().enumerate() {
+            match result {
+                Ok(correlation) => batch_result.successful.push(correlation),
+                Err(e) => batch_result.failed.push((idx, e)),
+            }
+        }
+
+        batch_result.print_summary();
+        Ok(())
+    }
+
+    pub async fn batch_assess_threats(&self, datasets: Vec<String>, max_concurrent: usize) -> Result<()> {
+        let engine = AnalysisEngine::from_config(&self.config)?;
+        let analyzer = BatchAnalyzer::new(engine, max_concurrent);
+
+        if let Some(metrics) = &self.metrics {
+            let _timer = metrics.record_request_start();
+        }
+
+        let results = analyzer.assess_threats_batch(datasets).await;
+
+        let mut batch_result = BatchResult::new();
+        for (idx, result) in results.into_iter().enumerate() {
+            match result {
+                Ok(assessment) => batch_result.successful.push(assessment),
+                Err(e) => batch_result.failed.push((idx, e)),
+            }
+        }
+
+        batch_result.print_summary();
+        Ok(())
+    }
+
+    pub async fn batch_validate_data(&self, items: Vec<(String, String)>, max_concurrent: usize) -> Result<()> {
+        let engine = AnalysisEngine::from_config(&self.config)?;
+        let analyzer = BatchAnalyzer::new(engine, max_concurrent);
+
+        if let Some(metrics) = &self.metrics {
+            let _timer = metrics.record_request_start();
+        }
+
+        let results = analyzer.validate_data_batch(items).await;
+
+        let mut batch_result = BatchResult::new();
+        for (idx, result) in results.into_iter().enumerate() {
+            match result {
+                Ok(validation) => batch_result.successful.push(validation),
+                Err(e) => batch_result.failed.push((idx, e)),
+            }
+        }
+
+        batch_result.print_summary();
         Ok(())
     }
 }
