@@ -46,19 +46,62 @@ impl OllamaClient {
     pub async fn generate(&self, request: &LLMRequest) -> LLMResult<LLMResponse> {
         let start_time = std::time::Instant::now();
 
-        // In production, use reqwest to make actual HTTP call to Ollama
-        // Example: POST to http://localhost:11434/api/generate
-        // For now, mock implementation for compilation
+        let client = reqwest::Client::new();
+        let url = format!("{}/api/generate", self.base_url);
 
-        let content = self.build_response(request);
+        let temperature = request.temperature.unwrap_or(0.7);
+        let max_tokens = request.max_tokens.unwrap_or(self.config.max_tokens);
+
+        let mut prompt = request.prompt.clone();
+        if let Some(system) = &request.system_prompt {
+            prompt = format!("{}\n\n{}", system, prompt);
+        }
+
+        let body = serde_json::json!({
+            "model": self.model,
+            "prompt": prompt,
+            "temperature": temperature,
+            "num_predict": max_tokens,
+            "stream": false,
+        });
+
+        let response = client
+            .post(&url)
+            .timeout(self.timeout)
+            .json(&body)
+            .send()
+            .await
+            .map_err(|e| LLMError::Network(format!("Failed to reach Ollama at {}: {}", url, e)))?;
+
+        if !response.status().is_success() {
+            return Err(LLMError::Network(format!(
+                "Ollama returned status {}: {}",
+                response.status(),
+                response.text().await.unwrap_or_default()
+            )));
+        }
+
+        let data: serde_json::Value = response
+            .json()
+            .await
+            .map_err(|e| LLMError::InvalidResponse(format!("Failed to parse Ollama response: {}", e)))?;
+
+        let content = data
+            .get("response")
+            .and_then(|v| v.as_str())
+            .ok_or_else(|| LLMError::InvalidResponse("No response field in Ollama output".to_string()))?
+            .to_string();
+
         let latency_ms = start_time.elapsed().as_millis() as u32;
+        let prompt_tokens = self.estimate_tokens(&prompt);
+        let completion_tokens = self.estimate_tokens(&content);
 
         Ok(LLMResponse {
             content,
             usage: TokenUsage {
-                prompt_tokens: self.estimate_tokens(&request.prompt),
-                completion_tokens: 50,
-                total_tokens: self.estimate_tokens(&request.prompt) + 50,
+                prompt_tokens,
+                completion_tokens,
+                total_tokens: prompt_tokens + completion_tokens,
             },
             finish_reason: "stop".to_string(),
             model: self.model.clone(),
@@ -68,40 +111,83 @@ impl OllamaClient {
 
     /// Check if Ollama service is running and model is available
     pub async fn health_check(&self) -> LLMResult<bool> {
-        // In production: GET http://localhost:11434/api/tags
-        // Check if model is in the response
-        Ok(true)
+        let client = reqwest::Client::new();
+        let url = format!("{}/api/tags", self.base_url);
+
+        match client.get(&url).timeout(self.timeout).send().await {
+            Ok(response) => {
+                if response.status().is_success() {
+                    Ok(true)
+                } else {
+                    Err(LLMError::Network(format!(
+                        "Ollama health check failed with status {}",
+                        response.status()
+                    )))
+                }
+            }
+            Err(e) => Err(LLMError::Network(format!(
+                "Cannot connect to Ollama at {}: {}",
+                self.base_url, e
+            ))),
+        }
     }
 
     /// List available local models
     pub async fn list_models(&self) -> LLMResult<Vec<String>> {
-        // In production: GET http://localhost:11434/api/tags
-        Ok(vec![
-            self.model.clone(),
-            "mistral".to_string(),
-            "neural-chat".to_string(),
-        ])
+        let client = reqwest::Client::new();
+        let url = format!("{}/api/tags", self.base_url);
+
+        let response = client
+            .get(&url)
+            .timeout(self.timeout)
+            .send()
+            .await
+            .map_err(|e| LLMError::Network(format!("Failed to fetch model list: {}", e)))?;
+
+        let data: serde_json::Value = response
+            .json()
+            .await
+            .map_err(|e| LLMError::InvalidResponse(format!("Failed to parse model list: {}", e)))?;
+
+        let models: Vec<String> = data
+            .get("models")
+            .and_then(|v| v.as_array())
+            .ok_or_else(|| LLMError::InvalidResponse("No models array in response".to_string()))?
+            .iter()
+            .filter_map(|m| m.get("name").and_then(|n| n.as_str()).map(String::from))
+            .collect();
+
+        Ok(models)
     }
 
     /// Pull model from Ollama registry (download to local)
     pub async fn pull_model(&self, model: &str) -> LLMResult<()> {
-        // In production: POST http://localhost:11434/api/pull
-        // with {"model": model, "stream": false}
-        println!("Pulling model: {}", model);
-        Ok(())
-    }
+        let client = reqwest::Client::new();
+        let url = format!("{}/api/pull", self.base_url);
 
-    fn build_response(&self, request: &LLMRequest) -> String {
-        // Parse prompt to determine response type
-        if request.prompt.contains("entity_summary") {
-            r#"{"entity_summary": "Analyzed entity", "key_attributes": ["attr1"], "confidence_assessment": 0.85, "intelligence_value": 0.8, "recommendations": ["verify"], "potential_connections": ["connection"]}"#.to_string()
-        } else if request.prompt.contains("relationship") {
-            r#"{"relationship_type": "associated_with", "relationship_strength": 0.75, "supporting_evidence": ["evidence1"], "confidence_score": 0.8, "intelligence_implications": ["implication"]}"#.to_string()
-        } else if request.prompt.contains("threat") {
-            r#"{"threat_level": "medium", "threat_vectors": ["vector1"], "vulnerability_assessment": ["vuln1"], "mitigation_recommendations": ["fix1"], "monitoring_priorities": ["priority1"]}"#.to_string()
-        } else {
-            "Generated response from local LLM".to_string()
+        let body = serde_json::json!({
+            "model": model,
+            "stream": false,
+        });
+
+        let response = client
+            .post(&url)
+            .timeout(self.timeout)
+            .json(&body)
+            .send()
+            .await
+            .map_err(|e| LLMError::ModelLoading(format!("Failed to pull model: {}", e)))?;
+
+        if !response.status().is_success() {
+            return Err(LLMError::ModelLoading(format!(
+                "Failed to pull model {}: {}",
+                model,
+                response.text().await.unwrap_or_default()
+            )));
         }
+
+        println!("✓ Successfully pulled model: {}", model);
+        Ok(())
     }
 
     fn estimate_tokens(&self, text: &str) -> u32 {

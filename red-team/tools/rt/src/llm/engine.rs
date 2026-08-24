@@ -7,16 +7,24 @@ use super::config::LocalLLMConfig;
 use super::client::OllamaClient;
 use super::types::*;
 use super::prompts::AnalysisPrompts;
+use super::cache::ResponseCache;
+use std::sync::Arc;
 
 pub struct AnalysisEngine {
     client: OllamaClient,
     config: LocalLLMConfig,
+    cache: Option<Arc<ResponseCache>>,
 }
 
 impl AnalysisEngine {
     pub fn new(client: OllamaClient, config: LocalLLMConfig) -> LLMResult<Self> {
         config.validate()?;
-        Ok(AnalysisEngine { client, config })
+        let cache = if config.cache_responses {
+            Some(Arc::new(ResponseCache::new(config.cache_ttl_hours)))
+        } else {
+            None
+        };
+        Ok(AnalysisEngine { client, config, cache })
     }
 
     pub fn from_config(config: &LocalLLMConfig) -> LLMResult<Self> {
@@ -31,6 +39,18 @@ impl AnalysisEngine {
 
     pub fn config(&self) -> &LocalLLMConfig {
         &self.config
+    }
+
+    pub fn is_cache_enabled(&self) -> bool {
+        self.cache.is_some()
+    }
+
+    pub async fn cache_stats(&self) -> Option<super::cache::CacheStats> {
+        if let Some(cache) = &self.cache {
+            Some(cache.stats().await)
+        } else {
+            None
+        }
     }
 
     /// Verify local LLM is available and responsive
@@ -74,12 +94,28 @@ impl AnalysisEngine {
             entity_data
         );
 
-        let request = LLMRequest::new(prompt)
+        let temperature = 0.3;
+        let max_tokens = 1024u32;
+
+        // Check cache first
+        if let Some(cache) = &self.cache {
+            if let Some(cached) = cache.get(self.client.model(), &prompt, temperature, max_tokens).await {
+                return self.parse_json_response::<EntityAnalysis>(&cached.content);
+            }
+        }
+
+        let request = LLMRequest::new(prompt.clone())
             .with_system("You are an OSINT analyst.")
-            .with_temperature(0.3)
-            .with_max_tokens(1024);
+            .with_temperature(temperature)
+            .with_max_tokens(max_tokens);
 
         let response = self.client.generate(&request).await?;
+
+        // Store in cache
+        if let Some(cache) = &self.cache {
+            cache.put(self.client.model(), &prompt, temperature, max_tokens, response.clone()).await;
+        }
+
         self.parse_json_response::<EntityAnalysis>(&response.content)
     }
 
@@ -96,12 +132,28 @@ impl AnalysisEngine {
             entity2_data
         );
 
-        let request = LLMRequest::new(prompt)
+        let temperature = 0.2;
+        let max_tokens = 1024u32;
+
+        // Check cache first
+        if let Some(cache) = &self.cache {
+            if let Some(cached) = cache.get(self.client.model(), &prompt, temperature, max_tokens).await {
+                return self.parse_json_response::<CorrelationAnalysis>(&cached.content);
+            }
+        }
+
+        let request = LLMRequest::new(prompt.clone())
             .with_system("You are an entity correlation analyst.")
-            .with_temperature(0.2)
-            .with_max_tokens(1024);
+            .with_temperature(temperature)
+            .with_max_tokens(max_tokens);
 
         let response = self.client.generate(&request).await?;
+
+        // Store in cache
+        if let Some(cache) = &self.cache {
+            cache.put(self.client.model(), &prompt, temperature, max_tokens, response.clone()).await;
+        }
+
         self.parse_json_response::<CorrelationAnalysis>(&response.content)
     }
 
@@ -113,12 +165,28 @@ impl AnalysisEngine {
             entities_data
         );
 
-        let request = LLMRequest::new(prompt)
+        let temperature = 0.3;
+        let max_tokens = 1536u32;
+
+        // Check cache first
+        if let Some(cache) = &self.cache {
+            if let Some(cached) = cache.get(self.client.model(), &prompt, temperature, max_tokens).await {
+                return self.parse_json_response::<ThreatAssessment>(&cached.content);
+            }
+        }
+
+        let request = LLMRequest::new(prompt.clone())
             .with_system("You are a threat analyst.")
-            .with_temperature(0.3)
-            .with_max_tokens(1536);
+            .with_temperature(temperature)
+            .with_max_tokens(max_tokens);
 
         let response = self.client.generate(&request).await?;
+
+        // Store in cache
+        if let Some(cache) = &self.cache {
+            cache.put(self.client.model(), &prompt, temperature, max_tokens, response.clone()).await;
+        }
+
         self.parse_json_response::<ThreatAssessment>(&response.content)
     }
 
@@ -133,12 +201,28 @@ impl AnalysisEngine {
             target_profile
         );
 
-        let request = LLMRequest::new(prompt)
+        let temperature = 0.4;
+        let max_tokens = 1536u32;
+
+        // Check cache first
+        if let Some(cache) = &self.cache {
+            if let Some(cached) = cache.get(self.client.model(), &prompt, temperature, max_tokens).await {
+                return self.parse_json_response::<CollectionStrategy>(&cached.content);
+            }
+        }
+
+        let request = LLMRequest::new(prompt.clone())
             .with_system("You are an OSINT collection planner.")
-            .with_temperature(0.4)
-            .with_max_tokens(1536);
+            .with_temperature(temperature)
+            .with_max_tokens(max_tokens);
 
         let response = self.client.generate(&request).await?;
+
+        // Store in cache
+        if let Some(cache) = &self.cache {
+            cache.put(self.client.model(), &prompt, temperature, max_tokens, response.clone()).await;
+        }
+
         self.parse_json_response::<CollectionStrategy>(&response.content)
     }
 
@@ -151,12 +235,28 @@ impl AnalysisEngine {
             data
         );
 
-        let request = LLMRequest::new(prompt)
+        let temperature = 0.2;
+        let max_tokens = 1024u32;
+
+        // Check cache first
+        if let Some(cache) = &self.cache {
+            if let Some(cached) = cache.get(self.client.model(), &prompt, temperature, max_tokens).await {
+                return self.parse_json_response::<ValidationResult>(&cached.content);
+            }
+        }
+
+        let request = LLMRequest::new(prompt.clone())
             .with_system("You are a data validation expert.")
-            .with_temperature(0.2)
-            .with_max_tokens(1024);
+            .with_temperature(temperature)
+            .with_max_tokens(max_tokens);
 
         let response = self.client.generate(&request).await?;
+
+        // Store in cache
+        if let Some(cache) = &self.cache {
+            cache.put(self.client.model(), &prompt, temperature, max_tokens, response.clone()).await;
+        }
+
         self.parse_json_response::<ValidationResult>(&response.content)
     }
 

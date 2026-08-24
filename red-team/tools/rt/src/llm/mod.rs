@@ -10,6 +10,7 @@ pub mod config;
 pub mod types;
 pub mod prompts;
 pub mod client;
+pub mod cache;
 pub mod engine;
 pub mod integration;
 
@@ -19,6 +20,7 @@ pub use config::LocalLLMConfig;
 pub use types::*;
 pub use prompts::AnalysisPrompts;
 pub use client::OllamaClient;
+pub use cache::ResponseCache;
 pub use engine::AnalysisEngine;
 pub use integration::LLMIntegration;
 
