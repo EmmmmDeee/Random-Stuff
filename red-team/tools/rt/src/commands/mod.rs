@@ -5,6 +5,7 @@ pub mod index;
 pub mod navigator;
 pub mod validate;
 pub mod llm;
+pub mod analyze;
 
 pub use scenario::ScenarioCommand;
 pub use derive::DeriveCommand;
@@ -13,3 +14,4 @@ pub use index::IndexCommand;
 pub use navigator::NavigatorCommand;
 pub use validate::ValidateCommand;
 pub use llm::LLMCommand;
+pub use analyze::AnalyzeCommand;

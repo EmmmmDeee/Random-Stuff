@@ -1,16 +1,83 @@
 use crate::loaders::EntityLoader;
 use crate::models::*;
+use crate::llm::{LocalLLMConfig, AnalysisEngine, LLMResult};
 use anyhow::Result;
 use std::collections::HashMap;
+use std::sync::Arc;
 
 pub struct Framework {
     loader: EntityLoader,
+    llm_engine: Option<Arc<AnalysisEngine>>,
 }
 
 impl Framework {
     pub fn new() -> Self {
         Framework {
             loader: EntityLoader::new(),
+            llm_engine: None,
+        }
+    }
+
+    pub fn with_llm(mut self, config: LocalLLMConfig) -> Result<Self> {
+        let engine = AnalysisEngine::from_config(&config)?;
+        self.llm_engine = Some(Arc::new(engine));
+        Ok(self)
+    }
+
+    pub fn get_llm_engine(&self) -> Option<Arc<AnalysisEngine>> {
+        self.llm_engine.clone()
+    }
+
+    pub async fn analyze_scenario_with_llm(&self, scenario: &AttackScenario) -> Result<Option<String>> {
+        if let Some(engine) = &self.llm_engine {
+            let scenario_json = serde_json::to_string(scenario)?;
+            let analysis = engine.analyze_entity(&scenario_json).await;
+            match analysis {
+                Ok(result) => Ok(Some(result.entity_summary)),
+                Err(_) => Ok(None),
+            }
+        } else {
+            Ok(None)
+        }
+    }
+
+    pub async fn analyze_actor_with_llm(&self, actor: &ThreatActor) -> Result<Option<String>> {
+        if let Some(engine) = &self.llm_engine {
+            let actor_json = serde_json::to_string(actor)?;
+            let analysis = engine.analyze_entity(&actor_json).await;
+            match analysis {
+                Ok(result) => Ok(Some(result.entity_summary)),
+                Err(_) => Ok(None),
+            }
+        } else {
+            Ok(None)
+        }
+    }
+
+    pub async fn assess_scenario_threat_with_llm(&self, scenario: &AttackScenario) -> Result<Option<String>> {
+        if let Some(engine) = &self.llm_engine {
+            let scenario_json = serde_json::to_string(scenario)?;
+            let assessment = engine.assess_threat(&scenario_json).await;
+            match assessment {
+                Ok(result) => Ok(Some(format!("Threat Level: {}", result.threat_level))),
+                Err(_) => Ok(None),
+            }
+        } else {
+            Ok(None)
+        }
+    }
+
+    pub async fn correlate_scenario_actor_with_llm(&self, scenario: &AttackScenario, actor: &ThreatActor) -> Result<Option<String>> {
+        if let Some(engine) = &self.llm_engine {
+            let scenario_json = serde_json::to_string(scenario)?;
+            let actor_json = serde_json::to_string(actor)?;
+            let correlation = engine.correlate_entities(&scenario_json, &actor_json).await;
+            match correlation {
+                Ok(result) => Ok(Some(format!("Relationship: {} (strength: {:.2})", result.relationship_type, result.relationship_strength))),
+                Err(_) => Ok(None),
+            }
+        } else {
+            Ok(None)
         }
     }
 
@@ -260,6 +327,7 @@ impl Clone for Framework {
     fn clone(&self) -> Self {
         Framework {
             loader: self.loader.clone(),
+            llm_engine: self.llm_engine.clone(),
         }
     }
 }

@@ -44,6 +44,34 @@ enum Commands {
         #[command(subcommand)]
         subcommand: LlmSubcommand,
     },
+    /// Framework intelligence analysis with LLM integration
+    Analyze {
+        #[command(subcommand)]
+        subcommand: AnalyzeSubcommand,
+    },
+}
+
+#[derive(Subcommand)]
+enum AnalyzeSubcommand {
+    /// Analyze a scenario with LLM intelligence
+    Scenario {
+        /// Scenario ID to analyze
+        id: String,
+    },
+    /// Correlate scenario with threat actor
+    Correlate {
+        /// Scenario ID
+        scenario_id: String,
+        /// Actor ID
+        actor_id: String,
+    },
+    /// Generate threat intelligence report
+    Report {
+        /// Scenario ID
+        id: String,
+    },
+    /// Bulk analyze multiple scenarios
+    Bulk,
 }
 
 #[derive(Subcommand)]
@@ -263,6 +291,10 @@ fn main() -> anyhow::Result<()> {
             let rt = tokio::runtime::Runtime::new()?;
             rt.block_on(handle_llm(subcommand))?;
         }
+        Commands::Analyze { subcommand } => {
+            let rt = tokio::runtime::Runtime::new()?;
+            rt.block_on(handle_analyze(subcommand))?;
+        }
     }
 
     Ok(())
@@ -461,5 +493,26 @@ async fn handle_batch(subcommand: &BatchSubcommand, cmd: &commands::LLMCommand) 
             cmd.batch_validate_data(item_list, *max_concurrent).await?;
         }
     }
+    Ok(())
+}
+
+async fn handle_analyze(subcommand: AnalyzeSubcommand) -> anyhow::Result<()> {
+    let cmd = commands::AnalyzeCommand::new()?;
+
+    match subcommand {
+        AnalyzeSubcommand::Scenario { id } => {
+            cmd.analyze_scenario_with_intelligence(&id).await?;
+        }
+        AnalyzeSubcommand::Correlate { scenario_id, actor_id } => {
+            cmd.correlate_scenario_and_actor(&scenario_id, &actor_id).await?;
+        }
+        AnalyzeSubcommand::Report { id } => {
+            cmd.threat_intelligence_report(&id).await?;
+        }
+        AnalyzeSubcommand::Bulk => {
+            cmd.bulk_scenario_analysis().await?;
+        }
+    }
+
     Ok(())
 }
