@@ -106,6 +106,12 @@ The `--defensive` report is the recommended starting point if you own the
 domain: it tells you what you're leaking and how to close it, without planning
 any offensive activity at all.
 
+For an **individual** footprint check (yourself, on your own accounts), see
+[`self-audit.md`](self-audit.md) — a run-it-yourself checklist that surfaces the
+same exposures a passive OSINT pass would (breaches, leaked secrets, public PII,
+cert/DNS leaks) with the fix for each. It is a self-audit, not reconnaissance on
+anyone; the framework performs no collection against people.
+
 ---
 
 ## Where recon feeds the rest of the framework
