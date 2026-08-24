@@ -1,0 +1,315 @@
+{
+  "metadata": {
+    "name": "Supply Chain Attack → Persistent Access → Widespread Compromise",
+    "scenario_id": "APT-002",
+    "difficulty": "Very High",
+    "estimated_duration_days": 30,
+    "realistic_success_rate": "70-95%",
+    "industry_targets": ["SaaS/Software", "Open Source Maintainers", "CI/CD Pipeline"],
+    "last_observed_in_wild": "2023-2026 (SolarWinds, 3CX, Codecov variants)",
+    "average_attacker_dwell_time_days": 365
+  },
+
+  "attack_chain": {
+    "stage_1_identify_target": {
+      "technique": "Target Selection",
+      "mitre_id": "T1592",
+      "description": "Attacker identifies popular open-source or commercial software with significant user base",
+      "tactics": ["Reconnaissance"],
+      "implementation": {
+        "method": "Analyze GitHub star count, npm downloads, production usage",
+        "target_characteristics": [
+          "100K+ monthly downloads (npm)",
+          "10K+ GitHub stars (credibility signal)",
+          "Low maintenance (fewer code reviewers)",
+          "Critical infrastructure dependency (libraries, CI/CD, monitoring)"
+        ],
+        "success_rate_percent": 100,
+        "time_to_select_days": 30
+      },
+      "detection_points": [
+        "Unusual project interest/forking",
+        "Attacker reconnaissance (GitHub API queries, dependency analysis)"
+      ]
+    },
+
+    "stage_2_compromise_maintainer": {
+      "technique": "Maintainer Account Compromise",
+      "mitre_id": "T1589.001",
+      "description": "Attacker gains access to project maintainer's GitHub/GitLab account",
+      "tactics": ["Credential Access"],
+      "implementation": {
+        "method": "Phishing maintainer, credential stuffing, or social engineering",
+        "attack_vectors": [
+          "Phishing email with malicious GitHub action file",
+          "Typosquatting with credential harvesting",
+          "Dependency confusion (publish higher version on public registry)",
+          "OAuth token theft via phishing"
+        ],
+        "success_rate_percent": 40,
+        "time_to_compromise_weeks": 4
+      },
+      "detection_points": [
+        "Unusual authentication method (new device, new location)",
+        "Unlikely commit times (middle of night, weekend)",
+        "Commit emails differ from maintainer's registered email"
+      ]
+    },
+
+    "stage_3_inject_malicious_code": {
+      "technique": "Malicious Code Injection",
+      "mitre_id": "T1195.001",
+      "description": "Attacker injects backdoor into legitimate codebase",
+      "tactics": ["Supply Chain Compromise"],
+      "implementation": {
+        "method": "Add small malicious code to legitimate commit, disguise as bug fix",
+        "evasion_techniques": [
+          "Single-line code change: import legitimate_module; malicious_code_hidden_in_module_internals",
+          "Comment obfuscation: # Optimization for legacy systems (actually launches C2)",
+          "GitHub Actions workflow modification: new job that exfiltrates build secrets",
+          "Conditional compilation: payload only activates for specific environment variables"
+        ],
+        "payload_characteristics": [
+          "Minimal code footprint (1-5 lines in main code)",
+          "Hidden in initialization routine (hard to review)",
+          "Activates on install/import (not on usage)",
+          "Phone-home payload: reaches out to attacker C2 server"
+        ],
+        "success_rate_percent": 95,
+        "time_to_inject_minutes": 10
+      },
+      "detection_points": [
+        "Code review catches suspicious imports",
+        "Unusual network calls in package initialization",
+        "Build log anomalies (unexpected outbound connections)",
+        "Dependency analysis tools flag unusual behavior"
+      ]
+    },
+
+    "stage_4_release_malicious_version": {
+      "technique": "Malicious Release Published",
+      "mitre_id": "T1195.001",
+      "description": "Attacker publishes poisoned version to package registry",
+      "tactics": ["Supply Chain Compromise"],
+      "implementation": {
+        "method": "Push new version to npm/PyPI/Maven Central",
+        "distribution_strategy": [
+          "Minor version bump: v1.5.0 (looks legitimate)",
+          "Version supersedes current stable: users auto-update via package manager",
+          "Release notes appear normal: 'Bug fixes and performance improvements'"
+        ],
+        "reach": {
+          "direct_downloads_first_week": "100K-1M",
+          "transitive_dependencies": "10M+",
+          "affected_organizations": "1000+",
+          "critical_infrastructure": "50-100+"
+        },
+        "success_rate_percent": 100,
+        "time_to_distribution_hours": 1
+      },
+      "detection_points": [
+        "SBOM (Software Bill of Materials) analysis detects new dependency version",
+        "Build pipeline behavioral changes (new network connections)",
+        "Security vendor feeds flag malicious hash",
+        "CDN log analysis shows unusual traffic patterns"
+      ]
+    },
+
+    "stage_5_activate_payload": {
+      "technique": "Payload Activation",
+      "mitre_id": "T1204",
+      "description": "When package is installed/imported by organizations, payload activates",
+      "tactics": ["Execution"],
+      "implementation": {
+        "method": "Backdoor activates silently on import/initialization",
+        "activation_conditions": [
+          "Automatic: Every time package imported (npm require, Python import)",
+          "Conditional: Only activates if specific environment detected (production)",
+          "Delayed: Waits 24-48 hours before activating (avoid immediate detection)"
+        ],
+        "payload_functions": [
+          "Steal build secrets (AWS keys, GitHub tokens from environment)",
+          "Register reverse shell callback to C2 server",
+          "Download and execute stage 2 payload",
+          "Persist via cron job or systemd service"
+        ],
+        "success_rate_percent": 85,
+        "time_to_activation_hours": 0.1
+      },
+      "detection_points": [
+        "Build pipeline outbound network connections",
+        "EDR detects background process spawning",
+        "Package sandbox detection (attempted file/network access)",
+        "Application performance monitoring (API slowdown from exfiltration)"
+      ]
+    },
+
+    "stage_6_exfiltrate_secrets": {
+      "technique": "Credential Exfiltration",
+      "mitre_id": "T1555",
+      "description": "Attacker exfiltrates build secrets, API keys, database credentials",
+      "tactics": ["Credential Access", "Exfiltration"],
+      "implementation": {
+        "method": "Scan environment variables and configuration files for secrets",
+        "targets": [
+          "AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY",
+          "GITHUB_TOKEN (with repo access)",
+          "NPM_TOKEN (publish permissions)",
+          "DOCKER_REGISTRY_AUTH",
+          "DATABASE_CONNECTION_STRING",
+          "API_KEYS for payment processors, cloud services"
+        ],
+        "exfiltration_method": [
+          "DNS tunneling (hides in DNS queries)",
+          "HTTPS C2 (blends with legitimate traffic)",
+          "Cloud storage (S3 bucket, cloud-hosted attacker infrastructure)"
+        ],
+        "success_rate_percent": 90,
+        "data_exfiltrated_kb": 50,
+        "time_to_exfiltrate_seconds": 30
+      },
+      "detection_points": [
+        "Build log analysis: unexpected curl/wget commands",
+        "Network egress monitoring: unusual domains/IPs",
+        "DLP (Data Loss Prevention): credential patterns in outbound traffic",
+        "Build artifact analysis: inspect package before deployment"
+      ]
+    },
+
+    "stage_7_lateral_movement": {
+      "technique": "Lateral Movement via Compromised Build Secrets",
+      "mitre_id": "T1021",
+      "description": "Using stolen credentials, attacker accesses downstream systems",
+      "tactics": ["Lateral Movement", "Credential Access"],
+      "implementation": {
+        "method": "Use exfiltrated GitHub token to access source code, AWS key to spin up resources",
+        "actions": [
+          "Clone private repositories (gain source code access)",
+          "Assume IAM roles (access cloud infrastructure)",
+          "Deploy malicious infrastructure (EC2 instance, Lambda function)",
+          "Modify CI/CD pipeline (inject malicious step into every build)",
+          "Access artifact repositories (poison container images, libraries)"
+        ],
+        "success_rate_percent": 80,
+        "time_to_lateral_movement_hours": 2
+      },
+      "detection_points": [
+        "GitHub: Unusual repository clones from new IP",
+        "AWS CloudTrail: API calls from new geographic location",
+        "CI/CD pipeline: modification to build steps",
+        "Container registry: new images pushed by automated account"
+      ]
+    },
+
+    "stage_8_persistent_access": {
+      "technique": "Persistent Backdoor Installation",
+      "mitre_id": "T1547",
+      "description": "Attacker establishes persistent access for long-term exploitation",
+      "tactics": ["Persistence"],
+      "implementation": {
+        "method": "Create admin user, install SSH key, modify CI/CD configuration",
+        "persistence_mechanisms": [
+          "Add SSH key to GitHub organization (backdoor account creation)",
+          "Create IAM user in AWS with programmatic access",
+          "Modify CI/CD secrets (permanently compromised)",
+          "Create hidden repository for exfiltration"
+        ],
+        "success_rate_percent": 95,
+        "time_to_persistence_hours": 1
+      },
+      "detection_points": [
+        "GitHub audit log: new SSH keys added",
+        "AWS IAM: new users created",
+        "Access pattern changes (account activity outside normal hours)",
+        "Privilege escalation attempts"
+      ]
+    },
+
+    "stage_9_widespread_compromise": {
+      "technique": "Widespread Distribution of Backdoor",
+      "mitre_id": "T1195.003",
+      "description": "Compromised package dependencies reach thousands of organizations",
+      "tactics": ["Impact"],
+      "implementation": {
+        "method": "Malicious package automatically pulled by dependent projects",
+        "impact_scope": {
+          "direct_users": "50K-500K organizations",
+          "transitive_users": "5M-50M developers",
+          "industries_affected": ["Finance", "Healthcare", "Technology", "Government"],
+          "time_to_widespread_days": 7
+        },
+        "attacker_leverage": [
+          "Ability to compromise all build systems",
+          "Access to all downstream software",
+          "Lateral movement into customer environments",
+          "Data theft from millions of users"
+        ],
+        "success_rate_percent": 100,
+        "business_impact_usd": "Billions (SolarWinds = $18B)"
+      },
+      "detection_points": [
+        "Security vendor alerts on malicious hash",
+        "Coordinated CISO notifications",
+        "Organizational SBOM analysis",
+        "Threat intelligence sharing (CISA alerts)"
+      ]
+    }
+  },
+
+  "cross_kill_chain_analysis": {
+    "critical_detection_gaps": [
+      {
+        "gap": "Malicious code injected looks legitimate (single-line change)",
+        "impact": "Code review misses backdoor; automatically merged",
+        "fix": "Behavioral analysis of imports; sandboxed package testing"
+      },
+      {
+        "gap": "Package registry has no verification process",
+        "impact": "Malicious package published to registry without review",
+        "fix": "Mandatory code review for package updates; signature verification"
+      },
+      {
+        "gap": "Organizations auto-update packages (dependabot)",
+        "impact": "Malicious version automatically installed in 1-7 days",
+        "fix": "Stage updates (test in dev, then staging, then prod); hold updates for review"
+      },
+      {
+        "gap": "Build secrets stored in environment variables",
+        "impact": "Exfiltrated secrets give attacker full access to downstream systems",
+        "fix": "Rotate build secrets frequently; use temporary STS tokens instead"
+      },
+      {
+        "gap": "No anomaly detection on build pipeline behavior",
+        "impact": "Malicious payload execution undetected",
+        "fix": "Baseline normal build behavior; alert on deviations (new imports, network calls)"
+      }
+    ],
+    "time_to_detection_days": 7,
+    "time_to_response_hours": 24,
+    "dwell_time_advantage_days": 365,
+    "success_rate_if_detected_at_stage": {
+      "stage_1": "0% (target not selected)",
+      "stage_2": "10% (maintainer compromise detected early)",
+      "stage_3": "30% (malicious code found in review)",
+      "stage_4": "50% (malicious release flagged by security vendors)",
+      "stage_5": "75% (payload detected in sandbox)",
+      "stage_6": "90% (data exfiltration detected)",
+      "stage_7": "98% (lateral movement blocked)",
+      "stage_8": "99% (persistent access prevented)",
+      "stage_9": "100% (widespread distribution contained)"
+    }
+  },
+
+  "incident_response_drill_objectives": [
+    "Code review catches malicious injection before merge",
+    "Package signing verification prevents publication",
+    "Dependency verification alerts on new version",
+    "Build sandbox detects malicious behavior",
+    "SBOM analysis identifies compromised package",
+    "Threat intelligence feed flags malicious hash",
+    "Organizations disable/remove malicious package",
+    "Downstream systems quarantined before lateral movement",
+    "Build secrets rotated before attacker uses them",
+    "Post-compromise forensics identify all affected systems"
+  ]
+}

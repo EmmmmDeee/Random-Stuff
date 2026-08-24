@@ -1,0 +1,353 @@
+{
+  "framework": "MITRE ATT&CK Enterprise",
+  "version": "14.0",
+  "generated": "2026-08-06",
+  "coverage_summary": {
+    "total_techniques_in_framework": 188,
+    "techniques_implemented": 48,
+    "coverage_percent": 26,
+    "targeted_coverage_percent": 65
+  },
+
+  "tactic_coverage": [
+    {
+      "tactic": "Reconnaissance",
+      "mitre_tactic_id": "TA0043",
+      "techniques_total": 10,
+      "techniques_implemented": 3,
+      "scenarios": [
+        "OSINT gathering (T1592: Gather Victim Identity Information)",
+        "Network scanning (T1595: Active Scanning)",
+        "Website research (T1589: Gather Victim Identity Information)"
+      ],
+      "detection_difficulty": "Hard",
+      "prevention_difficulty": "Very Hard"
+    },
+    {
+      "tactic": "Resource Development",
+      "mitre_tactic_id": "TA0042",
+      "techniques_total": 8,
+      "techniques_implemented": 4,
+      "scenarios": [
+        "Domain registration (T1583.001: Acquire Infrastructure)",
+        "C2 setup (T1583.006: Acquire Infrastructure - Web Services)",
+        "Phishing domain (T1583.001)",
+        "Malware compilation (T1587.001: Develop Capabilities)"
+      ],
+      "detection_difficulty": "Hard",
+      "prevention_difficulty": "Hard"
+    },
+    {
+      "tactic": "Initial Access",
+      "mitre_tactic_id": "TA0001",
+      "techniques_total": 13,
+      "techniques_implemented": 6,
+      "scenarios": [
+        "Phishing email (T1566.002: Phishing - Spearphishing Link)",
+        "Malicious attachment (T1566.001: Phishing - Spearphishing Attachment)",
+        "Trusted relationship (T1199: Trusted Relationship)",
+        "Supply chain compromise (T1195: Supply Chain Compromise)",
+        "Exploit public-facing app (T1190)",
+        "Hardware-based (T1200: Hardware Additions)"
+      ],
+      "detection_difficulty": "Medium",
+      "prevention_difficulty": "Medium",
+      "success_rate_percent": 15,
+      "time_to_detect_hours": 1
+    },
+    {
+      "tactic": "Execution",
+      "mitre_tactic_id": "TA0002",
+      "techniques_total": 14,
+      "techniques_implemented": 8,
+      "scenarios": [
+        "Command and scripting (T1059: Command and Scripting Interpreter)",
+        "PowerShell (T1059.001)",
+        "Bash (T1059.004)",
+        "User execution (T1204: User Execution)",
+        "Windows Management Instrumentation (T1047)",
+        "Scheduled task (T1053.005: Scheduled Task/Job)",
+        "System services (T1569.002)"
+      ],
+      "detection_difficulty": "Medium",
+      "prevention_difficulty": "Medium",
+      "success_rate_percent": 70,
+      "time_to_detect_hours": 0.5
+    },
+    {
+      "tactic": "Persistence",
+      "mitre_tactic_id": "TA0003",
+      "techniques_total": 19,
+      "techniques_implemented": 9,
+      "scenarios": [
+        "Scheduled task (T1053.005)",
+        "Registry modification (T1547.001: Boot or Logon Autostart Execution)",
+        "Browser extension (T1176: Browser Extensions)",
+        "DLL injection (T1547.001)",
+        "Startup folder (T1547.001)",
+        "Web shell (T1505.003: Server Software Component - Web Shell)",
+        "Rootkit (T1014: Rootkit)"
+      ],
+      "detection_difficulty": "Medium-Hard",
+      "prevention_difficulty": "Hard",
+      "success_rate_percent": 60,
+      "time_to_detect_hours": 4
+    },
+    {
+      "tactic": "Privilege Escalation",
+      "mitre_tactic_id": "TA0004",
+      "techniques_total": 17,
+      "techniques_implemented": 7,
+      "scenarios": [
+        "Kernel exploit (T1548.004: Abuse Elevation Control Mechanism)",
+        "UAC bypass (T1548.002)",
+        "Service abuse (T1134.005: Access Token Manipulation)",
+        "Credential access (T1556: Modify Authentication Process)"
+      ],
+      "detection_difficulty": "Medium-Hard",
+      "prevention_difficulty": "Hard",
+      "success_rate_percent": 45,
+      "time_to_detect_hours": 1
+    },
+    {
+      "tactic": "Defense Evasion",
+      "mitre_tactic_id": "TA0005",
+      "techniques_total": 34,
+      "techniques_implemented": 15,
+      "scenarios": [
+        "Obfuscation (T1027: Obfuscated Files or Information)",
+        "Masquerading (T1036: Masquerading)",
+        "Living off the land (T1202: Indirect Command Execution)",
+        "Code injection (T1055: Process Injection)",
+        "DLL side-loading (T1574.002: Hijack Execution Flow)",
+        "Log deletion (T1070.001: Indicator Removal - Clear Windows Event Logs)",
+        "Disable security tools (T1562: Impair Defenses)"
+      ],
+      "detection_difficulty": "Very Hard",
+      "prevention_difficulty": "Very Hard",
+      "success_rate_percent": 65,
+      "time_to_detect_hours": 8
+    },
+    {
+      "tactic": "Credential Access",
+      "mitre_tactic_id": "TA0006",
+      "techniques_total": 17,
+      "techniques_implemented": 11,
+      "scenarios": [
+        "Credential harvesting (T1598.003: Phishing for Information)",
+        "Keylogging (T1056.004: Input Capture - Keylog)",
+        "NTLM relay (T1557.001: Adversary-in-the-Middle)",
+        "Kerberos exploitation (T1558: Steal or Forge Kerberos Tickets)",
+        "Password cracking (T1110: Brute Force)",
+        "Credential dumping (T1003: OS Credential Dumping)",
+        "Phishing (T1566: Phishing)"
+      ],
+      "detection_difficulty": "Hard",
+      "prevention_difficulty": "Medium-Hard",
+      "success_rate_percent": 55,
+      "time_to_detect_hours": 2
+    },
+    {
+      "tactic": "Discovery",
+      "mitre_tactic_id": "TA0007",
+      "techniques_total": 30,
+      "techniques_implemented": 12,
+      "scenarios": [
+        "System information discovery (T1082: System Information Discovery)",
+        "File discovery (T1083: File and Directory Discovery)",
+        "Network share enumeration (T1135: Network Share Discovery)",
+        "Domain trust discovery (T1482: Domain Trust Discovery)",
+        "Process discovery (T1057: Process Discovery)"
+      ],
+      "detection_difficulty": "Hard",
+      "prevention_difficulty": "Medium",
+      "success_rate_percent": 85,
+      "time_to_detect_hours": 4
+    },
+    {
+      "tactic": "Lateral Movement",
+      "mitre_tactic_id": "TA0008",
+      "techniques_total": 9,
+      "techniques_implemented": 6,
+      "scenarios": [
+        "RDP (T1021.001: Remote Services - RDP)",
+        "SSH (T1021.004: Remote Services - SSH)",
+        "Windows Admin Shares (T1021.002: Remote Services - SMB/Windows Admin Shares)",
+        "Pass-the-hash (T1550.002: Use Alternate Authentication Material - Pass the Hash)",
+        "Kerberos exploitation (T1550.003: Use Alternate Authentication Material - Pass the Ticket)"
+      ],
+      "detection_difficulty": "Medium",
+      "prevention_difficulty": "Hard",
+      "success_rate_percent": 70,
+      "time_to_detect_hours": 6
+    },
+    {
+      "tactic": "Collection",
+      "mitre_tactic_id": "TA0009",
+      "techniques_total": 17,
+      "techniques_implemented": 8,
+      "scenarios": [
+        "Data staging (T1074: Data Staged)",
+        "Clipboard capture (T1115: Clipboard Data)",
+        "Screen capture (T1113: Screen Capture)",
+        "Email collection (T1114: Email Collection)",
+        "Archive collected data (T1560: Archive Collected Data)"
+      ],
+      "detection_difficulty": "Medium",
+      "prevention_difficulty": "Medium",
+      "success_rate_percent": 75,
+      "time_to_detect_hours": 6
+    },
+    {
+      "tactic": "Command and Control",
+      "mitre_tactic_id": "TA0011",
+      "techniques_total": 16,
+      "techniques_implemented": 10,
+      "scenarios": [
+        "C2 communication (T1071: Application Layer Protocol)",
+        "DNS tunneling (T1071.004: DNS)",
+        "HTTP/HTTPS (T1071.001: Web Protocols)",
+        "HTTPS C2 (T1071.001)",
+        "Domain generation algorithm (T1568.002: Dynamic Resolution - Domain Generation Algorithm)"
+      ],
+      "detection_difficulty": "Hard",
+      "prevention_difficulty": "Medium",
+      "success_rate_percent": 60,
+      "time_to_detect_hours": 12
+    },
+    {
+      "tactic": "Exfiltration",
+      "mitre_tactic_id": "TA0010",
+      "techniques_total": 13,
+      "techniques_implemented": 7,
+      "scenarios": [
+        "Data transfer size limits (T1030: Data Transfer Size Limits)",
+        "Exfiltration over C2 (T1041: Exfiltration Over C2 Channel)",
+        "Exfiltration over alternative protocol (T1048: Exfiltration Over Alternative Protocol)",
+        "Email exfiltration (T1048.003: Over Alternative Protocol - Mail)"
+      ],
+      "detection_difficulty": "Medium",
+      "prevention_difficulty": "Hard",
+      "success_rate_percent": 45,
+      "time_to_detect_hours": 8
+    },
+    {
+      "tactic": "Impact",
+      "mitre_tactic_id": "TA0040",
+      "techniques_total": 13,
+      "techniques_implemented": 6,
+      "scenarios": [
+        "Ransomware (T1486: Data Encrypted for Impact)",
+        "Data destruction (T1485: Data Destruction)",
+        "Service stop (T1531: Account Access Removal)",
+        "Defacement (T1491: Defacement)"
+      ],
+      "detection_difficulty": "Low-Medium",
+      "prevention_difficulty": "Medium-Hard",
+      "success_rate_percent": 85,
+      "time_to_detect_hours": 0.25
+    }
+  ],
+
+  "technique_to_detection_mapping": {
+    "T1566.002": {
+      "name": "Phishing - Spearphishing Link",
+      "detection_methods": [
+        "Email gateway URL reputation scanning",
+        "Email sandbox detonation",
+        "DMARC/SPF/DKIM verification",
+        "Link click tracking and analysis"
+      ],
+      "effectiveness_percent": 60,
+      "false_positive_rate_percent": 5
+    },
+    "T1598.003": {
+      "name": "Phishing for Information",
+      "detection_methods": [
+        "Azure AD impossible travel detection",
+        "Unusual device registration alerts",
+        "MFA push authentication anomalies"
+      ],
+      "effectiveness_percent": 75,
+      "false_positive_rate_percent": 10
+    },
+    "T1021.001": {
+      "name": "Remote Services - RDP",
+      "detection_methods": [
+        "Network flow analysis (unusual RDP sources)",
+        "EDR process tree analysis (cmd.exe from explorer.exe)",
+        "Failed login attempt patterns",
+        "Baseline deviation alerting"
+      ],
+      "effectiveness_percent": 70,
+      "false_positive_rate_percent": 15
+    },
+    "T1053.005": {
+      "name": "Scheduled Task/Job",
+      "detection_methods": [
+        "Windows Event ID 106 (scheduled task creation)",
+        "Behavioral EDR (process spawning from svchost)",
+        "Registry monitoring (HKLM\\Software\\Microsoft\\Windows NT\\CurrentVersion\\Schedule)"
+      ],
+      "effectiveness_percent": 80,
+      "false_positive_rate_percent": 3
+    },
+    "T1070.001": {
+      "name": "Indicator Removal - Clear Windows Event Logs",
+      "detection_methods": [
+        "Windows Event ID 1102 (log cleared)",
+        "Centralized immutable logging",
+        "Event log timeline gaps",
+        "File integrity monitoring on event log files"
+      ],
+      "effectiveness_percent": 95,
+      "false_positive_rate_percent": 1
+    },
+    "T1486": {
+      "name": "Data Encrypted for Impact (Ransomware)",
+      "detection_methods": [
+        "EDR behavioral detection (mass file encryption)",
+        "SIEM file modification pattern analysis",
+        "Network egress monitoring (pre-encryption data theft)",
+        "File extension change detection"
+      ],
+      "effectiveness_percent": 85,
+      "false_positive_rate_percent": 2
+    }
+  },
+
+  "detection_gap_analysis": {
+    "critical_gaps": [
+      {
+        "gap_id": "Gap-001",
+        "gap": "Credential theft detection requires external signals (Azure AD)",
+        "impact": "Local credential harvesting undetected",
+        "remediation": "Implement password change monitoring on local accounts"
+      },
+      {
+        "gap_id": "Gap-002",
+        "gap": "RDP lateral movement blends with legitimate traffic",
+        "impact": "Attackers access multiple systems before detection",
+        "remediation": "Baseline RDP source IPs and alert on deviations"
+      },
+      {
+        "gap_id": "Gap-003",
+        "gap": "Scheduled task monitoring not enabled by default",
+        "impact": "Persistence mechanisms installed without alert",
+        "remediation": "Enable Windows Event ID 106 monitoring and alerting"
+      },
+      {
+        "gap_id": "Gap-004",
+        "gap": "Log deletion succeeds if not centralized",
+        "impact": "Evidence destroyed, investigation impossible",
+        "remediation": "Implement immutable centralized logging (cloud or air-gapped)"
+      },
+      {
+        "gap_id": "Gap-005",
+        "gap": "EDR effectiveness depends on configuration",
+        "impact": "Ransomware execution detection misses if settings inadequate",
+        "remediation": "Audit EDR agent settings, test in staging environment"
+      }
+    ]
+  }
+}

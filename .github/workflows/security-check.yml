@@ -1,0 +1,185 @@
+name: Daily Security Checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
+
+# Cancel a superseded run when new commits are pushed, so queued runs don't
+# pile up and compete for scarce runners.
+concurrency:
+  group: security-check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # All checks run as sequential steps in ONE job so the whole suite needs only
+  # a single runner. Splitting these into 5 parallel jobs requires 5 concurrent
+  # runners; on runner-constrained accounts the extra jobs sit queued and get
+  # cancelled, failing the run for reasons unrelated to the checks themselves.
+  security-checks:
+    runs-on: ubuntu-latest
+    name: Security Checks
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # --- 1. Credential scan ------------------------------------------------
+      - name: Scan for exposed credentials
+        run: |
+          set +e
+
+          echo "🔍 Scanning recent git history for exposed secrets..."
+
+          # Match real secret FORMATS, not the words "password"/"token"/"secret"
+          # — this repo is a security framework whose documentation discusses
+          # those words constantly, so a bare-keyword grep matches its own docs
+          # (false positives), not leaked credentials. Lightweight, not a
+          # substitute for a dedicated scanner (gitleaks/trufflehog); limited to
+          # recent commits to avoid the cost of `git log -p --all`.
+          FOUND=0
+          SCAN_DEPTH=200
+
+          # High-signal credential formats that essentially never appear in prose.
+          SECRET_RE='AKIA[0-9A-Z]{16}'                                 # AWS access key id
+          SECRET_RE="$SECRET_RE"'|gh[posur]_[0-9A-Za-z]{36}'           # GitHub tokens
+          SECRET_RE="$SECRET_RE"'|github_pat_[0-9A-Za-z_]{50,}'        # GitHub fine-grained PAT
+          SECRET_RE="$SECRET_RE"'|xox[baprs]-[0-9A-Za-z-]{10,}'        # Slack tokens
+          SECRET_RE="$SECRET_RE"'|AIza[0-9A-Za-z_-]{35}'              # Google API key
+          SECRET_RE="$SECRET_RE"'|-----BEGIN [A-Z ]*PRIVATE KEY-----'  # private key blocks
+          SECRET_RE="$SECRET_RE"'|eyJ[0-9A-Za-z_-]{10,}\.[0-9A-Za-z_-]{10,}\.[0-9A-Za-z_-]{10,}'  # JWT
+
+          git log -p -n "$SCAN_DEPTH" | grep -nE "$SECRET_RE" > /tmp/matches.txt 2>&1
+
+          if [ -s /tmp/matches.txt ]; then
+            echo "⚠️  WARNING: Potential exposed secret detected!"
+            echo "Matches:"
+            head -20 /tmp/matches.txt
+            FOUND=1
+          else
+            echo "✅ No high-signal secret formats found in recent history"
+          fi
+
+          # Credential-bearing FILES that were ADDED (not prose that mentions the
+          # words) — anchored to real key/secret file extensions and names.
+          git log -n "$SCAN_DEPTH" --diff-filter=A --name-only --pretty= \
+            | grep -nE '(^|/)(\.env(\..*)?|id_rsa|id_ed25519|.*\.pem|.*\.p12|.*\.pfx|.*\.pkcs12)$' \
+            > /tmp/files.txt 2>&1
+
+          if [ -s /tmp/files.txt ]; then
+            echo "⚠️  WARNING: Credential-bearing files were committed:"
+            cat /tmp/files.txt
+            FOUND=1
+          fi
+
+          if [ "$FOUND" -ne 0 ]; then
+            echo "::error::Credentials detected in git history"
+            echo "If you committed credentials by accident:"
+            echo "1. Rotate the compromised credentials IMMEDIATELY (assume exposed)."
+            echo "2. Remove the secret from history with git-filter-repo:"
+            echo "     git filter-repo --path <secret-file> --invert-paths"
+            echo "   (git filter-branch is deprecated; prefer git-filter-repo.)"
+            echo "3. Coordinate the history rewrite with repo admins — the protected"
+            echo "   'main' branch disallows direct force pushes, so this requires an"
+            echo "   admin-run rewrite or a temporary protection bypass, not a"
+            echo "   'git push -f origin main' from a contributor."
+          fi
+
+          exit $FOUND
+
+      # --- 2. Commit signatures ---------------------------------------------
+      - name: Verify commit signatures
+        if: always()
+        run: |
+          echo "🔐 Verifying commit signatures..."
+
+          # On pull_request events actions/checkout leaves us on the PR merge
+          # ref, and a local `main` branch may not exist. Resolve a ref that is
+          # actually present: prefer origin/main, fall back to HEAD.
+          if git rev-parse --verify --quiet origin/main >/dev/null; then
+            REF=origin/main
+          elif git rev-parse --verify --quiet main >/dev/null; then
+            REF=main
+          else
+            REF=HEAD
+          fi
+          echo "Checking last 20 commits on: $REF"
+
+          # Feed the loop via process substitution rather than a pipe so that
+          # UNSIGNED set inside the loop persists (a piped `while` runs in a
+          # subshell and would discard the assignment).
+          UNSIGNED=0
+          while read -r commit rest; do
+            status=$(git show --quiet --format='%G?' "$commit")
+            if [ "$status" != "G" ]; then
+              echo "⚠️  Unsigned commit: $commit ($status)"
+              UNSIGNED=1
+            fi
+          done < <(git log --oneline "$REF" -20)
+
+          if [ "$UNSIGNED" -eq 1 ]; then
+            echo "::warning::Some commits are not signed with GPG"
+            echo "Run: git commit -S -m 'message' to sign future commits"
+          else
+            echo "✅ All recent commits are GPG-signed"
+          fi
+
+      # --- 3. Branch protection (advisory) ----------------------------------
+      - name: Verify branch protection
+        if: always()
+        run: |
+          echo "🛡️  Verifying branch protection rules..."
+          echo "Expected for 'main': PR reviews, status checks, commit signatures."
+          echo "Note: GitHub branch protection settings must be verified in the UI"
+          echo "See: Settings → Branches → Branch protection rules → 'main'"
+
+      # --- 4. Repository integrity ------------------------------------------
+      - name: Repository integrity
+        if: always()
+        run: |
+          echo "📊 Computing repository integrity hashes..."
+
+          # Exclude .integrity-baseline itself so it never appears in its own
+          # hash set (which would guarantee a spurious diff every run).
+          hash_files() {
+            find . -type f \
+              -not -path './.git/*' \
+              -not -path './.github/*' \
+              -not -name '.integrity-baseline' \
+              | sort | xargs sha256sum
+          }
+
+          # The baseline is only meaningful if `.integrity-baseline` is committed
+          # to the repo (or restored from a cache/artifact). A fresh runner
+          # starts without it, so the first run just records a baseline — real
+          # enforcement requires committing that file.
+          if [ ! -f .integrity-baseline ]; then
+            echo "Creating new integrity baseline..."
+            hash_files > .integrity-baseline
+            echo "✅ Baseline created with $(wc -l < .integrity-baseline) files"
+            echo "ℹ️  Commit .integrity-baseline to enable comparison on future runs."
+          else
+            hash_files > /tmp/current.txt
+            if diff -q .integrity-baseline /tmp/current.txt > /dev/null; then
+              echo "✅ Repository integrity verified"
+            else
+              echo "⚠️  Repository integrity check failed"
+              echo "Changes detected:"
+              diff .integrity-baseline /tmp/current.txt || true
+            fi
+          fi
+
+      # --- 5. Unauthorized access -------------------------------------------
+      - name: Check for unauthorized access
+        if: always()
+        run: |
+          echo "👤 Analyzing commit authorship..."
+          echo "Recent commit authors:"
+          git log --oneline -100 --pretty='%an <%ae>' | sort | uniq -c | sort -rn
+          echo ""
+          echo "⚠️  Review the list above for unexpected authors"
+          echo "If you see unfamiliar names, run: git log --all --oneline to investigate."
