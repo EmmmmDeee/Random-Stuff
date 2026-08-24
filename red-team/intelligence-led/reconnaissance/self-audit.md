@@ -1,6 +1,6 @@
 # Personal Digital-Footprint Self-Audit
 
-The defensive companion to the footprint-reduction report. Every step here is
+The security companion to the footprint-reduction report. Every step here is
 something **you run against your own accounts and identifiers** — this is a
 self-audit, not reconnaissance on anyone. Each check names the fix and the
 ATT&CK technique (and this repo's detection ID) it shuts down, so reducing your

@@ -8,7 +8,7 @@ form of the hunt (`H-*`), correlation (`C-*`), blind-spot (`B-*`), and baseline
 It answers "which detection covers X?" fast, from the terminal — the queryable
 counterpart to the prose in `hunt-queries.md` / `correlation-and-coverage.md`.
 
-> Defensive tooling. HSE searches detection *content*; it executes nothing
+> Security tooling. HSE searches detection *content*; it executes nothing
 > against any system.
 
 ## Build
@@ -86,4 +86,4 @@ authoritative, human-readable reference with full context and caveats.
 
 ---
 
-**Status**: defensive detection-catalog search • **License**: MIT
+**Status**: security detection-catalog search • **License**: MIT
