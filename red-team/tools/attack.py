@@ -7,6 +7,7 @@ repository paths, JSON loading, and MITRE ATT&CK technique-ID handling.
 
 import json
 import re
+from datetime import datetime
 from pathlib import Path
 
 # --- Repository layout (single source of truth for paths) ------------------
@@ -24,11 +25,17 @@ REPORTS_DIR = RED_TEAM_DIR / "reports"
 
 # Common data files
 THREAT_ACTORS_FILE = INTEL_DIR / "threat-actors.json"
-TARGETING_FILE = INTEL_DIR / "targeting-model.json"
+TARGETING_MODEL_FILE = INTEL_DIR / "targeting-model.json"
 ATTACK_SURFACE_FILE = RECON_DIR / "attack-surface.json"
+SELF_AUDIT_FILE = RECON_DIR / "self-audit.json"
 MITRE_FRAMEWORK_FILE = MITRE_DIR / "framework.json"
-DRILL_FRAMEWORK_FILE = DRILLS_DIR / "drill-framework.json"
 NAVIGATOR_LAYER_FILE = MITRE_DIR / "navigator-layer.json"
+INDEX_FILE = MITRE_DIR / "index.json"
+DRILL_FRAMEWORK_FILE = DRILLS_DIR / "drill-framework.json"
+DETECTIONS_FILE = DETECTION_DIR / "detections.json"
+
+# Timestamp for generated files
+TIMESTAMP = datetime.utcnow().isoformat() + "Z"
 
 # --- MITRE ATT&CK helpers ---------------------------------------------------
 # Enterprise technique / sub-technique IDs: TNNNN or TNNNN.NNN

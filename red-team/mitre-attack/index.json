@@ -1,0 +1,894 @@
+{
+  "metadata": {
+    "description": "Unified framework index mapping all entities (actors, scenarios, campaigns, drills, detections, reconnaissance)",
+    "generated": "2026-08-24T15:28:16.373476Z",
+    "version": "1.0"
+  },
+  "statistics": {
+    "threat_actors": 6,
+    "scenarios": 1,
+    "campaigns": 1,
+    "drills": 6,
+    "detections": 27,
+    "recon_techniques": 11,
+    "self_audit_controls": 0,
+    "unique_techniques": 64
+  },
+  "technique_index": {
+    "T1195.002": {
+      "id": "T1195.002",
+      "name": "Supply Chain Compromise - Software",
+      "tactic": "Initial Access",
+      "actors": [
+        "APT29",
+        "LAZARUS",
+        "APT41"
+      ],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [],
+      "recon": []
+    },
+    "T1566.002": {
+      "id": "T1566.002",
+      "name": "Spearphishing Link",
+      "tactic": "Initial Access",
+      "actors": [
+        "APT29"
+      ],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [],
+      "recon": []
+    },
+    "T1528": {
+      "id": "T1528",
+      "name": "Steal Application Access Token",
+      "tactic": "Credential Access",
+      "actors": [
+        "APT29"
+      ],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [],
+      "recon": []
+    },
+    "T1070.004": {
+      "id": "T1070.004",
+      "name": "File Deletion",
+      "tactic": "Defense Evasion",
+      "actors": [
+        "APT29"
+      ],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [],
+      "recon": []
+    },
+    "T1098.001": {
+      "id": "T1098.001",
+      "name": "Additional Cloud Credentials",
+      "tactic": "Persistence",
+      "actors": [
+        "APT29"
+      ],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [],
+      "recon": []
+    },
+    "T1114.002": {
+      "id": "T1114.002",
+      "name": "Remote Email Collection",
+      "tactic": "Collection",
+      "actors": [
+        "APT29"
+      ],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [],
+      "recon": []
+    },
+    "T1566.001": {
+      "id": "T1566.001",
+      "name": "Spearphishing Attachment",
+      "tactic": "Initial Access",
+      "actors": [
+        "FIN7"
+      ],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [],
+      "recon": []
+    },
+    "T1204.002": {
+      "id": "T1204.002",
+      "name": "Malicious File",
+      "tactic": "Execution",
+      "actors": [
+        "FIN7",
+        "LAZARUS"
+      ],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [],
+      "recon": []
+    },
+    "T1059.001": {
+      "id": "T1059.001",
+      "name": "PowerShell",
+      "tactic": "Execution",
+      "actors": [
+        "FIN7",
+        "LOCKBIT"
+      ],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [],
+      "recon": []
+    },
+    "T1053.005": {
+      "id": "T1053.005",
+      "name": "Scheduled Task/Job",
+      "tactic": "Persistence",
+      "actors": [
+        "FIN7"
+      ],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [],
+      "recon": []
+    },
+    "T1003.001": {
+      "id": "T1003.001",
+      "name": "LSASS Memory Dumping",
+      "tactic": "Credential Access",
+      "actors": [
+        "FIN7"
+      ],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [],
+      "recon": []
+    },
+    "T1005": {
+      "id": "T1005",
+      "name": "Data from Local System",
+      "tactic": "Collection",
+      "actors": [
+        "FIN7"
+      ],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [
+        "C0062"
+      ],
+      "recon": []
+    },
+    "T1486": {
+      "id": "T1486",
+      "name": "Data Encrypted for Impact",
+      "tactic": "Impact",
+      "actors": [
+        "FIN7",
+        "LAZARUS",
+        "LOCKBIT",
+        "SCATTERED_SPIDER"
+      ],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [],
+      "recon": []
+    },
+    "T1566.003": {
+      "id": "T1566.003",
+      "name": "Spearphishing via Service",
+      "tactic": "Initial Access",
+      "actors": [
+        "LAZARUS"
+      ],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [],
+      "recon": []
+    },
+    "T1027": {
+      "id": "T1027",
+      "name": "Obfuscated Files or Information",
+      "tactic": "Defense Evasion",
+      "actors": [
+        "LAZARUS"
+      ],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [],
+      "recon": []
+    },
+    "T1071.001": {
+      "id": "T1071.001",
+      "name": "Web Protocols",
+      "tactic": "Command and Control",
+      "actors": [
+        "LAZARUS"
+      ],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [],
+      "recon": []
+    },
+    "T1041": {
+      "id": "T1041",
+      "name": "Exfiltration Over C2 Channel",
+      "tactic": "Exfiltration",
+      "actors": [
+        "LAZARUS"
+      ],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [],
+      "recon": []
+    },
+    "T1190": {
+      "id": "T1190",
+      "name": "Exploit Public-Facing Application",
+      "tactic": "Initial Access",
+      "actors": [
+        "APT41",
+        "LOCKBIT"
+      ],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [
+        "C0062"
+      ],
+      "recon": []
+    },
+    "T1505.003": {
+      "id": "T1505.003",
+      "name": "Web Shell",
+      "tactic": "Persistence",
+      "actors": [
+        "APT41"
+      ],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [],
+      "recon": []
+    },
+    "T1068": {
+      "id": "T1068",
+      "name": "Exploitation for Privilege Escalation",
+      "tactic": "Privilege Escalation",
+      "actors": [
+        "APT41"
+      ],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [],
+      "recon": []
+    },
+    "T1021.002": {
+      "id": "T1021.002",
+      "name": "SMB/Windows Admin Shares",
+      "tactic": "Lateral Movement",
+      "actors": [
+        "APT41"
+      ],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [],
+      "recon": []
+    },
+    "T1071.004": {
+      "id": "T1071.004",
+      "name": "DNS",
+      "tactic": "Command and Control",
+      "actors": [
+        "APT41"
+      ],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [],
+      "recon": []
+    },
+    "T1078": {
+      "id": "T1078",
+      "name": "Valid Accounts",
+      "tactic": "Initial Access",
+      "actors": [
+        "LOCKBIT",
+        "SCATTERED_SPIDER"
+      ],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [
+        "C0062"
+      ],
+      "recon": []
+    },
+    "T1562.001": {
+      "id": "T1562.001",
+      "name": "Disable or Modify Tools",
+      "tactic": "Defense Evasion",
+      "actors": [
+        "LOCKBIT",
+        "SCATTERED_SPIDER"
+      ],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [],
+      "recon": []
+    },
+    "T1003": {
+      "id": "T1003",
+      "name": "OS Credential Dumping",
+      "tactic": "Credential Access",
+      "actors": [
+        "LOCKBIT"
+      ],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [],
+      "recon": []
+    },
+    "T1567.002": {
+      "id": "T1567.002",
+      "name": "Exfiltration to Cloud Storage",
+      "tactic": "Exfiltration",
+      "actors": [
+        "LOCKBIT"
+      ],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [],
+      "recon": []
+    },
+    "T1566.004": {
+      "id": "T1566.004",
+      "name": "Spearphishing Voice",
+      "tactic": "Initial Access",
+      "actors": [
+        "SCATTERED_SPIDER"
+      ],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [],
+      "recon": []
+    },
+    "T1621": {
+      "id": "T1621",
+      "name": "Multi-Factor Authentication Request Generation",
+      "tactic": "Credential Access",
+      "actors": [
+        "SCATTERED_SPIDER"
+      ],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [],
+      "recon": []
+    },
+    "T1098.005": {
+      "id": "T1098.005",
+      "name": "Device Registration",
+      "tactic": "Persistence",
+      "actors": [
+        "SCATTERED_SPIDER"
+      ],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [],
+      "recon": []
+    },
+    "APT-001": {
+      "id": "APT-001",
+      "drills": [
+        "IR-Drill-001",
+        "IR-Drill-002",
+        "IR-Drill-003",
+        "IR-Drill-004",
+        "IR-Drill-005",
+        "IR-Drill-006"
+      ]
+    },
+    "null": {
+      "id": null,
+      "name": null,
+      "tactic": null,
+      "actors": [],
+      "scenarios": [],
+      "drills": [],
+      "detections": [
+        "H-01",
+        "H-02",
+        "H-03",
+        "H-04",
+        "H-05",
+        "H-06",
+        "H-07",
+        "H-08",
+        "H-09",
+        "H-10",
+        "H-11",
+        "H-12",
+        "H-13",
+        "H-14",
+        "H-15",
+        "C-01",
+        "C-02",
+        "C-03",
+        "C-04",
+        "C-05",
+        "B-01",
+        "B-02",
+        "B-03",
+        "B-04",
+        "A-01",
+        "A-02",
+        "A-03"
+      ],
+      "campaigns": [],
+      "recon": []
+    },
+    "T1588.007": {
+      "id": "T1588.007",
+      "name": "Obtain Capabilities: Artificial Intelligence",
+      "tactic": "Resource Development",
+      "actors": [],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [
+        "C0062"
+      ],
+      "recon": []
+    },
+    "T1588.002": {
+      "id": "T1588.002",
+      "name": "Obtain Capabilities: Tool",
+      "tactic": "Resource Development",
+      "actors": [],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [
+        "C0062"
+      ],
+      "recon": []
+    },
+    "T1587.004": {
+      "id": "T1587.004",
+      "name": "Develop Capabilities: Exploits",
+      "tactic": "Resource Development",
+      "actors": [],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [
+        "C0062"
+      ],
+      "recon": []
+    },
+    "T1683": {
+      "id": "T1683",
+      "name": "Generate Content",
+      "tactic": "Resource Development",
+      "actors": [],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [
+        "C0062"
+      ],
+      "recon": []
+    },
+    "T1584.004": {
+      "id": "T1584.004",
+      "name": "Compromise Infrastructure: Server",
+      "tactic": "Resource Development",
+      "actors": [],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [
+        "C0062"
+      ],
+      "recon": []
+    },
+    "T1595.001": {
+      "id": "T1595.001",
+      "name": "Active Scanning: Scanning IP Blocks",
+      "tactic": "Reconnaissance",
+      "actors": [],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [
+        "C0062"
+      ],
+      "recon": []
+    },
+    "T1595.002": {
+      "id": "T1595.002",
+      "name": "Active Scanning: Vulnerability Scanning",
+      "tactic": "Reconnaissance",
+      "actors": [],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [
+        "C0062"
+      ],
+      "recon": [
+        "R-SCAN-ACTIVE"
+      ]
+    },
+    "T1592.002": {
+      "id": "T1592.002",
+      "name": "Gather Victim Host Information: Software",
+      "tactic": "Reconnaissance",
+      "actors": [],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [
+        "C0062"
+      ],
+      "recon": []
+    },
+    "T1592.004": {
+      "id": "T1592.004",
+      "name": "Gather Victim Host Information: Client Configurations",
+      "tactic": "Reconnaissance",
+      "actors": [],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [
+        "C0062"
+      ],
+      "recon": []
+    },
+    "T1590.004": {
+      "id": "T1590.004",
+      "name": "Gather Victim Network Information: Network Topology",
+      "tactic": "Reconnaissance",
+      "actors": [],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [
+        "C0062"
+      ],
+      "recon": []
+    },
+    "T1078.003": {
+      "id": "T1078.003",
+      "name": "Valid Accounts: Local Accounts",
+      "tactic": "Lateral Movement / Defense Evasion",
+      "actors": [],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [
+        "C0062"
+      ],
+      "recon": []
+    },
+    "T1136.001": {
+      "id": "T1136.001",
+      "name": "Create Account: Local Account",
+      "tactic": "Persistence",
+      "actors": [],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [
+        "C0062"
+      ],
+      "recon": []
+    },
+    "T1552.001": {
+      "id": "T1552.001",
+      "name": "Unsecured Credentials: Credentials In Files",
+      "tactic": "Credential Access",
+      "actors": [],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [
+        "C0062"
+      ],
+      "recon": []
+    },
+    "T1087": {
+      "id": "T1087",
+      "name": "Account Discovery",
+      "tactic": "Discovery",
+      "actors": [],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [
+        "C0062"
+      ],
+      "recon": []
+    },
+    "T1046": {
+      "id": "T1046",
+      "name": "Network Service Discovery",
+      "tactic": "Discovery",
+      "actors": [],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [
+        "C0062"
+      ],
+      "recon": []
+    },
+    "T1083": {
+      "id": "T1083",
+      "name": "File and Directory Discovery",
+      "tactic": "Discovery",
+      "actors": [],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [
+        "C0062"
+      ],
+      "recon": []
+    },
+    "T1082": {
+      "id": "T1082",
+      "name": "System Information Discovery",
+      "tactic": "Discovery",
+      "actors": [],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [
+        "C0062"
+      ],
+      "recon": []
+    },
+    "T1016": {
+      "id": "T1016",
+      "name": "System Network Configuration Discovery",
+      "tactic": "Discovery",
+      "actors": [],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [
+        "C0062"
+      ],
+      "recon": []
+    },
+    "T1049": {
+      "id": "T1049",
+      "name": "System Network Connections Discovery",
+      "tactic": "Discovery",
+      "actors": [],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [
+        "C0062"
+      ],
+      "recon": []
+    },
+    "T1119": {
+      "id": "T1119",
+      "name": "Automated Collection",
+      "tactic": "Collection",
+      "actors": [],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [
+        "C0062"
+      ],
+      "recon": []
+    },
+    "T1213.006": {
+      "id": "T1213.006",
+      "name": "Data from Information Repositories: Databases",
+      "tactic": "Collection",
+      "actors": [],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [
+        "C0062"
+      ],
+      "recon": []
+    },
+    "T1074.001": {
+      "id": "T1074.001",
+      "name": "Data Staged: Local Data Staging",
+      "tactic": "Collection",
+      "actors": [],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [
+        "C0062"
+      ],
+      "recon": []
+    },
+    "T1567": {
+      "id": "T1567",
+      "name": "Exfiltration Over Web Service",
+      "tactic": "Exfiltration",
+      "actors": [],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [
+        "C0062"
+      ],
+      "recon": []
+    },
+    "T1590.002": {
+      "id": "T1590.002",
+      "name": "Domain & DNS enumeration",
+      "tactic": "Reconnaissance",
+      "actors": [],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [],
+      "recon": [
+        "R-DNS"
+      ]
+    },
+    "T1596.002": {
+      "id": "T1596.002",
+      "name": "WHOIS & registration data",
+      "tactic": "Reconnaissance",
+      "actors": [],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [],
+      "recon": [
+        "R-WHOIS"
+      ]
+    },
+    "T1596.003": {
+      "id": "T1596.003",
+      "name": "TLS certificate transparency mining",
+      "tactic": "Reconnaissance",
+      "actors": [],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [],
+      "recon": [
+        "R-CERT"
+      ]
+    },
+    "T1596.005": {
+      "id": "T1596.005",
+      "name": "Internet scan database lookup",
+      "tactic": "Reconnaissance",
+      "actors": [],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [],
+      "recon": [
+        "R-SCANDB"
+      ]
+    },
+    "T1589.002": {
+      "id": "T1589.002",
+      "name": "Email address & naming-convention harvesting",
+      "tactic": "Reconnaissance",
+      "actors": [],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [],
+      "recon": [
+        "R-EMAIL"
+      ]
+    },
+    "T1589.001": {
+      "id": "T1589.001",
+      "name": "Breach-corpus / credential-exposure review",
+      "tactic": "Reconnaissance",
+      "actors": [],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [],
+      "recon": [
+        "R-BREACH"
+      ]
+    },
+    "T1593.003": {
+      "id": "T1593.003",
+      "name": "Public code repository & secrets review",
+      "tactic": "Reconnaissance",
+      "actors": [],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [],
+      "recon": [
+        "R-CODE"
+      ]
+    },
+    "T1593.001": {
+      "id": "T1593.001",
+      "name": "Social media & employee profiling",
+      "tactic": "Reconnaissance",
+      "actors": [],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [],
+      "recon": [
+        "R-SOCIAL"
+      ]
+    },
+    "T1591.003": {
+      "id": "T1591.003",
+      "name": "Organizational & business-tempo profiling",
+      "tactic": "Reconnaissance",
+      "actors": [],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [],
+      "recon": [
+        "R-ORG"
+      ]
+    },
+    "T1594": {
+      "id": "T1594",
+      "name": "Victim-owned website content review",
+      "tactic": "Reconnaissance",
+      "actors": [],
+      "scenarios": [],
+      "drills": [],
+      "detections": [],
+      "campaigns": [],
+      "recon": [
+        "R-OWNED-WEB"
+      ]
+    }
+  },
+  "coverage_matrix": []
+}

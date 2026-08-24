@@ -5,6 +5,7 @@ rt — unified CLI for the Random-Stuff red-team framework.
     rt.py scenario  --list | --run <stem> [--ir-drill] | --mitre-report
     rt.py derive    --sector <s> | --actor <id> [--build-scenario]
     rt.py recon     --org <o> --domain <d> [--plan [--authorize-active] | --footprint-reduction]
+    rt.py index     [--output <file>]
     rt.py navigator
 
 Each subcommand is also runnable standalone (e.g. `python3 tools/scenario.py --list`).
@@ -16,6 +17,7 @@ import argparse
 import scenario
 import derive
 import recon
+import index
 import navigator
 
 
@@ -25,7 +27,7 @@ def main():
         description="Unified CLI for the intelligence-led red-team framework.",
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
-    for module in (scenario, derive, recon, navigator):
+    for module in (scenario, derive, recon, index, navigator):
         module.register(subparsers)
 
     args = parser.parse_args()
