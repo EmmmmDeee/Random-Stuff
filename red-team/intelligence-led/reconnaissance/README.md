@@ -60,7 +60,7 @@ three fields beyond the offensive description:
 - **`mitre_id`** — the ATT&CK Reconnaissance technique it emulates
 
 So the same run produces two artifacts: the **recon checklist** (offensive plan)
-and the **footprint-reduction report** (security remediation). A blue team can
+and the **footprint-reduction report** (security fixes). A blue team can
 run this against their *own* org to find what they're leaking.
 
 ---
