@@ -17,9 +17,9 @@ a `detection_ref` pointing at the hunt/correlation query that catches it.
 
 ## Why C0062 is worth modeling
 
-It's the **AI-orchestrated** threat class: human operators drove AI agents +
+It's the **AI-orchestrated** threat class: operators drove AI agents +
 tooling to run reconnaissance → exploitation → lateral movement → credential
-harvesting → collection → exfiltration with minimal human involvement, against
+harvesting → collection → exfiltration with minimal operator direction, against
 ~30 technology, financial, chemical, and government targets.
 
 The security insight isn't exotic tradecraft — it's **tempo and volume**:
