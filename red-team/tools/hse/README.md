@@ -23,6 +23,20 @@ The catalog is embedded at compile time, so the binary is self-contained. Editin
 `detections.json` requires a rebuild (or pass `--catalog <path>` to read a file at
 runtime).
 
+### Cross-platform (Android/Termux/aarch64)
+
+HSE uses only standard Rust (no platform-specific code or system calls). To build
+for aarch64 (Termux on Android, etc.):
+
+```bash
+rustup target add aarch64-unknown-linux-gnu
+cargo build --release --target aarch64-unknown-linux-gnu
+# binary at target/aarch64-unknown-linux-gnu/release/hse
+```
+
+No root required. The binary is portable and works in any userland environment
+(Termux, chroot, etc.).
+
 ## Usage
 
 ```bash
