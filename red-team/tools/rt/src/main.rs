@@ -49,6 +49,11 @@ enum Commands {
         #[command(subcommand)]
         subcommand: AnalyzeSubcommand,
     },
+    /// OSINT entity reconnaissance and analysis
+    Osint {
+        #[command(subcommand)]
+        subcommand: OsintSubcommand,
+    },
 }
 
 #[derive(Subcommand)]
@@ -72,6 +77,27 @@ enum AnalyzeSubcommand {
     },
     /// Bulk analyze multiple scenarios
     Bulk,
+}
+
+#[derive(Subcommand)]
+enum OsintSubcommand {
+    /// Analyze an entity (email, domain, IP)
+    Analyze {
+        /// Entity to analyze
+        entity: String,
+    },
+    /// Correlate entity with attack scenario
+    Correlate {
+        /// Entity to analyze
+        entity: String,
+        /// Scenario ID to correlate with
+        scenario_id: String,
+    },
+    /// Bulk analyze multiple entities
+    Bulk {
+        /// Entities as JSON array string
+        entities: String,
+    },
 }
 
 #[derive(Subcommand)]
@@ -295,6 +321,10 @@ fn main() -> anyhow::Result<()> {
             let rt = tokio::runtime::Runtime::new()?;
             rt.block_on(handle_analyze(subcommand))?;
         }
+        Commands::Osint { subcommand } => {
+            let rt = tokio::runtime::Runtime::new()?;
+            rt.block_on(handle_osint(subcommand))?;
+        }
     }
 
     Ok(())
@@ -511,6 +541,25 @@ async fn handle_analyze(subcommand: AnalyzeSubcommand) -> anyhow::Result<()> {
         }
         AnalyzeSubcommand::Bulk => {
             cmd.bulk_scenario_analysis().await?;
+        }
+    }
+
+    Ok(())
+}
+
+async fn handle_osint(subcommand: OsintSubcommand) -> anyhow::Result<()> {
+    let cmd = commands::OsintCommand::new()?;
+
+    match subcommand {
+        OsintSubcommand::Analyze { entity } => {
+            cmd.analyze_entity(&entity).await?;
+        }
+        OsintSubcommand::Correlate { entity, scenario_id } => {
+            cmd.correlate_with_scenario(&entity, &scenario_id).await?;
+        }
+        OsintSubcommand::Bulk { entities } => {
+            let entity_list: Vec<String> = serde_json::from_str(&entities)?;
+            cmd.bulk_analyze(entity_list).await?;
         }
     }
 

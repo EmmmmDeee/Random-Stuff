@@ -6,6 +6,7 @@ pub mod navigator;
 pub mod validate;
 pub mod llm;
 pub mod analyze;
+pub mod osint;
 
 pub use scenario::ScenarioCommand;
 pub use derive::DeriveCommand;
@@ -15,3 +16,4 @@ pub use navigator::NavigatorCommand;
 pub use validate::ValidateCommand;
 pub use llm::LLMCommand;
 pub use analyze::AnalyzeCommand;
+pub use osint::OsintCommand;
