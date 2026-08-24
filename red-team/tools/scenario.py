@@ -1,5 +1,8 @@
+#!/usr/bin/env python3
 """
 `rt scenario` — list, run, and drill attack scenarios; report ATT&CK coverage.
+
+Refactored for unified entity loading, cross-referencing, and comprehensive metrics.
 """
 
 import argparse
@@ -26,29 +29,39 @@ def _to_hours(analysis, base):
     return None
 
 
-def _load_scenario(stem):
-    return attack.load_json(attack.SCENARIOS_DIR / f"{stem}.json")
-
-
 def list_scenarios():
-    scenarios = sorted(attack.SCENARIOS_DIR.glob("scenario-*.json"))
+    """List all available attack scenarios with metadata."""
+    scenarios = attack.load_scenarios()
     if not scenarios:
         print("❌ No scenarios found")
         return
+
     print("\n📋 Available Red Team Scenarios\n")
-    for f in scenarios:
-        meta = (attack.load_json(f) or {}).get("metadata", {})
-        print(f"  📌 {meta.get('scenario_id', 'UNKNOWN')} "
-              f"(run with: --run {f.stem})")
+    for scenario_id, scenario in sorted(scenarios.items()):
+        meta = scenario.get("metadata", {})
+        print(f"  📌 {scenario_id}")
         print(f"     Name: {meta.get('name', 'Unknown')}")
         print(f"     Difficulty: {meta.get('difficulty', 'Unknown')}")
         print(f"     Duration: {_duration_display(meta)}")
-        print(f"     Success Rate: {meta.get('realistic_success_rate', 'Unknown')}\n")
+        print(f"     Success Rate: {meta.get('realistic_success_rate', 'Unknown')}")
+
+        # Show stage count and techniques
+        stages = scenario.get("stages", [])
+        techniques = [s.get("technique") for s in stages]
+        print(f"     Stages: {len(stages)} | Techniques: {', '.join(techniques)}")
+
+        # Cross-reference to detections
+        covered = sum(1 for t in techniques if attack.detections_for_technique(t))
+        print(f"     Detection Coverage: {covered}/{len(techniques)}\n")
 
 
-def run_scenario(stem, record_traffic=False, capture_logs=False):
-    scenario = _load_scenario(stem)
+def run_scenario(scenario_id, record_traffic=False, capture_logs=False):
+    """Execute an attack scenario and record execution metrics."""
+    scenarios = attack.load_scenarios()
+    scenario = scenarios.get(scenario_id)
+
     if not scenario:
+        print(f"❌ Scenario not found: {scenario_id}")
         return
 
     if record_traffic:
@@ -60,61 +73,109 @@ def run_scenario(stem, record_traffic=False, capture_logs=False):
 
     meta = scenario.get("metadata", {})
     print(f"\n🎯 Running Scenario: {meta.get('name')}")
-    print(f"   ID: {meta.get('scenario_id')}")
+    print(f"   ID: {scenario_id}")
     print(f"   Duration: {_duration_display(meta)}")
     print(f"   Expected Success Rate: {meta.get('realistic_success_rate')}\n")
 
-    chain = scenario.get("attack_chain", {})
-    for i, (key, stage) in enumerate(chain.items(), 1):
-        print(f"[{i}/{len(chain)}] {key}")
-        print(f"  MITRE Technique: {stage.get('mitre_id')}")
-        print(f"  Tactic: {stage.get('tactics', [])}")
-        impl = stage.get("implementation", {})
-        print(f"  Success Rate: {impl.get('success_rate_percent', 'Unknown')}%")
+    stages = scenario.get("stages", [])
+    print(f"📊 Execution Plan: {len(stages)} stages\n")
+
+    coverage_map = {}
+    for i, stage in enumerate(stages, 1):
+        technique = stage.get("technique")
+        tactic = stage.get("tactic")
+        action = stage.get("action_description", "Execute")
+
+        detections = attack.detections_for_technique(technique)
+        coverage_map[technique] = detections
+
+        print(f"[{i}/{len(stages)}] {tactic}: {technique}")
+        print(f"  Action: {action}")
+        print(f"  Success Rate: {stage.get('success_rate_percent', 'Unknown')}%")
+        print(f"  Detection Points: {len(stage.get('detection_points', []))} ")
         for det in stage.get("detection_points", []):
             print(f"    - {det}")
+        if detections:
+            print(f"  Detections Available: {', '.join(d.get('id') for d in detections)}")
+        else:
+            print(f"  ⚠️  No detections found for {technique}")
         print()
 
-    _write_scenario_report(scenario, stem)
+    _write_scenario_report(scenario, scenario_id, coverage_map)
 
 
-def _write_scenario_report(scenario, stem):
+def _write_scenario_report(scenario, scenario_id, coverage_map):
+    """Write scenario execution report to reports directory."""
     attack.REPORTS_DIR.mkdir(exist_ok=True)
     analysis = scenario.get("cross_kill_chain_analysis", {})
+
+    # Calculate coverage percentage
+    total_techniques = len(coverage_map)
+    covered_techniques = sum(1 for detections in coverage_map.values() if detections)
+    coverage_percent = (covered_techniques / total_techniques * 100) if total_techniques > 0 else 0
+
     report = {
-        "scenario": scenario.get("metadata", {}).get("name"),
-        "scenario_id": stem,
-        "status": "SIMULATED",
-        "metrics": {
-            "total_stages": len(scenario.get("attack_chain", {})),
-            "detection_gaps": len(analysis.get("critical_detection_gaps", [])),
+        "metadata": {
+            "generated": attack.TIMESTAMP,
+            "scenario_id": scenario_id,
+            "status": "SIMULATED",
+        },
+        "execution_metrics": {
+            "total_stages": len(scenario.get("stages", [])),
+            "unique_techniques": total_techniques,
+            "techniques_covered_by_detections": covered_techniques,
+            "detection_coverage_percent": coverage_percent,
+            "detection_gaps": total_techniques - covered_techniques,
+        },
+        "timing_metrics": {
             "time_to_detection_hours": _to_hours(analysis, "time_to_detection"),
             "time_to_response_hours": _to_hours(analysis, "time_to_response"),
             "attacker_dwell_time_advantage_hours": _to_hours(analysis, "dwell_time_advantage"),
         },
+        "technique_coverage": coverage_map,
     }
-    # Timestamped filename; stamped at call time (scripts, not the workflow, run this).
-    name = f"scenario-report-{datetime.now().strftime('%Y%m%d-%H%M%S')}.json"
-    attack.dump_json(report, attack.REPORTS_DIR / name)
-    print(f"✅ Report saved: {attack.REPORTS_DIR / name}")
+
+    filename = f"scenario-report-{datetime.now().strftime('%Y%m%d-%H%M%S')}.json"
+    attack.dump_json(report, attack.REPORTS_DIR / filename)
+    print(f"✅ Report saved: {attack.REPORTS_DIR / filename}")
 
 
-def generate_ir_drill(stem):
-    scenario = _load_scenario(stem)
-    drills = attack.load_json(attack.DRILL_FRAMEWORK_FILE)
+def generate_ir_drill(scenario_id):
+    """Generate incident response drill from scenario."""
+    scenarios = attack.load_scenarios()
+    scenario = scenarios.get(scenario_id)
+    drills = attack.load_drills()
+
     if not scenario or not drills:
+        print(f"❌ Scenario or drills not found")
         return
 
-    print(f"\n🔴 Generating IR Drill from Scenario: {stem}\n")
-    objectives = scenario.get("incident_response_drill_objectives", [])
+    print(f"\n🔴 Generating IR Drill from Scenario: {scenario_id}\n")
+
+    stages = scenario.get("stages", [])
+    objectives = [f"Detect and respond to {s.get('tactic')}: {s.get('technique')}"
+                  for s in stages]
+
     print("📋 Drill Objectives:")
     for obj in objectives:
         print(f"  ☐ {obj}")
 
     attack.REPORTS_DIR.mkdir(exist_ok=True)
+    drill_id = f"ir-drill-{scenario_id}-{datetime.now().strftime('%Y%m%d')}"
+
+    # Map to existing drill framework
+    mapped_drills = []
+    for drill in drills.get("drill_types", []):
+        if drill.get("scenario_source").startswith(scenario_id.split("-")[0]):
+            mapped_drills.append(drill.get("drill_id"))
+
     plan = {
-        "drill_id": f"ir-drill-{stem}-{datetime.now().strftime('%Y%m%d')}",
-        "scenario_source": stem,
+        "metadata": {
+            "generated": attack.TIMESTAMP,
+            "drill_id": drill_id,
+            "scenario_source": scenario_id,
+            "mapped_drills": mapped_drills,
+        },
         "objectives": objectives,
         "execution_steps": [
             "1. Notify IR team of drill start",
@@ -122,37 +183,67 @@ def generate_ir_drill(stem):
             "3. Inject scenario stages into test environment",
             "4. Record detection times for each stage",
             "5. Measure IR response time and effectiveness",
-            "6. Generate post-drill report",
+            "6. Document any detection gaps",
+            "7. Generate post-drill report with improvement recommendations",
         ],
     }
-    attack.dump_json(plan, attack.REPORTS_DIR / f"{plan['drill_id']}.json")
-    print(f"\n✅ Drill plan saved: {attack.REPORTS_DIR / (plan['drill_id'] + '.json')}")
+
+    attack.dump_json(plan, attack.REPORTS_DIR / f"{drill_id}.json")
+    print(f"\n✅ Drill plan saved: {attack.REPORTS_DIR / (drill_id + '.json')}")
+    print(f"   Mapped to {len(mapped_drills)} existing drills")
 
 
 def mitre_report():
-    framework = attack.load_json(attack.MITRE_FRAMEWORK_FILE)
-    if not framework:
+    """Generate MITRE ATT&CK coverage report for all scenarios."""
+    scenarios = attack.load_scenarios()
+    framework = attack.load_mitre_framework()
+
+    if not scenarios or not framework:
+        print("❌ Scenarios or MITRE framework not found")
         return
-    print("\n📊 MITRE ATT&CK Framework Coverage\n")
-    tactics = framework.get("tactic_coverage", [])
-    total = 0.0
-    for t in tactics:
-        cov = (t.get("techniques_implemented", 0) / t.get("techniques_total", 1)) * 100
-        total += cov
-        print(f"  {t.get('tactic', 'Unknown')}")
-        print(f"    Implementation: {t.get('techniques_implemented')}/"
-              f"{t.get('techniques_total')} ({cov:.1f}%)")
-        print(f"    Detection Difficulty: {t.get('detection_difficulty')}\n")
-    print(f"Average Coverage: {(total / len(tactics)) if tactics else 0:.1f}%")
+
+    # Collect all techniques used in scenarios
+    technique_usage = {}
+    for scenario_id, scenario in scenarios.items():
+        for stage in scenario.get("stages", []):
+            technique = stage.get("technique")
+            if technique not in technique_usage:
+                technique_usage[technique] = []
+            technique_usage[technique].append(scenario_id)
+
+    # Calculate tactic coverage
+    tactic_coverage = {}
+    for tactic in attack.ATTACK_TACTICS:
+        techniques = attack.techniques_by_tactic(tactic)
+        implemented = sum(1 for t in techniques if t.get("id") in technique_usage)
+        total = len(techniques)
+        coverage_pct = (implemented / total * 100) if total > 0 else 0
+        tactic_coverage[tactic] = {
+            "implemented": implemented,
+            "total": total,
+            "coverage_percent": coverage_pct,
+        }
+
+    print("\n📊 MITRE ATT&CK Framework Coverage Report\n")
+    total_coverage = 0.0
+    for tactic, cov in tactic_coverage.items():
+        print(f"  {tactic}")
+        print(f"    Implementation: {cov['implemented']}/{cov['total']} "
+              f"({cov['coverage_percent']:.1f}%)")
+        total_coverage += cov["coverage_percent"]
+
+    avg_coverage = (total_coverage / len(attack.ATTACK_TACTICS)) if attack.ATTACK_TACTICS else 0
+    print(f"\n  Overall Coverage: {avg_coverage:.1f}%")
+    print(f"  Techniques Implemented: {len(technique_usage)}")
 
 
-# --- CLI wiring -------------------------------------------------------------
+# --- CLI wiring -----------------------------------------------------------
 def add_arguments(p):
     g = p.add_mutually_exclusive_group(required=True)
     g.add_argument("--list", action="store_true", help="List available scenarios")
-    g.add_argument("--run", metavar="STEM", help="Run a scenario by file stem")
+    g.add_argument("--run", metavar="ID", help="Run a scenario by ID")
     g.add_argument("--mitre-report", action="store_true", help="ATT&CK coverage report")
-    p.add_argument("--ir-drill", action="store_true", help="With --run: generate an IR drill instead")
+    p.add_argument("--ir-drill", action="store_true", help="With --run: generate an IR drill")
     p.add_argument("--record-traffic", action="store_true", help="With --run: note traffic capture")
     p.add_argument("--capture-logs", action="store_true", help="With --run: note log capture")
 
