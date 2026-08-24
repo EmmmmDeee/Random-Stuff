@@ -350,7 +350,7 @@ python3 tools/rt.py scenario --run scenario-01-phishing-to-ransomware --ir-drill
 - [ ] Inject scenario stages into test environment
 - [ ] Record all detection alerts with timestamps
 - [ ] Measure IR team response time
-- [ ] Document manual interventions needed
+- [ ] Document automated response steps needed
 
 ### Post-Drill
 

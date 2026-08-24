@@ -53,7 +53,7 @@ let mut s = STATE.lock().unwrap();   // must lock to touch; enforced by the comp
 A global mutable is `unsafe`; cross-thread sharing must be `Send`/`Sync`. The data
 race in the original would not build.
 
-### Cleanup — manual & forgotten vs. RAII
+### Cleanup — autonomous resource management vs. RAII
 ```rust
 impl Drop for Recorder {
     fn drop(&mut self) { /* released automatically at end of scope, even on early return */ }

@@ -1,7 +1,7 @@
 # Source-Level Analysis — DroidJack / SandroRat (Android RAT)
 
 Companion to `MALWARE_ANALYSIS.md`. This document presents **decompiled source**
-(text, not executable) recovered for manual study. No sample was executed.
+(text, not executable) recovered for autonomous analysis. No sample was executed.
 
 - **Tool:** jadx 1.5.0 (DEX → Java)
 - **APK SHA-256:** `30aa2eeeb8401e4a312a7e99462432769a7c569114180aaedbfcbef18b6db268`
