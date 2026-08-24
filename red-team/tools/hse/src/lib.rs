@@ -4,14 +4,18 @@
 //! Defensive tooling: it searches detection *content* (hunt/correlation/blind-spot/
 //! baseline queries). It does not execute anything against any system.
 
+pub mod llm;
+
 use serde::Deserialize;
 
-/// One detection in the catalog.
+/// One entry in a catalog — either a detection (tier hunt/correlation/blind-spot/
+/// baseline) or a self-audit control (tier self-audit). Detection-specific fields
+/// default to empty so both content types share one schema.
 #[derive(Debug, Clone, Deserialize)]
 pub struct Detection {
     pub id: String,
     pub name: String,
-    /// One of: hunt | correlation | blind-spot | baseline
+    /// hunt | correlation | blind-spot | baseline | self-audit | recon
     pub tier: String,
     #[serde(default)]
     pub techniques: Vec<String>,
@@ -19,25 +23,101 @@ pub struct Detection {
     pub tactics: Vec<String>,
     #[serde(default)]
     pub actors: Vec<String>,
+    /// Detection confidence (detections). Empty for self-audit controls.
+    #[serde(default)]
     pub fidelity: String,
+    /// Priority (self-audit controls, e.g. P1). Empty for detections.
+    #[serde(default)]
+    pub priority: String,
+    #[serde(default)]
     pub data_source: String,
+    #[serde(default)]
     pub dialect: String,
+    #[serde(default)]
     pub summary: String,
+    /// The detection query, or (self-audit) how to run the check.
+    #[serde(default)]
     pub query: String,
+    /// Tuning notes, or (self-audit) the fix.
+    #[serde(default)]
     pub tuning: String,
 }
 
 #[derive(Debug, Deserialize)]
 struct Catalog {
+    // detections.json uses "detections"; self-audit.json uses "entries".
+    #[serde(alias = "entries")]
     detections: Vec<Detection>,
 }
 
-/// Parse the catalog JSON into a list of detections.
+/// Parse one catalog file into a list of entries.
 pub fn parse_catalog(json: &str) -> Result<Vec<Detection>, serde_json::Error> {
     Ok(serde_json::from_str::<Catalog>(json)?.detections)
 }
 
+/// Parse and concatenate several catalog files into one searchable set.
+pub fn parse_catalogs(jsons: &[&str]) -> Result<Vec<Detection>, serde_json::Error> {
+    let mut all = Vec::new();
+    for j in jsons {
+        all.extend(parse_catalog(j)?);
+    }
+    Ok(all)
+}
+
+/// Parse attack-surface.json (recon techniques) into Detection entries with tier='recon'.
+pub fn parse_attack_surface(json: &str) -> Result<Vec<Detection>, serde_json::Error> {
+    #[derive(Debug, Deserialize)]
+    struct ReconSurface {
+        recon_techniques: Vec<ReconTechnique>,
+    }
+    #[derive(Debug, Deserialize)]
+    struct ReconTechnique {
+        id: String,
+        name: String,
+        mitre_id: String,
+        #[serde(default)]
+        activity: String,
+        #[serde(default)]
+        what_it_reveals: String,
+        #[serde(default)]
+        open_sources: Vec<String>,
+        #[serde(default)]
+        defensive_counter: String,
+        #[serde(default)]
+        detection_signal: String,
+    }
+
+    let surface: ReconSurface = serde_json::from_str(json)?;
+    let detections = surface.recon_techniques.into_iter().map(|rt| {
+        Detection {
+            id: rt.id,
+            name: rt.name,
+            tier: "recon".to_string(),
+            techniques: vec![rt.mitre_id],
+            tactics: vec!["Reconnaissance".to_string()],
+            actors: vec![],
+            fidelity: String::new(),
+            priority: String::new(),
+            data_source: rt.open_sources.join("; "),
+            dialect: rt.activity,
+            summary: rt.what_it_reveals,
+            query: rt.detection_signal,
+            tuning: rt.defensive_counter,
+        }
+    }).collect();
+    Ok(detections)
+}
+
 impl Detection {
+    /// Display label: detection fidelity, or the self-audit priority.
+    pub fn label(&self) -> &str {
+        if !self.fidelity.is_empty() {
+            &self.fidelity
+        } else {
+            &self.priority
+        }
+    }
+
     /// Lowercased concatenation of every searchable field.
     pub fn haystack(&self) -> String {
         [
@@ -48,6 +128,7 @@ impl Detection {
             &self.tactics.join(" "),
             &self.actors.join(" "),
             &self.fidelity,
+            &self.priority,
             &self.data_source,
             &self.summary,
             &self.query,
@@ -115,7 +196,6 @@ mod tests {
     fn parses_and_defaults_empty_vecs() {
         let cat = parse_catalog(SAMPLE).unwrap();
         assert_eq!(cat.len(), 2);
-        // B-01 omits techniques/tactics/actors — must default to empty, not error.
         let b01 = cat.iter().find(|d| d.id == "B-01").unwrap();
         assert!(b01.techniques.is_empty());
         assert!(b01.actors.is_empty());
@@ -125,8 +205,8 @@ mod tests {
     fn technique_matches_parent_and_child() {
         let cat = parse_catalog(SAMPLE).unwrap();
         let h06 = &cat[0];
-        assert!(h06.covers_technique("T1566.001")); // exact
-        assert!(h06.covers_technique("T1566")); // parent -> child
+        assert!(h06.covers_technique("T1566.001"));
+        assert!(h06.covers_technique("T1566"));
         assert!(!h06.covers_technique("T1059"));
     }
 
@@ -134,8 +214,6 @@ mod tests {
     fn search_ranks_by_term_matches() {
         let cat = parse_catalog(SAMPLE).unwrap();
         let hits = search(&cat, "powershell edr");
-        // H-06 matches "powershell"; B-01 matches "edr". Both score 1 here,
-        // but a query hitting both terms on one doc should rank it first.
         assert!(!hits.is_empty());
         let hits2 = search(&cat, "office powershell fin7");
         assert_eq!(hits2[0].1.id, "H-06");
