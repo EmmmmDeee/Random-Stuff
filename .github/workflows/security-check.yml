@@ -33,35 +33,45 @@ jobs:
         run: |
           set +e
 
-          echo "🔍 Scanning recent git history for exposed credentials..."
+          echo "🔍 Scanning recent git history for exposed secrets..."
 
-          # Lightweight heuristic scan, not a substitute for a dedicated secret
-          # scanner (e.g. gitleaks/trufflehog). Limited to recent commits to
-          # keep CI fast and avoid the OOM/timeout risk of `git log -p --all`
-          # on large histories.
+          # Match real secret FORMATS, not the words "password"/"token"/"secret"
+          # — this repo is a security framework whose documentation discusses
+          # those words constantly, so a bare-keyword grep matches its own docs
+          # (false positives), not leaked credentials. Lightweight, not a
+          # substitute for a dedicated scanner (gitleaks/trufflehog); limited to
+          # recent commits to avoid the cost of `git log -p --all`.
           FOUND=0
           SCAN_DEPTH=200
 
-          git log -p -n "$SCAN_DEPTH" | grep -E \
-            'password|api[_-]?key|secret|token|private[_-]?key|aws[_-]?access|github[_-]?token' \
-            > /tmp/matches.txt 2>&1
+          # High-signal credential formats that essentially never appear in prose.
+          SECRET_RE='AKIA[0-9A-Z]{16}'                                 # AWS access key id
+          SECRET_RE="$SECRET_RE"'|gh[posur]_[0-9A-Za-z]{36}'           # GitHub tokens
+          SECRET_RE="$SECRET_RE"'|github_pat_[0-9A-Za-z_]{50,}'        # GitHub fine-grained PAT
+          SECRET_RE="$SECRET_RE"'|xox[baprs]-[0-9A-Za-z-]{10,}'        # Slack tokens
+          SECRET_RE="$SECRET_RE"'|AIza[0-9A-Za-z_-]{35}'              # Google API key
+          SECRET_RE="$SECRET_RE"'|-----BEGIN [A-Z ]*PRIVATE KEY-----'  # private key blocks
+          SECRET_RE="$SECRET_RE"'|eyJ[0-9A-Za-z_-]{10,}\.[0-9A-Za-z_-]{10,}\.[0-9A-Za-z_-]{10,}'  # JWT
+
+          git log -p -n "$SCAN_DEPTH" | grep -nE "$SECRET_RE" > /tmp/matches.txt 2>&1
 
           if [ -s /tmp/matches.txt ]; then
-            echo "⚠️  WARNING: Potential credentials found in git history!"
+            echo "⚠️  WARNING: Potential exposed secret detected!"
             echo "Matches:"
             head -20 /tmp/matches.txt
             FOUND=1
           else
-            echo "✅ No obvious credentials found"
+            echo "✅ No high-signal secret formats found in recent history"
           fi
 
-          # Also check for common credential file patterns in recent history
-          git log -n "$SCAN_DEPTH" --name-only --pretty= | grep -E \
-            '\.env|\.pem|\.key|credentials|secrets|id_rsa' \
+          # Credential-bearing FILES that were ADDED (not prose that mentions the
+          # words) — anchored to real key/secret file extensions and names.
+          git log -n "$SCAN_DEPTH" --diff-filter=A --name-only --pretty= \
+            | grep -nE '(^|/)(\.env(\..*)?|id_rsa|id_ed25519|.*\.pem|.*\.p12|.*\.pfx|.*\.pkcs12)$' \
             > /tmp/files.txt 2>&1
 
           if [ -s /tmp/files.txt ]; then
-            echo "⚠️  WARNING: Credential-related files in history:"
+            echo "⚠️  WARNING: Credential-bearing files were committed:"
             cat /tmp/files.txt
             FOUND=1
           fi
