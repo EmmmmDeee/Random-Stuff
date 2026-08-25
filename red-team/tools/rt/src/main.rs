@@ -303,6 +303,21 @@ enum OsintSubcommand {
         /// Operation type (stealth, fast, advanced)
         op_type: String,
     },
+    /// Plan persistence mechanism
+    Persist {
+        /// Mechanism type (registry_run, scheduled_task, wmi_event, dll_hijack, netsh_helper)
+        mechanism: String,
+    },
+    /// Plan backdoor chain for environment
+    BackdoorChain {
+        /// Environment type (enterprise, mid_market, small_business)
+        environment: String,
+    },
+    /// Plan privilege escalation strategy
+    PrivEsc {
+        /// Escalation method (uac_bypass, kernel_exploit)
+        method: String,
+    },
 }
 
 #[derive(Subcommand)]
@@ -882,6 +897,15 @@ async fn handle_osint(subcommand: OsintSubcommand) -> anyhow::Result<()> {
         }
         OsintSubcommand::Deploy { op_type } => {
             cmd.plan_infrastructure(&op_type)?;
+        }
+        OsintSubcommand::Persist { mechanism } => {
+            cmd.plan_persistence(&mechanism)?;
+        }
+        OsintSubcommand::BackdoorChain { environment } => {
+            cmd.plan_backdoor_chain(&environment)?;
+        }
+        OsintSubcommand::PrivEsc { method } => {
+            cmd.plan_privilege_escalation(&method)?;
         }
     }
 

@@ -1,4 +1,4 @@
-use crate::{Framework, osint::{OsintAggregator, OsintCache, ThreatIntelligenceFeed, OsintApiConfig, MultiSourceAggregator, CorrelationEngine, GeolocationEngine, AttributionEngine, DetectionRuleGenerator, RuleFormat, TimelineAnalyzer, ThreatEmulator, IncidentMapper, CampaignPlanner, SupplyChainPlanner, SocialEngineer, CounterDefenseStrategist, InfrastructureDeployer}};
+use crate::{Framework, osint::{OsintAggregator, OsintCache, ThreatIntelligenceFeed, OsintApiConfig, MultiSourceAggregator, CorrelationEngine, GeolocationEngine, AttributionEngine, DetectionRuleGenerator, RuleFormat, TimelineAnalyzer, ThreatEmulator, IncidentMapper, CampaignPlanner, SupplyChainPlanner, SocialEngineer, CounterDefenseStrategist, InfrastructureDeployer, PersistenceStrategist}};
 use anyhow::Result;
 
 pub struct OsintCommand {
@@ -1279,6 +1279,104 @@ impl OsintCommand {
         let report = deployer.generate_infrastructure_report(op_type)?;
 
         println!("{}", report);
+        Ok(())
+    }
+
+    pub fn plan_persistence(&self, mechanism_type: &str) -> Result<()> {
+        let strategist = PersistenceStrategist;
+        let mechanism = strategist.plan_persistence_mechanism(mechanism_type)?;
+
+        println!("\n=== Persistence Mechanism: {} ===\n", mechanism.name);
+        println!("Technique: {} ({})", mechanism.technique_id, mechanism.name);
+        println!("Description: {}", mechanism.description);
+        println!("Windows Versions: {}", mechanism.windows_version);
+        println!("Privilege Level: {}", mechanism.privilege_level_required);
+        println!("Reliability Score: {:.0}%", mechanism.reliability_score * 100.0);
+        println!("Detection Difficulty: {}\n", mechanism.detection_difficulty);
+
+        println!("Implementation Steps:");
+        for step in &mechanism.implementation_steps {
+            println!("  • {}", step);
+        }
+
+        println!("\nDetection Risks:");
+        for risk in &mechanism.detection_risks {
+            println!("  • {}", risk);
+        }
+
+        println!("\nBehavioral Indicators:");
+        for indicator in &mechanism.behavioral_indicators {
+            println!("  • {}", indicator);
+        }
+
+        println!("\nRecovery Options:");
+        for option in &mechanism.recovery_options {
+            println!("  • {}", option);
+        }
+
+        println!("\n========================================\n");
+        Ok(())
+    }
+
+    pub fn plan_backdoor_chain(&self, environment: &str) -> Result<()> {
+        let strategist = PersistenceStrategist;
+        let chain = strategist.plan_backdoor_chain(environment)?;
+
+        println!("\n=== Backdoor Chain: {} ===\n", chain.chain_id);
+        println!("Primary Backdoor: {}", chain.primary_backdoor);
+        println!("Secondary Backdoors: {}", chain.secondary_backdoors.join(", "));
+        println!("Privilege Escalation Path: {}", chain.privilege_escalation_path);
+        println!("Detection Evasion Score: {:.0}%", chain.detection_evasion_score * 100.0);
+        println!("Recovery Resilience: {:.0}%", chain.recovery_resilience * 100.0);
+        println!("Estimated Persistence: {} days\n", chain.estimated_persistence_days);
+
+        println!("Failover Mechanisms:");
+        for failover in &chain.failover_mechanisms {
+            println!("  • {}", failover);
+        }
+
+        println!("\nEvidence Cleanup Procedures:");
+        for cleanup in &chain.evidence_cleanup_procedures {
+            println!("  • {}", cleanup);
+        }
+
+        println!("\n========================================\n");
+        Ok(())
+    }
+
+    pub fn plan_privilege_escalation(&self, escalation_method: &str) -> Result<()> {
+        let strategist = PersistenceStrategist;
+        let escalation = strategist.plan_privilege_escalation(escalation_method)?;
+
+        println!("\n=== Privilege Escalation: {} ===\n", escalation.vulnerability);
+        println!("Escalation ID: {}", escalation.escalation_id);
+        println!("Vulnerability: {}", escalation.vulnerability);
+        println!("Affected Versions: {}", escalation.affected_versions.join(", "));
+        println!("Exploitation Difficulty: {}", escalation.exploitation_difficulty);
+        println!("Success Probability: {:.0}%", escalation.success_probability * 100.0);
+        println!("Detection Risk: {:.0}%\n", escalation.detection_risk * 100.0);
+
+        println!("Exploitation Steps:");
+        for step in &escalation.steps {
+            println!("  • {}", step);
+        }
+
+        println!("\nDefender Mitigations:");
+        for mitigation in &escalation.defender_mitigations {
+            println!("  • {}", mitigation);
+        }
+
+        println!("\nAlternative Methods:");
+        for alternative in &escalation.alternative_methods {
+            println!("  • {}", alternative);
+        }
+
+        println!("\nPost-Exploitation Actions:");
+        for action in &escalation.post_exploitation_actions {
+            println!("  • {}", action);
+        }
+
+        println!("\n========================================\n");
         Ok(())
     }
 
