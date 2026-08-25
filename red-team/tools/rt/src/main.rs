@@ -134,6 +134,16 @@ enum OsintSubcommand {
         /// Email address to analyze
         email: String,
     },
+    /// Campaign attribution analysis
+    Attribution {
+        /// Email address to attribute
+        email: String,
+    },
+    /// Incident profile and risk assessment
+    Profile {
+        /// Email address to profile
+        email: String,
+    },
 }
 
 #[derive(Subcommand)]
@@ -623,6 +633,12 @@ async fn handle_osint(subcommand: OsintSubcommand) -> anyhow::Result<()> {
         }
         OsintSubcommand::Patterns { email } => {
             cmd.analyze_geographic_patterns(&email).await?;
+        }
+        OsintSubcommand::Attribution { email } => {
+            cmd.analyze_campaign_attribution(&email).await?;
+        }
+        OsintSubcommand::Profile { email } => {
+            cmd.analyze_incident_profile(&email).await?;
         }
     }
 

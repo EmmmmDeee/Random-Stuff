@@ -1,4 +1,4 @@
-use crate::{Framework, osint::{OsintAggregator, OsintCache, ThreatIntelligenceFeed, OsintApiConfig, MultiSourceAggregator, CorrelationEngine, GeolocationEngine}};
+use crate::{Framework, osint::{OsintAggregator, OsintCache, ThreatIntelligenceFeed, OsintApiConfig, MultiSourceAggregator, CorrelationEngine, GeolocationEngine, AttributionEngine}};
 use anyhow::Result;
 
 pub struct OsintCommand {
@@ -482,6 +482,89 @@ impl OsintCommand {
         }
 
         println!("\n==================================\n");
+        Ok(())
+    }
+
+    pub async fn analyze_campaign_attribution(&self, email: &str) -> Result<()> {
+        println!("\n=== Campaign Attribution Analysis ===\n");
+
+        let engine = AttributionEngine::new(self.threat_feed.clone());
+        let attribution = engine.attribute_campaign(email);
+
+        println!("Email: {}", email);
+        println!("Geographic Fingerprint: {}", attribution.geographic_fingerprint);
+        println!("Attack Stage: {}\n", attribution.timeline_stage);
+
+        if let Some(primary) = &attribution.primary_attribution {
+            println!("PRIMARY ATTRIBUTION");
+            println!("  Actor: {} ({}% confidence)", primary, (attribution.attribution_confidence * 100.0) as u32);
+
+            if let Some(actor) = self.threat_feed.get_actor(primary) {
+                println!("  Profile: {} ({})", actor.name, actor.motivation);
+                println!("  Country: {}", actor.country);
+            }
+        } else {
+            println!("PRIMARY ATTRIBUTION: Unable to determine");
+        }
+
+        if !attribution.secondary_attributions.is_empty() {
+            println!("\nSECONDARY ATTRIBUTIONS");
+            for (i, (actor, confidence)) in attribution.secondary_attributions.iter().enumerate() {
+                println!("  {}. {} ({}% confidence)", i + 1, actor, (confidence * 100.0) as u32);
+            }
+        }
+
+        println!("\nATTRIBUTION INDICATORS");
+        for indicator in &attribution.indicators {
+            println!("  • {}: {} ({:.0}% confidence)",
+                     indicator.indicator_type,
+                     indicator.value,
+                     indicator.confidence * 100.0);
+            if !indicator.matched_actors.is_empty() {
+                println!("    Matched: {}", indicator.matched_actors.join(", "));
+            }
+        }
+
+        println!("\nRECOMMENDED RESPONSE");
+        for (i, rec) in attribution.recommended_response.iter().enumerate() {
+            println!("  {}. {}", i + 1, rec);
+        }
+
+        println!("\nDETECTION OPPORTUNITIES");
+        for (i, opp) in attribution.detection_opportunities.iter().enumerate() {
+            println!("  {}. {}", i + 1, opp);
+        }
+
+        println!("\n=====================================\n");
+        Ok(())
+    }
+
+    pub async fn analyze_incident_profile(&self, email: &str) -> Result<()> {
+        println!("\n=== Incident Profile ===\n");
+
+        let engine = AttributionEngine::new(self.threat_feed.clone());
+        let profile = engine.profile_incident(email);
+
+        println!("Email: {}", email);
+        println!("Breach Count: {}", profile.breach_count);
+        println!("Geographic Spread: {} unique location(s)", profile.geographic_spread);
+        println!("Exposure Severity: {}", profile.exposure_severity.to_uppercase());
+        println!("Recovery Difficulty: {}", profile.recovery_difficulty);
+        println!("Temporal Clustering: {:.0}%\n", profile.temporal_clustering * 100.0);
+
+        if let Some(highest_risk) = &profile.highest_risk_breach {
+            println!("HIGHEST RISK EXPOSURE: {}", highest_risk);
+        }
+
+        if !profile.actor_profiles.is_empty() {
+            println!("\nKNOWN THREAT ACTORS PROFILE");
+            println!("  Total actors monitored: {}", profile.actor_profiles.len());
+            for (i, actor) in profile.actor_profiles.iter().take(3).enumerate() {
+                println!("  {}. {}", i + 1, actor);
+            }
+        }
+
+        println!("\n==================\n");
         Ok(())
     }
 

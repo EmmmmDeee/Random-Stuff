@@ -7,6 +7,7 @@ pub mod multi_source;
 pub mod config;
 pub mod correlation;
 pub mod geolocation;
+pub mod attribution;
 
 pub use models::{OsintEntity, EntityType, OsintResult, BreachData, ThreatIndicator};
 pub use sources::{DataSource, DataSourceType, MockDataSource, HaveIBeenPwnedSource, VirusTotalSource, IPReputationSource};
@@ -17,3 +18,4 @@ pub use multi_source::{MultiSourceAggregator, EntityEnrichment};
 pub use config::OsintApiConfig;
 pub use correlation::{CorrelationEngine, CorrelationLink, TTPPattern, ActorNetwork};
 pub use geolocation::{GeolocationEngine, GeoLocation, BreachVictimData, GeolocationEnrichment};
+pub use attribution::{AttributionEngine, CampaignAttribution, IncidentProfile};
