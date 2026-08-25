@@ -252,9 +252,10 @@ ollama pull mistral
 
 ## Next Development Phases
 
-### Phase 1: External Data Integration (Ready)
-- [ ] HaveIBeenPwned API integration
-- [ ] VirusTotal API integration
+### Phase 1: External Data Integration (In Progress)
+- [x] HaveIBeenPwned API integration (email breach data)
+- [x] VirusTotal API integration (domain/file reputation)
+- [x] AbuseIPDB API integration (IP reputation & abuse reports)
 - [ ] Hunter.io email enumeration
 - [ ] Shodan IP reconnaissance
 - [ ] MITRE ATT&CK API for live data
