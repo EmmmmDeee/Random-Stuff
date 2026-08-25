@@ -1,5 +1,5 @@
 use crate::osint::models::*;
-use crate::osint::sources::{DataSource, MockDataSource, HaveIBeenPwnedSource, VirusTotalSource};
+use crate::osint::sources::{DataSource, MockDataSource, HaveIBeenPwnedSource, VirusTotalSource, IPReputationSource};
 use anyhow::Result;
 use std::sync::Arc;
 
@@ -27,6 +27,12 @@ impl OsintAggregator {
     pub fn with_virustotal(api_key: Option<String>) -> Self {
         OsintAggregator {
             source: Arc::new(VirusTotalSource::new(api_key)),
+        }
+    }
+
+    pub fn with_ipreputat(abuseipdb_key: Option<String>) -> Self {
+        OsintAggregator {
+            source: Arc::new(IPReputationSource::new(abuseipdb_key)),
         }
     }
 

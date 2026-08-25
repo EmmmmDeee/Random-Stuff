@@ -358,6 +358,128 @@ impl DataSource for VirusTotalSource {
     }
 }
 
+pub struct IPReputationSource {
+    client: reqwest::Client,
+    abuseipdb_key: Option<String>,
+}
+
+impl IPReputationSource {
+    pub fn new(abuseipdb_key: Option<String>) -> Self {
+        IPReputationSource {
+            client: reqwest::Client::new(),
+            abuseipdb_key,
+        }
+    }
+
+    async fn fetch_ip_reputation(&self, ip: &str) -> Result<serde_json::Value> {
+        if self.abuseipdb_key.is_none() {
+            return Ok(serde_json::json!({}));
+        }
+
+        let api_key = self.abuseipdb_key.as_ref().unwrap();
+        let url = "https://api.abuseipdb.com/api/v2/check";
+
+        match self
+            .client
+            .get(url)
+            .header("Key", api_key)
+            .header("Accept", "application/json")
+            .query(&[("ipAddress", ip), ("maxAgeInDays", "90")])
+            .timeout(std::time::Duration::from_secs(10))
+            .send()
+            .await
+        {
+            Ok(resp) => {
+                if resp.status().is_success() {
+                    match resp.json::<serde_json::Value>().await {
+                        Ok(data) => Ok(data),
+                        Err(_) => Ok(serde_json::json!({})),
+                    }
+                } else if resp.status().as_u16() == 404 {
+                    Ok(serde_json::json!({}))
+                } else if resp.status().as_u16() == 429 {
+                    anyhow::bail!("AbuseIPDB API rate limited (429)")
+                } else {
+                    Ok(serde_json::json!({}))
+                }
+            }
+            Err(_) => Ok(serde_json::json!({})),
+        }
+    }
+}
+
+#[async_trait]
+impl DataSource for IPReputationSource {
+    async fn query_email(&self, _email: &str) -> Result<Option<OsintResult>> {
+        Ok(None)
+    }
+
+    async fn query_domain(&self, _domain: &str) -> Result<Option<DomainReputation>> {
+        Ok(None)
+    }
+
+    async fn query_ip(&self, ip: &str) -> Result<Option<IPIntelligence>> {
+        let report = self.fetch_ip_reputation(ip).await?;
+
+        if report.is_null() || report.get("data").is_none() {
+            return Ok(None);
+        }
+
+        let data = &report["data"];
+
+        let is_whitelisted = data
+            .get("isWhitelisted")
+            .and_then(|v| v.as_bool())
+            .unwrap_or(false);
+
+        let abuse_confidence_score = data
+            .get("abuseConfidenceScore")
+            .and_then(|v| v.as_i64())
+            .unwrap_or(0) as i32;
+
+        let threat_level = if abuse_confidence_score > 75 {
+            "critical"
+        } else if abuse_confidence_score > 50 {
+            "high"
+        } else if abuse_confidence_score > 25 {
+            "medium"
+        } else if is_whitelisted {
+            "low"
+        } else {
+            "unknown"
+        };
+
+        Ok(Some(IPIntelligence {
+            ip_address: ip.to_string(),
+            organization: data
+                .get("usageType")
+                .and_then(|v| v.as_str())
+                .map(|s| s.to_string())
+                .unwrap_or_else(|| "Unknown".to_string()),
+            country: data
+                .get("countryCode")
+                .and_then(|v| v.as_str())
+                .map(|s| s.to_string())
+                .unwrap_or_else(|| "Unknown".to_string()),
+            is_vpn: false,
+            is_proxy: false,
+            is_datacenter: data
+                .get("isDatacenter")
+                .and_then(|v| v.as_bool())
+                .unwrap_or(false),
+            threat_level: threat_level.to_string(),
+            abuse_reports: data
+                .get("totalReports")
+                .and_then(|v| v.as_i64())
+                .unwrap_or(0) as u32,
+        }))
+    }
+
+    async fn query_username(&self, _username: &str) -> Result<Vec<CredentialData>> {
+        Ok(vec![])
+    }
+}
+
 pub struct SourceConfig {
     pub sources_enabled: Vec<DataSourceType>,
     pub cache_ttl_seconds: u64,
