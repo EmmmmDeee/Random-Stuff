@@ -283,6 +283,26 @@ enum OsintSubcommand {
         /// Environment type (enterprise, mid_market, small_business)
         env_type: String,
     },
+    /// Recommend C2 frameworks for operation type
+    C2 {
+        /// Operation type (stealth, fast, advanced)
+        op_type: String,
+    },
+    /// Recommend VPS providers based on risk tolerance
+    VPS {
+        /// Risk tolerance (low, medium, high)
+        risk_tolerance: String,
+    },
+    /// Plan domain registration strategy
+    Domain {
+        /// Strategy type (legitimate_looking, disposable, compromised_registrar)
+        strategy: String,
+    },
+    /// Plan complete infrastructure deployment
+    Deploy {
+        /// Operation type (stealth, fast, advanced)
+        op_type: String,
+    },
 }
 
 #[derive(Subcommand)]
@@ -850,6 +870,18 @@ async fn handle_osint(subcommand: OsintSubcommand) -> anyhow::Result<()> {
         }
         OsintSubcommand::Bypass { env_type } => {
             cmd.plan_defense_bypass(&env_type)?;
+        }
+        OsintSubcommand::C2 { op_type } => {
+            cmd.recommend_c2_frameworks(&op_type)?;
+        }
+        OsintSubcommand::VPS { risk_tolerance } => {
+            cmd.recommend_vps_providers(&risk_tolerance)?;
+        }
+        OsintSubcommand::Domain { strategy } => {
+            cmd.plan_domain_registration(&strategy)?;
+        }
+        OsintSubcommand::Deploy { op_type } => {
+            cmd.plan_infrastructure(&op_type)?;
         }
     }
 

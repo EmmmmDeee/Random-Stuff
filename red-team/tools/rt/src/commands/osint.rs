@@ -1,4 +1,4 @@
-use crate::{Framework, osint::{OsintAggregator, OsintCache, ThreatIntelligenceFeed, OsintApiConfig, MultiSourceAggregator, CorrelationEngine, GeolocationEngine, AttributionEngine, DetectionRuleGenerator, RuleFormat, TimelineAnalyzer, ThreatEmulator, IncidentMapper, CampaignPlanner, SupplyChainPlanner, SocialEngineer, CounterDefenseStrategist}};
+use crate::{Framework, osint::{OsintAggregator, OsintCache, ThreatIntelligenceFeed, OsintApiConfig, MultiSourceAggregator, CorrelationEngine, GeolocationEngine, AttributionEngine, DetectionRuleGenerator, RuleFormat, TimelineAnalyzer, ThreatEmulator, IncidentMapper, CampaignPlanner, SupplyChainPlanner, SocialEngineer, CounterDefenseStrategist, InfrastructureDeployer}};
 use anyhow::Result;
 
 pub struct OsintCommand {
@@ -1181,6 +1181,102 @@ impl OsintCommand {
     pub fn plan_defense_bypass(&self, env_type: &str) -> Result<()> {
         let strategist = CounterDefenseStrategist;
         let report = strategist.generate_detection_evasion_report(env_type)?;
+
+        println!("{}", report);
+        Ok(())
+    }
+
+    pub fn recommend_c2_frameworks(&self, op_type: &str) -> Result<()> {
+        let deployer = InfrastructureDeployer;
+        let frameworks = deployer.recommend_c2_framework(op_type)?;
+
+        println!("\n=== C2 Framework Recommendations ({}  Operation) ===\n", op_type);
+        for (i, framework) in frameworks.iter().enumerate() {
+            println!("{}. {} (ID: C2-{})", i + 1, framework.name, i + 1);
+            println!("   Description: {}", framework.description);
+            println!("   Protocol: {}", framework.command_protocol);
+            println!("   Stealth: {}", framework.stealth_capability);
+            println!("   Evasion Score: {:.0}%", framework.evasion_score * 100.0);
+            println!("   Operational Difficulty: {}", framework.operational_difficulty);
+            println!("   Persistence Options:");
+            for option in &framework.persistence_options {
+                println!("     • {}", option);
+            }
+            println!("   Supported Payloads:");
+            for payload in &framework.supported_payloads {
+                println!("     • {}", payload);
+            }
+            println!("   Known Detections:");
+            for detection in &framework.known_detections {
+                println!("     • {}", detection);
+            }
+            println!("   Operator Skill Required: {}\n", framework.operator_skill_required);
+        }
+
+        println!("========================================\n");
+        Ok(())
+    }
+
+    pub fn recommend_vps_providers(&self, risk_tolerance: &str) -> Result<()> {
+        let deployer = InfrastructureDeployer;
+        let providers = deployer.recommend_vps_provider("US", risk_tolerance)?;
+
+        println!("\n=== VPS Provider Recommendations (Risk Tolerance: {}) ===\n", risk_tolerance);
+        for (i, provider) in providers.iter().enumerate() {
+            println!("{}. {} (ID: VPS-{})", i + 1, provider.provider_name, i + 1);
+            println!("   Geographic Locations: {}", provider.geographic_locations.join(", "));
+            println!("   IP Reputation: {}", provider.ip_reputation);
+            println!("   Detection Risk: {:.0}%", provider.detection_risk * 100.0);
+            println!("   Cost: ${}/month", provider.cost_per_month);
+            println!("   Payment Methods: {}", provider.payment_methods.join(", "));
+            println!("   Abuse Response Time: {}", provider.abuse_reporting_lag);
+            println!("   LE Cooperation: {}", provider.law_enforcement_cooperation);
+            println!("   Evasion Techniques:");
+            for technique in &provider.provider_evasion_techniques {
+                println!("     • {}", technique);
+            }
+            println!("   Previous Breaches:");
+            for breach in &provider.previous_breach_history {
+                println!("     • {}", breach);
+            }
+            println!();
+        }
+
+        println!("========================================\n");
+        Ok(())
+    }
+
+    pub fn plan_domain_registration(&self, strategy: &str) -> Result<()> {
+        let deployer = InfrastructureDeployer;
+        let domain = deployer.plan_domain_strategy(strategy)?;
+
+        println!("\n=== Domain Registration Strategy: {} ===\n", strategy);
+        println!("Domain: {}", domain.domain_name);
+        println!("Registrar: {}", domain.registrar);
+        println!("WHOIS Privacy: {}", domain.whois_privacy);
+        if let Some(privacy) = &domain.privacy_provider {
+            println!("Privacy Provider: {}", privacy);
+        }
+        println!("DNS Provider: {}", domain.dns_provider);
+        println!("Reputation Risk: {:.0}%\n", domain.reputation_risk * 100.0);
+
+        println!("DNS Records to Configure:");
+        for record in &domain.dns_records {
+            println!("  • {}", record);
+        }
+
+        println!("\nSSL Certificate:");
+        println!("  Method: {}", domain.ssl_certificate_method);
+        println!("  Provider: {}", domain.certificate_provider);
+        println!("  Domain Age Requirement: {}", domain.domain_age_requirement);
+
+        println!("\n========================================\n");
+        Ok(())
+    }
+
+    pub fn plan_infrastructure(&self, op_type: &str) -> Result<()> {
+        let deployer = InfrastructureDeployer;
+        let report = deployer.generate_infrastructure_report(op_type)?;
 
         println!("{}", report);
         Ok(())
