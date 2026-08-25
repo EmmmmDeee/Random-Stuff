@@ -1,6 +1,6 @@
-# Fraud Bible 2020 — Defensive Analysis
+# Fraud Bible 2020 — Security Analysis
 
-Static, defensive analysis of a malware/fraud collection ("Fraud Bible 2020 /
+Static, security analysis of a malware/fraud collection ("Fraud Bible 2020 /
 Methods Pack", 64 files) recovered for security research. **No malware samples,
 binaries, decompiled source trees, or harmful instructional content are stored in
 this repository** — those are quarantined in a gitignored, AES-256 encrypted
@@ -12,7 +12,7 @@ and handling guidance.
 **Reference (read first)**
 | Document | Purpose |
 |---|---|
-| [`EXECUTIVE_SUMMARY.md`](EXECUTIVE_SUMMARY.md) | One-page distillation — what was found, top findings, defensive output |
+| [`EXECUTIVE_SUMMARY.md`](EXECUTIVE_SUMMARY.md) | One-page distillation — what was found, top findings, security output |
 | [`DEFINITIONS.md`](DEFINITIONS.md) | Methodology, provenance, glossary, confidence/severity scales, scope & limitations — the lens for everything else |
 
 **Inventory**
@@ -81,6 +81,6 @@ and handling guidance.
 
 ## Scope
 
-This repository is for **defensive** purposes: detection, threat intelligence, and
+This repository is for **security** purposes: detection, threat intelligence, and
 safe handling. It deliberately excludes operational criminal instructions and
 working malware.

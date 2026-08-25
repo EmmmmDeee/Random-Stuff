@@ -16,7 +16,7 @@ This framework provides:
 2. **MITRE ATT&CK Framework** - Techniques, tactics, and detection methods
 3. **Incident Response Drills** - Automated testing of detection, response, and recovery capabilities
 4. **Detection Gap Analysis** - Identifies blindspots in current security controls
-5. **Remediation Tracking** - Prioritized fixes for detected gaps
+5. **Fix Tracking** - Prioritized fixes for detected gaps
 6. **Intelligence-Led Testing (TLPT)** - Emulate the *specific* threat actors that
    target your sector, using their real documented TTPs — see
    [`intelligence-led/`](intelligence-led/README.md). This is the maturity
@@ -297,7 +297,7 @@ Six automated IR drills test detection, response, and recovery:
 
 ---
 
-## 🔐 Remediation Roadmap
+## 🔐 Fix Roadmap
 
 ### Priority 1 (30 days)
 - [ ] EDR detection of scheduled task creation (IR-Drill-004)
@@ -341,8 +341,8 @@ python3 tools/rt.py scenario --run scenario-01-phishing-to-ransomware --ir-drill
 - [ ] Set up isolated lab environment (or agreed test window)
 - [ ] Backup all production systems
 - [ ] Verify SIEM/EDR are recording
-- [ ] Prepare incident response runbook
-- [ ] Have management approval to proceed
+- [ ] Prepare and validate incident response runbook
+- [ ] Obtain management approval to proceed
 
 ### During Drill
 
@@ -350,14 +350,14 @@ python3 tools/rt.py scenario --run scenario-01-phishing-to-ransomware --ir-drill
 - [ ] Inject scenario stages into test environment
 - [ ] Record all detection alerts with timestamps
 - [ ] Measure IR team response time
-- [ ] Document manual interventions needed
+- [ ] Document automated response steps needed
 
 ### Post-Drill
 
 - [ ] Calculate drill score vs. target metrics
 - [ ] Identify detection gaps
 - [ ] Interview IR team for lessons learned
-- [ ] Generate remediation task list
+- [ ] Generate fix task list
 - [ ] Schedule follow-up drills for failed areas
 
 ---
@@ -409,7 +409,7 @@ Each scenario generates metrics:
 ### SOAR Automation
 - Automate incident response workflows
 - Test playbook execution
-- Measure time-to-remediation
+- Measure time-to-fix
 
 ---
 

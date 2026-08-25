@@ -5,7 +5,7 @@ SHA-256 (extracted, never executed), and the **typical/historical price** of the
 tool it belongs to. Prices are reported/retail figures for context — historical
 threat intelligence, not a buying guide.
 
-> Defensive scope. Hashes are IOC-grade identifiers. No executable was run; all were
+> Security scope. Hashes are IOC-grade identifiers. No executable was run; all were
 > extracted to an isolated workspace with execute bits stripped, then wiped.
 
 ## Inventory

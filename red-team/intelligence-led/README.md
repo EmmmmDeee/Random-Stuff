@@ -27,7 +27,7 @@ tester's imagination.
 
 A generic red team might spend effort on techniques your real adversaries never
 use, while missing the ones they favor. Intelligence-led testing aligns your
-defensive investment with your actual threat landscape.
+security investment with your actual threat landscape.
 
 ---
 
@@ -82,7 +82,7 @@ intelligence-led/
 ├── tti-report-template.md     (Targeted Threat Intelligence report template)
 ├── reconnaissance/            (Recon phase / OSINT — MITRE TA0043)
 │   ├── README.md              (authorized-recon method + footprint reduction)
-│   └── attack-surface.json    (recon techniques ↔ defensive counters)
+│   └── attack-surface.json    (recon techniques ↔ security counters)
 ├── detection-mapping/         (the purple-team payoff — detection content)
 │   ├── hunt-queries.md        (single-TTP hunts, actor-mapped)
 │   ├── correlation-and-coverage.md  (kill-chain + blind-spot + baseline queries)
@@ -136,7 +136,7 @@ for?"* — not to make attribution claims.
 
 ## Data Sources
 
-All actor data is derived from public, defensive-security sources:
+All actor data is derived from public, security-security sources:
 
 - [MITRE ATT&CK Groups](https://attack.mitre.org/groups/)
 - [CISA Advisories](https://www.cisa.gov/news-events/cybersecurity-advisories)

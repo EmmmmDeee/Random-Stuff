@@ -2,7 +2,7 @@
 name = "hse"
 version = "0.1.0"
 edition = "2021"
-description = "Huntsman Search Engine — search the red-team detection catalog (defensive)."
+description = "Huntsman Search Engine — search the red-team detection catalog (security)."
 license = "MIT"
 
 # Minimal, auditable dependency tree — only JSON deserialization is pulled in.
@@ -13,3 +13,7 @@ serde_json = "1"
 [profile.release]
 lto = true
 codegen-units = 1
+
+# Target-specific: aarch64 (ARM64, Termux/Android, etc.)
+[target.aarch64-unknown-linux-gnu]
+# No special configuration needed; uses defaults

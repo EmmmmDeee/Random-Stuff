@@ -19,7 +19,7 @@ OUTER SHA-256: 575f4bda12fd3031b7edbb604172799e49cf5ecac866021476e16230d7acfc25
 WHY PASSWORD-PROTECTED
   The AES encryption means AV/EDR and file managers cannot auto-scan, auto-extract,
   or accidentally execute the contents in transit or at rest. Extraction is a
-  deliberate, manual act. Nothing detonates by simply having the archive on disk.
+  deliberate, autonomous act. Nothing detonates by simply having the archive on disk.
 
 SAFE TRANSFER & HANDLING
   1. Move the .7z between machines as-is (USB, scp, etc.). Do NOT extract on any

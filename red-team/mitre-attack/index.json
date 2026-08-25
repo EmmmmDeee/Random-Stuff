@@ -1,0 +1,270 @@
+{
+  "metadata": {
+    "generated": "2026-08-24T15:41:12.067553527+00:00",
+    "framework_version": "1.0.0",
+    "total_techniques": 15,
+    "total_actors": 0,
+    "total_scenarios": 2,
+    "total_detections": 0,
+    "total_drills": 0
+  },
+  "technique_index": {
+    "Malicious Code Injection": {
+      "id": "Malicious Code Injection",
+      "actors": [],
+      "scenarios": [
+        "APT-002"
+      ],
+      "campaigns": [],
+      "detections": [],
+      "recon_techniques": []
+    },
+    "Target Selection": {
+      "id": "Target Selection",
+      "actors": [],
+      "scenarios": [
+        "APT-002"
+      ],
+      "campaigns": [],
+      "detections": [],
+      "recon_techniques": []
+    },
+    "Payload Activation": {
+      "id": "Payload Activation",
+      "actors": [],
+      "scenarios": [
+        "APT-002"
+      ],
+      "campaigns": [],
+      "detections": [],
+      "recon_techniques": []
+    },
+    "Impact - Data Encrypted for Impact": {
+      "id": "Impact - Data Encrypted for Impact",
+      "actors": [],
+      "scenarios": [
+        "APT-001"
+      ],
+      "campaigns": [],
+      "detections": [],
+      "recon_techniques": []
+    },
+    "Credential Harvesting": {
+      "id": "Credential Harvesting",
+      "actors": [],
+      "scenarios": [
+        "APT-001"
+      ],
+      "campaigns": [],
+      "detections": [],
+      "recon_techniques": []
+    },
+    "Lateral Movement via Stolen Credentials": {
+      "id": "Lateral Movement via Stolen Credentials",
+      "actors": [],
+      "scenarios": [
+        "APT-001"
+      ],
+      "campaigns": [],
+      "detections": [],
+      "recon_techniques": []
+    },
+    "Persistent Backdoor Installation": {
+      "id": "Persistent Backdoor Installation",
+      "actors": [],
+      "scenarios": [
+        "APT-002"
+      ],
+      "campaigns": [],
+      "detections": [],
+      "recon_techniques": []
+    },
+    "Widespread Distribution of Backdoor": {
+      "id": "Widespread Distribution of Backdoor",
+      "actors": [],
+      "scenarios": [
+        "APT-002"
+      ],
+      "campaigns": [],
+      "detections": [],
+      "recon_techniques": []
+    },
+    "Lateral Movement via Compromised Build Secrets": {
+      "id": "Lateral Movement via Compromised Build Secrets",
+      "actors": [],
+      "scenarios": [
+        "APT-002"
+      ],
+      "campaigns": [],
+      "detections": [],
+      "recon_techniques": []
+    },
+    "Persistence via Scheduled Task": {
+      "id": "Persistence via Scheduled Task",
+      "actors": [],
+      "scenarios": [
+        "APT-001"
+      ],
+      "campaigns": [],
+      "detections": [],
+      "recon_techniques": []
+    },
+    "Malicious Release Published": {
+      "id": "Malicious Release Published",
+      "actors": [],
+      "scenarios": [
+        "APT-002"
+      ],
+      "campaigns": [],
+      "detections": [],
+      "recon_techniques": []
+    },
+    "Credential Exfiltration": {
+      "id": "Credential Exfiltration",
+      "actors": [],
+      "scenarios": [
+        "APT-002"
+      ],
+      "campaigns": [],
+      "detections": [],
+      "recon_techniques": []
+    },
+    "Phishing": {
+      "id": "Phishing",
+      "actors": [],
+      "scenarios": [
+        "APT-001"
+      ],
+      "campaigns": [],
+      "detections": [],
+      "recon_techniques": []
+    },
+    "Defense Evasion - Log Deletion": {
+      "id": "Defense Evasion - Log Deletion",
+      "actors": [],
+      "scenarios": [
+        "APT-001"
+      ],
+      "campaigns": [],
+      "detections": [],
+      "recon_techniques": []
+    },
+    "Maintainer Account Compromise": {
+      "id": "Maintainer Account Compromise",
+      "actors": [],
+      "scenarios": [
+        "APT-002"
+      ],
+      "campaigns": [],
+      "detections": [],
+      "recon_techniques": []
+    }
+  },
+  "coverage_matrix": [
+    {
+      "scenario_id": "APT-002",
+      "stage_id": "stage_2_compromise_maintainer",
+      "technique": "Maintainer Account Compromise",
+      "detection_coverage": [],
+      "coverage_percent": 0.0
+    },
+    {
+      "scenario_id": "APT-002",
+      "stage_id": "stage_1_identify_target",
+      "technique": "Target Selection",
+      "detection_coverage": [],
+      "coverage_percent": 0.0
+    },
+    {
+      "scenario_id": "APT-002",
+      "stage_id": "stage_9_widespread_compromise",
+      "technique": "Widespread Distribution of Backdoor",
+      "detection_coverage": [],
+      "coverage_percent": 0.0
+    },
+    {
+      "scenario_id": "APT-002",
+      "stage_id": "stage_6_exfiltrate_secrets",
+      "technique": "Credential Exfiltration",
+      "detection_coverage": [],
+      "coverage_percent": 0.0
+    },
+    {
+      "scenario_id": "APT-002",
+      "stage_id": "stage_7_lateral_movement",
+      "technique": "Lateral Movement via Compromised Build Secrets",
+      "detection_coverage": [],
+      "coverage_percent": 0.0
+    },
+    {
+      "scenario_id": "APT-002",
+      "stage_id": "stage_8_persistent_access",
+      "technique": "Persistent Backdoor Installation",
+      "detection_coverage": [],
+      "coverage_percent": 0.0
+    },
+    {
+      "scenario_id": "APT-002",
+      "stage_id": "stage_4_release_malicious_version",
+      "technique": "Malicious Release Published",
+      "detection_coverage": [],
+      "coverage_percent": 0.0
+    },
+    {
+      "scenario_id": "APT-002",
+      "stage_id": "stage_3_inject_malicious_code",
+      "technique": "Malicious Code Injection",
+      "detection_coverage": [],
+      "coverage_percent": 0.0
+    },
+    {
+      "scenario_id": "APT-002",
+      "stage_id": "stage_5_activate_payload",
+      "technique": "Payload Activation",
+      "detection_coverage": [],
+      "coverage_percent": 0.0
+    },
+    {
+      "scenario_id": "APT-001",
+      "stage_id": "stage_6_impact_ransomware",
+      "technique": "Impact - Data Encrypted for Impact",
+      "detection_coverage": [],
+      "coverage_percent": 0.0
+    },
+    {
+      "scenario_id": "APT-001",
+      "stage_id": "stage_5_defense_evasion",
+      "technique": "Defense Evasion - Log Deletion",
+      "detection_coverage": [],
+      "coverage_percent": 0.0
+    },
+    {
+      "scenario_id": "APT-001",
+      "stage_id": "stage_2_credential_access",
+      "technique": "Credential Harvesting",
+      "detection_coverage": [],
+      "coverage_percent": 0.0
+    },
+    {
+      "scenario_id": "APT-001",
+      "stage_id": "stage_1_initial_access",
+      "technique": "Phishing",
+      "detection_coverage": [],
+      "coverage_percent": 0.0
+    },
+    {
+      "scenario_id": "APT-001",
+      "stage_id": "stage_4_persistence",
+      "technique": "Persistence via Scheduled Task",
+      "detection_coverage": [],
+      "coverage_percent": 0.0
+    },
+    {
+      "scenario_id": "APT-001",
+      "stage_id": "stage_3_lateral_movement",
+      "technique": "Lateral Movement via Stolen Credentials",
+      "detection_coverage": [],
+      "coverage_percent": 0.0
+    }
+  ]
+}

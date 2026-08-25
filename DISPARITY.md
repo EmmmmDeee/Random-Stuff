@@ -5,10 +5,10 @@ provided samples (Blackshades, DroidJack) and **professional engineering**, usin
 the analysis, code review, and detection work in this repository.
 
 > **The correct axis of comparison.** The professional in this story is *not* a
-> better malware author — it's the defensive/systems engineer who makes the
+> better malware author — it's the security/systems engineer who makes the
 > malware findable. This document contrasts amateur offense with professional
-> **defense and engineering**. It does not describe a "professional" (stealthier,
-> more resilient) version of the malware; that would just be a better weapon, and
+> **engineering and detection**. It does not describe a "professional" (stealthier,
+> harder to detect) version of the malware; that would just be a better weapon, and
 > it is deliberately absent.
 
 **Supporting documents**
@@ -16,21 +16,21 @@ the analysis, code review, and detection work in this repository.
 - `CODE_REVIEW.md` — code-style critique (19 findings)
 - `RUST_PERSPECTIVE.md` — defects ranked by significance + language contrast
 - `MALWARE_ANALYSIS.md`, `SOURCE_LEVEL_ANALYSIS.md` — the underlying evidence
-- `detection/`, `intel/`, `ATTACK_MAPPING.md` — the professional defensive output
+- `detection/`, `intel/`, `ATTACK_MAPPING.md` — the professional security output
 - `tools/ioc-scanner/` — a working, tested detector
 
 ---
 
 ## 1. The thesis in one table
 
-| Dimension | Amateur (the malware author) | Professional (defensive/systems engineer) |
+| Dimension | Amateur (the malware author) | Professional (security/systems engineer) |
 |---|---|---|
 | Indicators | Hardcodes `droidjack.net`, `DJ_GooDbYe:(`, brand in package name | Turns those exact literals into instant, automated detections |
 | Matching | One-pass `String.equals` command loop, O(commands) | `aho-corasick`: all patterns in one O(input) automaton |
 | Errors | `catch (Exception) { printStackTrace() }` — swallow everything | Errors are values (`Result`); nothing is ignored |
 | State | `static` mutable shared across receivers; data races | Owned state; the compiler forbids the race |
 | Testing | "It ran on the victim" | Unit + integration + fuzz + benchmark |
-| Audience | Optimizes for one undefended target | Optimizes for defenders at scale |
+| Audience | Optimizes for one unprotected target | Optimizes for blue teams at scale |
 | Honesty | Debug `println` shipped to production | Measured numbers, reported with their caveats |
 
 The pattern: the amateur assumes no one is watching; the professional *is* the one
@@ -113,7 +113,7 @@ leaks, ignored errors, non-exhaustive dispatch) are removed by construction.
 
 (Artifacts: `detection/`, `intel/`, `ATTACK_MAPPING.md`, `tools/ioc-scanner/`.)
 
-Every amateur tell becomes a defensive win:
+Every amateur tell becomes a security win:
 
 | Amateur tell | Professional response |
 |---|---|
@@ -133,7 +133,7 @@ professional's defense are the same problem, approached from opposite competence
 ## 6. Conclusion
 
 The disparity is not a matter of degree but of **stance**. The amateur writes for a
-world with no defenders: hardcoded, plaintext, untested, loud. The professional
+world with no one watching: hardcoded, plaintext, untested, loud. The professional
 writes for a world that is adversarial by default: correct by construction,
 measured, and aimed at detection at scale. The samples here are commodity malware —
 bought or cracked, run by operators who did not write them — and the professional

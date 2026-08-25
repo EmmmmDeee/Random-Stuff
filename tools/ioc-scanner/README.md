@@ -1,6 +1,6 @@
 # ioc-scanner
 
-A small, fast, multi-pattern IOC scanner for malware triage — the defensive
+A small, fast, multi-pattern IOC scanner for malware triage — the security
 counterpart to the string-token command loop found in the analysed RATs.
 
 It loads literal indicators from a CSV feed (e.g. `intel/iocs.csv`), compiles a

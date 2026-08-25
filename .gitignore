@@ -6,6 +6,7 @@ PASSWORD.txt
 decompiled/
 *_src/
 tools/ioc-scanner/target/
+red-team/tools/hse/target/
 __pycache__/
 *.pyc
 
@@ -34,5 +35,6 @@ private_key*
 # Red-team framework: generated scenario/drill reports
 red-team/reports/
 
-# HSE (Huntsman Search Engine) Rust build artifacts
+# Rust build artifacts
 red-team/tools/hse/target/
+red-team/tools/rt/target/

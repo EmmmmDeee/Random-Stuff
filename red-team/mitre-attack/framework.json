@@ -322,31 +322,31 @@
         "gap_id": "Gap-001",
         "gap": "Credential theft detection requires external signals (Azure AD)",
         "impact": "Local credential harvesting undetected",
-        "remediation": "Implement password change monitoring on local accounts"
+        "fix": "Implement password change monitoring on local accounts"
       },
       {
         "gap_id": "Gap-002",
         "gap": "RDP lateral movement blends with legitimate traffic",
         "impact": "Attackers access multiple systems before detection",
-        "remediation": "Baseline RDP source IPs and alert on deviations"
+        "fix": "Baseline RDP source IPs and alert on deviations"
       },
       {
         "gap_id": "Gap-003",
         "gap": "Scheduled task monitoring not enabled by default",
         "impact": "Persistence mechanisms installed without alert",
-        "remediation": "Enable Windows Event ID 106 monitoring and alerting"
+        "fix": "Enable Windows Event ID 106 monitoring and alerting"
       },
       {
         "gap_id": "Gap-004",
         "gap": "Log deletion succeeds if not centralized",
         "impact": "Evidence destroyed, investigation impossible",
-        "remediation": "Implement immutable centralized logging (cloud or air-gapped)"
+        "fix": "Implement immutable centralized logging (cloud or air-gapped)"
       },
       {
         "gap_id": "Gap-005",
         "gap": "EDR effectiveness depends on configuration",
         "impact": "Ransomware execution detection misses if settings inadequate",
-        "remediation": "Audit EDR agent settings, test in staging environment"
+        "fix": "Audit EDR agent settings, test in staging environment"
       }
     ]
   }
