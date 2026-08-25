@@ -162,6 +162,27 @@ enum OsintSubcommand {
         /// Email address to analyze timeline for
         email: String,
     },
+    /// Emulate threat actor campaign
+    Campaign {
+        /// Actor ID to emulate
+        actor_id: String,
+        /// Target domain
+        target_domain: String,
+    },
+    /// Plan reconnaissance for target
+    Recon {
+        /// Actor ID to emulate
+        actor_id: String,
+        /// Target domain
+        target_domain: String,
+    },
+    /// Recommend delivery vectors for target
+    Vectors {
+        /// Actor ID to emulate
+        actor_id: String,
+        /// Target domain
+        target_domain: String,
+    },
 }
 
 #[derive(Subcommand)]
@@ -666,6 +687,15 @@ async fn handle_osint(subcommand: OsintSubcommand) -> anyhow::Result<()> {
         }
         OsintSubcommand::Timeline { email } => {
             cmd.analyze_breach_timeline(&email).await?;
+        }
+        OsintSubcommand::Campaign { actor_id, target_domain } => {
+            cmd.emulate_actor_campaign(&actor_id, &target_domain).await?;
+        }
+        OsintSubcommand::Recon { actor_id, target_domain } => {
+            cmd.plan_reconnaissance(&actor_id, &target_domain).await?;
+        }
+        OsintSubcommand::Vectors { actor_id, target_domain } => {
+            cmd.recommend_delivery_vectors(&actor_id, &target_domain).await?;
         }
     }
 

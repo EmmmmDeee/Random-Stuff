@@ -1,4 +1,4 @@
-use crate::{Framework, osint::{OsintAggregator, OsintCache, ThreatIntelligenceFeed, OsintApiConfig, MultiSourceAggregator, CorrelationEngine, GeolocationEngine, AttributionEngine, DetectionRuleGenerator, RuleFormat, TimelineAnalyzer}};
+use crate::{Framework, osint::{OsintAggregator, OsintCache, ThreatIntelligenceFeed, OsintApiConfig, MultiSourceAggregator, CorrelationEngine, GeolocationEngine, AttributionEngine, DetectionRuleGenerator, RuleFormat, TimelineAnalyzer, ThreatEmulator}};
 use anyhow::Result;
 
 pub struct OsintCommand {
@@ -676,6 +676,131 @@ impl OsintCommand {
         }
 
         println!("\n==================================\n");
+        Ok(())
+    }
+
+    pub async fn emulate_actor_campaign(&self, actor_id: &str, target_domain: &str) -> Result<()> {
+        println!("\n=== Threat Actor Campaign Emulation ===\n");
+
+        let emulator = ThreatEmulator::new(self.threat_feed.clone());
+
+        if let Some(scenario) = emulator.emulate_actor_campaign(actor_id, target_domain) {
+            println!("Scenario ID: {}", scenario.scenario_id);
+            println!("Actor: {} ({})", scenario.actor_name, scenario.actor_id);
+            println!("Target: {}", scenario.target_profile);
+            println!("Estimated Duration: {} days", scenario.estimated_duration_days);
+            println!("Success Probability: {:.0}%\n", scenario.success_probability * 100.0);
+
+            println!("Attack Phases:");
+            for phase in &scenario.attack_phases {
+                println!("  Phase {}: {}", phase.phase_number, phase.name);
+                println!("    Description: {}", phase.description);
+                println!("    Duration: {} days", phase.duration_days);
+                println!("    Primary Techniques: {}", phase.primary_techniques.join(", "));
+                println!("    Recommended Tools: {}", phase.recommended_tools.join(", "));
+                println!("    Evasion: {}", phase.evasion_techniques.join(", "));
+                println!();
+            }
+
+            println!("Required Capabilities:");
+            for cap in &scenario.required_capabilities {
+                println!("  • {}", cap);
+            }
+
+            println!("\nRecommended Infrastructure:");
+            for infra in &scenario.recommended_infrastructure {
+                println!("  • {}", infra);
+            }
+        } else {
+            println!("Actor {} not found", actor_id);
+        }
+
+        println!("\n========================================\n");
+        Ok(())
+    }
+
+    pub async fn plan_reconnaissance(&self, actor_id: &str, target_domain: &str) -> Result<()> {
+        println!("\n=== Reconnaissance Plan ===\n");
+
+        let emulator = ThreatEmulator::new(self.threat_feed.clone());
+
+        if let Some(plan) = emulator.plan_reconnaissance(actor_id, target_domain) {
+            println!("Target: {}", plan.target_domain);
+            println!("Actor: {}", plan.actor_id);
+            println!("Estimated Duration: {} days\n", plan.estimated_recon_duration_days);
+
+            println!("Passive Reconnaissance Tasks:");
+            for task in &plan.passive_recon_tasks {
+                println!("  {} - {}", task.task_id, task.description);
+                println!("    Technique: {}", task.technique_id);
+                println!("    Tools: {}", task.tools.join(", "));
+                println!("    Expected Output: {}", task.expected_output);
+                println!("    Detection Likelihood: {:.0}%", task.detection_likelihood * 100.0);
+                println!();
+            }
+
+            println!("Active Reconnaissance Tasks:");
+            for task in &plan.active_recon_tasks {
+                println!("  {} - {}", task.task_id, task.description);
+                println!("    Risk Level: {}", task.risk_level);
+                println!("    Detection Likelihood: {:.0}%\n", task.detection_likelihood * 100.0);
+            }
+
+            println!("Social Engineering Targets:");
+            for target in &plan.social_engineering_targets {
+                println!("  • {}", target);
+            }
+
+            println!("\nOperational Security Requirements:");
+            for req in &plan.opsec_requirements {
+                println!("  • {}", req);
+            }
+        } else {
+            println!("Actor {} not found", actor_id);
+        }
+
+        println!("\n===========================\n");
+        Ok(())
+    }
+
+    pub async fn recommend_delivery_vectors(&self, actor_id: &str, target_domain: &str) -> Result<()> {
+        println!("\n=== Delivery Vector Recommendations ===\n");
+
+        let emulator = ThreatEmulator::new(self.threat_feed.clone());
+
+        if let Some(actor) = self.threat_feed.get_actor(actor_id) {
+            let target_profile = crate::osint::TargetProfile {
+                target_domain: target_domain.to_string(),
+                estimated_size: "medium".to_string(),
+                industry: actor.known_targets.first().cloned().unwrap_or_else(|| "Unknown".to_string()),
+                security_posture: "moderate".to_string(),
+                attack_surface_score: 0.5,
+                vulnerability_likelihood: 0.5,
+                employee_count_estimate: 250,
+                recommended_vectors: vec![],
+                likely_defenders: vec![],
+            };
+
+            let vectors = emulator.recommend_delivery_vectors(actor_id, &target_profile);
+
+            println!("Target: {}", target_domain);
+            println!("Industry: {}\n", target_profile.industry);
+
+            for vector in vectors {
+                println!("Vector: {} ({})", vector.vector_type, vector.technique_id);
+                println!("  Description: {}", vector.description);
+                println!("  Payload Type: {}", vector.payload_type);
+                println!("  Success Rate: {:.0}%", vector.success_rate * 100.0);
+                println!("  Detection Risk: {:.0}%", vector.detection_risk * 100.0);
+                println!("  Setup Complexity: {}", vector.setup_complexity);
+                println!("  Infrastructure Needed: {}", vector.required_infrastructure.join(", "));
+                println!();
+            }
+        } else {
+            println!("Actor {} not found", actor_id);
+        }
+
+        println!("========================================\n");
         Ok(())
     }
 

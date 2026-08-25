@@ -10,6 +10,7 @@ pub mod geolocation;
 pub mod attribution;
 pub mod detection_rules;
 pub mod timeline;
+pub mod threat_emulation;
 
 pub use models::{OsintEntity, EntityType, OsintResult, BreachData, ThreatIndicator};
 pub use sources::{DataSource, DataSourceType, MockDataSource, HaveIBeenPwnedSource, VirusTotalSource, IPReputationSource};
@@ -23,3 +24,4 @@ pub use geolocation::{GeolocationEngine, GeoLocation, BreachVictimData, Geolocat
 pub use attribution::{AttributionEngine, CampaignAttribution, IncidentProfile};
 pub use detection_rules::{DetectionRuleGenerator, DetectionRule, DetectionRuleset, RuleFormat, TuningGuidance};
 pub use timeline::{TimelineAnalyzer, AttackTimeline, CampaignTimeline, TimelineEvent, AttackStage};
+pub use threat_emulation::{ThreatEmulator, AttackScenario, ReconPlan, TargetProfile, DeliveryVector};
