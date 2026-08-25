@@ -108,6 +108,17 @@ enum OsintSubcommand {
         /// Query (country:Russia, technique:T1566, sector:Finance, indicator:1.2.3.4)
         query: String,
     },
+    /// Analyze multi-actor threat correlations
+    Correlations,
+    /// Show MITRE ATT&CK technique prevalence
+    Techniques,
+    /// Analyze shared targeting across actors
+    Targets,
+    /// Show actor's threat network
+    Network {
+        /// Actor ID to analyze
+        actor_id: String,
+    },
 }
 
 #[derive(Subcommand)]
@@ -576,6 +587,18 @@ async fn handle_osint(subcommand: OsintSubcommand) -> anyhow::Result<()> {
         }
         OsintSubcommand::Search { query } => {
             cmd.threat_feed_search(&query).await?;
+        }
+        OsintSubcommand::Correlations => {
+            cmd.analyze_actor_correlations().await?;
+        }
+        OsintSubcommand::Techniques => {
+            cmd.analyze_ttp_prevalence().await?;
+        }
+        OsintSubcommand::Targets => {
+            cmd.analyze_targeting_overlap().await?;
+        }
+        OsintSubcommand::Network { actor_id } => {
+            cmd.analyze_actor_network(&actor_id).await?;
         }
     }
 

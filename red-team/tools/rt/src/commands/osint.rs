@@ -1,4 +1,4 @@
-use crate::{Framework, osint::{OsintAggregator, OsintCache, ThreatIntelligenceFeed, OsintApiConfig, MultiSourceAggregator}};
+use crate::{Framework, osint::{OsintAggregator, OsintCache, ThreatIntelligenceFeed, OsintApiConfig, MultiSourceAggregator, CorrelationEngine}};
 use anyhow::Result;
 
 pub struct OsintCommand {
@@ -264,6 +264,133 @@ impl OsintCommand {
         }
 
         println!("\n=======================\n");
+        Ok(())
+    }
+
+    pub async fn analyze_actor_correlations(&self) -> Result<()> {
+        println!("\n=== Multi-Actor Threat Correlation ===\n");
+
+        let engine = CorrelationEngine::new(self.threat_feed.clone());
+        let correlations = engine.correlate_all_actors();
+
+        if correlations.is_empty() {
+            println!("No technique overlaps found between threat actors.");
+            println!("\n=====================================\n");
+            return Ok(());
+        }
+
+        println!("Discovered {} correlation links:\n", correlations.len());
+
+        for (i, link) in correlations.iter().enumerate().take(10) {
+            println!(
+                "{}. {} ↔ {} (Shared Techniques: {})",
+                i + 1,
+                link.actor1_id,
+                link.actor2_id,
+                link.shared_techniques.len()
+            );
+            println!(
+                "   Techniques: {}",
+                link.shared_techniques.join(", ")
+            );
+            println!();
+        }
+
+        println!("\n=====================================\n");
+        Ok(())
+    }
+
+    pub async fn analyze_ttp_prevalence(&self) -> Result<()> {
+        println!("\n=== MITRE ATT&CK Technique Prevalence ===\n");
+
+        let engine = CorrelationEngine::new(self.threat_feed.clone());
+        let patterns = engine.get_most_common_techniques(15);
+
+        let total_actors = self.threat_feed.list_actors().len();
+        println!("Technique prevalence across {} actors:\n", total_actors);
+
+        for (i, pattern) in patterns.iter().enumerate() {
+            println!(
+                "{}. {} (Used by {} actors, {:.1}%)",
+                i + 1,
+                pattern.technique,
+                pattern.count,
+                pattern.prevalence * 100.0
+            );
+            println!("   Actors: {}", pattern.actors.join(", "));
+            println!();
+        }
+
+        println!("\n========================================\n");
+        Ok(())
+    }
+
+    pub async fn analyze_targeting_overlap(&self) -> Result<()> {
+        println!("\n=== Shared Target Sectors ===\n");
+
+        let engine = CorrelationEngine::new(self.threat_feed.clone());
+        let targets = engine.find_common_targets();
+
+        if targets.is_empty() {
+            println!("No overlapping target sectors found.");
+            println!("\n=============================\n");
+            return Ok(());
+        }
+
+        let mut target_list: Vec<_> = targets.iter().collect();
+        target_list.sort_by_key(|&(_, actors)| std::cmp::Reverse(actors.len()));
+
+        println!("Sectors targeted by multiple threat actors:\n");
+
+        for (i, (target, actors)) in target_list.iter().take(10).enumerate() {
+            println!(
+                "{}. {} (Targeted by {} actors)",
+                i + 1,
+                target,
+                actors.len()
+            );
+            println!("   Actors: {}", actors.join(", "));
+            println!();
+        }
+
+        println!("\n=============================\n");
+        Ok(())
+    }
+
+    pub async fn analyze_actor_network(&self, actor_id: &str) -> Result<()> {
+        println!("\n=== {} Threat Network ===\n", actor_id);
+
+        if self.threat_feed.get_actor(actor_id).is_none() {
+            println!("Threat actor {} not found", actor_id);
+            println!("\n==========================\n");
+            return Ok(());
+        }
+
+        let engine = CorrelationEngine::new(self.threat_feed.clone());
+
+        if let Some(network) = engine.get_actor_network(actor_id) {
+            println!(
+                "Connected to {} other actors via {} shared techniques\n",
+                network.connected_actors.len(),
+                network.shared_technique_count
+            );
+
+            for link in &network.connected_actors {
+                let other = if link.actor1_id == actor_id {
+                    &link.actor2_id
+                } else {
+                    &link.actor1_id
+                };
+
+                println!("↔ {} (Shared techniques: {})", other, link.shared_techniques.len());
+                println!("  {}\n", link.shared_techniques.join(", "));
+            }
+        } else {
+            println!("No technique overlaps with other actors");
+            println!("\n==========================\n");
+        }
+
+        println!("\n==========================\n");
         Ok(())
     }
 
