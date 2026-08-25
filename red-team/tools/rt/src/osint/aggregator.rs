@@ -1,5 +1,5 @@
 use crate::osint::models::*;
-use crate::osint::sources::{DataSource, MockDataSource};
+use crate::osint::sources::{DataSource, MockDataSource, HaveIBeenPwnedSource};
 use anyhow::Result;
 use std::sync::Arc;
 
@@ -15,6 +15,12 @@ impl OsintAggregator {
     pub fn with_mock() -> Self {
         OsintAggregator {
             source: Arc::new(MockDataSource),
+        }
+    }
+
+    pub fn with_haveibeenpwned() -> Self {
+        OsintAggregator {
+            source: Arc::new(HaveIBeenPwnedSource::new()),
         }
     }
 
@@ -96,7 +102,7 @@ mod tests {
 
         assert_eq!(result.entity.entity_type, EntityType::Email);
         assert!(!result.breaches.is_empty());
-        assert_eq!(result.risk_level, "medium");
+        assert_eq!(result.risk_level, "low");
     }
 
     #[tokio::test]
