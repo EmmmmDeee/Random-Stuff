@@ -1026,6 +1026,86 @@ impl OsintCommand {
         Ok(())
     }
 
+    pub fn create_phishing_template(&self, pretext: &str) -> Result<()> {
+        let engineer = SocialEngineer;
+        let template = engineer.create_phishing_template(pretext)?;
+
+        println!("\n=== Phishing Template ===\n");
+        println!("Template ID: {}", template.template_id);
+        println!("Pretense Scenario: {}", template.pretense_scenario);
+        println!("Sender Identity: {}", template.sender_identity);
+        println!("Subject Line: {}", template.subject_line);
+        println!("Body Outline: {}", template.body_outline);
+        println!("Call to Action: {}", template.call_to_action);
+        println!("Urgency Level: {}", template.urgency_level);
+        println!("Success Probability: {:.0}%\n", template.success_probability * 100.0);
+
+        println!("Authenticity Indicators:");
+        for indicator in &template.authenticity_indicators {
+            println!("  • {}", indicator);
+        }
+
+        println!("\nPayload Mechanism: {}", template.payload_mechanism);
+        println!("\n========================================\n");
+        Ok(())
+    }
+
+    pub fn build_campaign(&self, org: &str, department: &str, pretext: &str) -> Result<()> {
+        let engineer = SocialEngineer;
+        let campaign = engineer.build_campaign(org, department, pretext)?;
+
+        println!("\n=== Social Engineering Campaign ===\n");
+        println!("Campaign ID: {}", campaign.campaign_id);
+        println!("Target Organization: {}", campaign.target_organization);
+        println!("Target Department: {}", campaign.target_department);
+        println!("Phishing Template: {}", campaign.phishing_template);
+        println!("Total Targets: {}", campaign.total_targets);
+        println!("Number of Phases: {}\n", campaign.number_of_phases);
+
+        println!("Target Profiles:");
+        for profile in &campaign.target_profiles {
+            println!("  Job Title: {}", profile.job_title);
+            println!("  Department: {}", profile.department);
+            println!("  Responsibility Level: {}", profile.responsibility_level);
+            println!("  Likely Access:");
+            for access in &profile.likely_access {
+                println!("    • {}", access);
+            }
+        }
+
+        println!("\nEstimated Success Rate: {:.0}%", campaign.estimated_success_rate * 100.0);
+        println!("Expected Credential Harvest: {}", campaign.expected_credential_harvest);
+        println!("Alternative Exploits:");
+        for exploit in &campaign.alternative_exploits {
+            println!("  • {}", exploit);
+        }
+
+        println!("\n========================================\n");
+        Ok(())
+    }
+
+    pub fn identify_high_value_targets(&self, org: &str) -> Result<()> {
+        let engineer = SocialEngineer;
+        let targets = engineer.identify_high_value_targets(org)?;
+
+        println!("\n=== High-Value Targets for {} ===\n", org);
+        for (i, target) in targets.iter().enumerate() {
+            println!("{}. {}", i + 1, target);
+        }
+
+        println!("\n========================================\n");
+        Ok(())
+    }
+
+    pub fn calculate_roi(&self, estimated_harvest: usize) -> Result<()> {
+        let engineer = SocialEngineer;
+        let roi = engineer.calculate_roi(estimated_harvest)?;
+
+        println!("{}", roi);
+        println!("========================================\n");
+        Ok(())
+    }
+
     fn print_osint_result(&self, result: &crate::osint::models::OsintResult) {
         println!("Entity: {}", result.entity.entity);
         println!("Risk Level: {}", result.risk_level);

@@ -244,6 +244,30 @@ enum OsintSubcommand {
     },
     /// Show supply chain attack surface
     Surface,
+    /// Create phishing template
+    Template {
+        /// Pretext scenario (executive_directive, security_alert, vendor_communication, personal_pretext)
+        pretext: String,
+    },
+    /// Build social engineering campaign
+    Build {
+        /// Target organization name
+        org: String,
+        /// Target department (IT, Finance, HR, Executive)
+        department: String,
+        /// Phishing pretext (executive_directive, security_alert, vendor_communication, personal_pretext)
+        pretext: String,
+    },
+    /// Identify high-value social engineering targets
+    HighValue {
+        /// Target organization name
+        org: String,
+    },
+    /// Calculate social engineering campaign ROI
+    ROI {
+        /// Estimated number of successful harvests
+        harvest: usize,
+    },
 }
 
 #[derive(Subcommand)]
@@ -790,6 +814,18 @@ async fn handle_osint(subcommand: OsintSubcommand) -> anyhow::Result<()> {
         }
         OsintSubcommand::Surface => {
             cmd.show_attack_surface()?;
+        }
+        OsintSubcommand::Template { pretext } => {
+            cmd.create_phishing_template(&pretext)?;
+        }
+        OsintSubcommand::Build { org, department, pretext } => {
+            cmd.build_campaign(&org, &department, &pretext)?;
+        }
+        OsintSubcommand::HighValue { org } => {
+            cmd.identify_high_value_targets(&org)?;
+        }
+        OsintSubcommand::ROI { harvest } => {
+            cmd.calculate_roi(harvest)?;
         }
     }
 
