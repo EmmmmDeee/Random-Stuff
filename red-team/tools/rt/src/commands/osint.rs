@@ -1,4 +1,4 @@
-use crate::{Framework, osint::{OsintAggregator, OsintCache, ThreatIntelligenceFeed, OsintApiConfig, MultiSourceAggregator, CorrelationEngine, GeolocationEngine, AttributionEngine}};
+use crate::{Framework, osint::{OsintAggregator, OsintCache, ThreatIntelligenceFeed, OsintApiConfig, MultiSourceAggregator, CorrelationEngine, GeolocationEngine, AttributionEngine, DetectionRuleGenerator, RuleFormat}};
 use anyhow::Result;
 
 pub struct OsintCommand {
@@ -565,6 +565,74 @@ impl OsintCommand {
         }
 
         println!("\n==================\n");
+        Ok(())
+    }
+
+    pub async fn generate_detection_rules(&self, actor_id: &str, format: &str) -> Result<()> {
+        println!("\n=== Detection Rule Generation ===\n");
+
+        let rule_format = match format.to_lowercase().as_str() {
+            "sigma" => RuleFormat::Sigma,
+            "yara" => RuleFormat::Yara,
+            "siem" | "siemquery" => RuleFormat::SiemQuery,
+            "snort" => RuleFormat::Snort,
+            _ => RuleFormat::Sigma,
+        };
+
+        let generator = DetectionRuleGenerator::new(self.threat_feed.clone());
+
+        if let Some(ruleset) = generator.generate_rules_for_actor(actor_id, rule_format.clone()) {
+            println!("Actor: {} ({})", actor_id, ruleset.actor_name);
+            println!("Format: {:?}", rule_format);
+            println!("Coverage: {}/{} techniques ({:.1}%)\n",
+                     ruleset.covered_techniques,
+                     ruleset.total_techniques,
+                     ruleset.overall_coverage * 100.0);
+
+            println!("Generated Rules:\n");
+            for rule in ruleset.rules.iter().take(5) {
+                println!("Rule: {}", rule.rule_id);
+                println!("Title: {}", rule.title);
+                println!("Description: {}", rule.description);
+                println!("Severity: {} | Confidence: {:.0}% | FP Risk: {}",
+                         rule.severity,
+                         rule.confidence * 100.0,
+                         rule.false_positive_risk);
+                println!("Technique: {}\n", rule.techniques.join(", "));
+            }
+
+            if ruleset.rules.len() > 5 {
+                println!("... and {} more rules\n", ruleset.rules.len() - 5);
+            }
+        } else {
+            println!("Actor {} not found", actor_id);
+        }
+
+        println!("\n======================================\n");
+        Ok(())
+    }
+
+    pub async fn show_tuning_guidance(&self, rule_id: &str) -> Result<()> {
+        println!("\n=== Detection Rule Tuning Guidance ===\n");
+
+        let generator = DetectionRuleGenerator::new(self.threat_feed.clone());
+        let guidance = generator.get_tuning_guidance(rule_id);
+
+        println!("Rule ID: {}", guidance.rule_id);
+        println!("Baseline Period: {} days", guidance.baseline_period_days);
+        println!("Alert Threshold: {}\n", guidance.alert_threshold);
+
+        println!("Common False Positive Causes:");
+        for (i, cause) in guidance.false_positive_causes.iter().enumerate() {
+            println!("  {}. {}", i + 1, cause);
+        }
+
+        println!("\nTuning Recommendations:");
+        for (i, rec) in guidance.tuning_recommendations.iter().enumerate() {
+            println!("  {}. {}", i + 1, rec);
+        }
+
+        println!("\n=========================================\n");
         Ok(())
     }
 

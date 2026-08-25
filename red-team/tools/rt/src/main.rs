@@ -144,6 +144,19 @@ enum OsintSubcommand {
         /// Email address to profile
         email: String,
     },
+    /// Generate detection rules for threat actor
+    Rules {
+        /// Actor ID to generate rules for
+        actor_id: String,
+        /// Output format (sigma, yara, siem, snort)
+        #[arg(default_value = "sigma")]
+        format: String,
+    },
+    /// Show tuning guidance for detection rule
+    Tuning {
+        /// Rule ID to get guidance for
+        rule_id: String,
+    },
 }
 
 #[derive(Subcommand)]
@@ -639,6 +652,12 @@ async fn handle_osint(subcommand: OsintSubcommand) -> anyhow::Result<()> {
         }
         OsintSubcommand::Profile { email } => {
             cmd.analyze_incident_profile(&email).await?;
+        }
+        OsintSubcommand::Rules { actor_id, format } => {
+            cmd.generate_detection_rules(&actor_id, &format).await?;
+        }
+        OsintSubcommand::Tuning { rule_id } => {
+            cmd.show_tuning_guidance(&rule_id).await?;
         }
     }
 
