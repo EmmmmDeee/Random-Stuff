@@ -206,6 +206,28 @@ enum OsintSubcommand {
         /// Actor ID to analyze infrastructure for
         actor_id: String,
     },
+    /// Plan multi-phase campaign for actor against target
+    Plan {
+        /// Actor ID to plan campaign for
+        actor_id: String,
+        /// Target organization name
+        target_org: String,
+        /// Target sector (Government, Finance, Technology, etc.)
+        #[arg(default_value = "Government")]
+        sector: String,
+    },
+    /// Show optimal timing windows for attacks
+    Timing,
+    /// Estimate detection timeline for campaign
+    Detection {
+        /// Actor ID to estimate detection for
+        actor_id: String,
+        /// Target organization
+        target_org: String,
+        /// Target sector
+        #[arg(default_value = "Government")]
+        sector: String,
+    },
 }
 
 #[derive(Subcommand)]
@@ -731,6 +753,15 @@ async fn handle_osint(subcommand: OsintSubcommand) -> anyhow::Result<()> {
         }
         OsintSubcommand::Infrastructure { actor_id } => {
             cmd.show_infrastructure_patterns(&actor_id)?;
+        }
+        OsintSubcommand::Plan { actor_id, target_org, sector } => {
+            cmd.plan_campaign(&actor_id, &target_org, &sector)?;
+        }
+        OsintSubcommand::Timing => {
+            cmd.show_timing_windows()?;
+        }
+        OsintSubcommand::Detection { actor_id, target_org, sector } => {
+            cmd.estimate_detection_timeline(&actor_id, &target_org, &sector)?;
         }
     }
 

@@ -1,4 +1,4 @@
-use crate::{Framework, osint::{OsintAggregator, OsintCache, ThreatIntelligenceFeed, OsintApiConfig, MultiSourceAggregator, CorrelationEngine, GeolocationEngine, AttributionEngine, DetectionRuleGenerator, RuleFormat, TimelineAnalyzer, ThreatEmulator, IncidentMapper}};
+use crate::{Framework, osint::{OsintAggregator, OsintCache, ThreatIntelligenceFeed, OsintApiConfig, MultiSourceAggregator, CorrelationEngine, GeolocationEngine, AttributionEngine, DetectionRuleGenerator, RuleFormat, TimelineAnalyzer, ThreatEmulator, IncidentMapper, CampaignPlanner}};
 use anyhow::Result;
 
 pub struct OsintCommand {
@@ -852,6 +852,89 @@ impl OsintCommand {
             Err(err) => println!("Error: {}", err),
         }
 
+        println!("========================================\n");
+        Ok(())
+    }
+
+    pub fn plan_campaign(&self, actor_id: &str, target_org: &str, target_sector: &str) -> Result<()> {
+        let planner = CampaignPlanner;
+        let campaign = planner.plan_multi_actor_campaign(actor_id, target_org, target_sector)?;
+
+        println!("\n=== Multi-Actor Campaign Plan ===\n");
+        println!("Campaign ID: {}", campaign.campaign_id);
+        println!("Target: {} ({})", campaign.target_organization, campaign.target_sector);
+        println!("Duration: {} days", campaign.total_duration_days);
+        println!(
+            "Estimated Success Rate: {:.0}%",
+            campaign.estimated_success_rate * 100.0
+        );
+        println!(
+            "Evasion Score: {:.0}%\n",
+            campaign.detection_evasion_score * 100.0
+        );
+
+        println!("Actors Involved:");
+        for actor in &campaign.actors_involved {
+            println!("  • {}", actor);
+        }
+
+        println!("\nCampaign Phases:");
+        for phase in &campaign.phases {
+            println!("\n{}. {} ({} days)", phase.phase_number, phase.phase_name, phase.duration_days);
+            println!("   Primary Actor: {}", phase.primary_actor);
+            println!("   Success Probability: {:.0}%", phase.success_probability * 100.0);
+            println!("   Detection Risk: {:.0}%", phase.detection_risk_score * 100.0);
+            println!("   Techniques:");
+            for tech in &phase.techniques {
+                println!("     - {}", tech);
+            }
+            println!("   Objectives:");
+            for obj in &phase.objectives {
+                println!("     • {}", obj);
+            }
+            println!("   Evasion Tactics:");
+            for tactic in &phase.evasion_tactics {
+                println!("     - {}", tactic);
+            }
+        }
+
+        println!("\nRequired Infrastructure ({} items):", campaign.total_infrastructure_required.len());
+        for (i, infra) in campaign.total_infrastructure_required.iter().take(10).enumerate() {
+            println!("  {}. {}", i + 1, infra);
+        }
+
+        println!("\nCritical Success Factors:");
+        for factor in &campaign.critical_success_factors {
+            println!("  • {}", factor);
+        }
+
+        println!("\n========================================\n");
+        Ok(())
+    }
+
+    pub fn show_timing_windows(&self) -> Result<()> {
+        let planner = CampaignPlanner;
+        let windows = planner.identify_optimal_timing()?;
+
+        println!("\n=== Optimal Attack Timing Windows ===\n");
+        for window in windows {
+            println!("{}:", window.window_type);
+            println!("  Description: {}", window.description);
+            println!("  Timing: {}", window.timing);
+            println!("  Guidance: {}", window.operational_guidance);
+            println!("  Risk Level: {}\n", window.risk_level);
+        }
+
+        println!("========================================\n");
+        Ok(())
+    }
+
+    pub fn estimate_detection_timeline(&self, actor_id: &str, target_org: &str, sector: &str) -> Result<()> {
+        let planner = CampaignPlanner;
+        let campaign = planner.plan_multi_actor_campaign(actor_id, target_org, sector)?;
+        let timeline = planner.estimate_detection_timeline(&campaign)?;
+
+        println!("\n{}", timeline);
         println!("========================================\n");
         Ok(())
     }

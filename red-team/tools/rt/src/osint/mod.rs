@@ -12,6 +12,7 @@ pub mod detection_rules;
 pub mod timeline;
 pub mod threat_emulation;
 pub mod incident_mapping;
+pub mod campaign_planner;
 
 pub use models::{OsintEntity, EntityType, OsintResult, BreachData, ThreatIndicator};
 pub use sources::{DataSource, DataSourceType, MockDataSource, HaveIBeenPwnedSource, VirusTotalSource, IPReputationSource};
@@ -27,3 +28,4 @@ pub use detection_rules::{DetectionRuleGenerator, DetectionRule, DetectionRulese
 pub use timeline::{TimelineAnalyzer, AttackTimeline, CampaignTimeline, TimelineEvent, AttackStage};
 pub use threat_emulation::{ThreatEmulator, AttackScenario, ReconPlan, TargetProfile, DeliveryVector};
 pub use incident_mapping::{IncidentMapper, ScenarioIncident, IncidentChain, ActorScenarioMapping};
+pub use campaign_planner::{CampaignPlanner, CampaignStrategy, CampaignPhase, AnomalyWindow};
