@@ -183,6 +183,29 @@ enum OsintSubcommand {
         /// Target domain
         target_domain: String,
     },
+    /// Map scenarios to actor incidents
+    Incidents {
+        /// Actor ID to map scenarios for
+        actor_id: String,
+    },
+    /// Build attack chain from known scenarios
+    Chain {
+        /// Actor ID for attack chain
+        actor_id: String,
+        /// Target sector (Government, Finance, etc.)
+        #[arg(default_value = "Government")]
+        sector: String,
+    },
+    /// Analyze threat actor technique usage patterns
+    ActorTechniques {
+        /// Actor ID to analyze techniques for
+        actor_id: String,
+    },
+    /// Show actor infrastructure patterns
+    Infrastructure {
+        /// Actor ID to analyze infrastructure for
+        actor_id: String,
+    },
 }
 
 #[derive(Subcommand)]
@@ -696,6 +719,18 @@ async fn handle_osint(subcommand: OsintSubcommand) -> anyhow::Result<()> {
         }
         OsintSubcommand::Vectors { actor_id, target_domain } => {
             cmd.recommend_delivery_vectors(&actor_id, &target_domain).await?;
+        }
+        OsintSubcommand::Incidents { actor_id } => {
+            cmd.show_scenario_incidents(&actor_id)?;
+        }
+        OsintSubcommand::Chain { actor_id, sector } => {
+            cmd.show_attack_chain(&actor_id, &sector)?;
+        }
+        OsintSubcommand::ActorTechniques { actor_id } => {
+            cmd.show_technique_analysis(&actor_id)?;
+        }
+        OsintSubcommand::Infrastructure { actor_id } => {
+            cmd.show_infrastructure_patterns(&actor_id)?;
         }
     }
 

@@ -1,4 +1,4 @@
-use crate::{Framework, osint::{OsintAggregator, OsintCache, ThreatIntelligenceFeed, OsintApiConfig, MultiSourceAggregator, CorrelationEngine, GeolocationEngine, AttributionEngine, DetectionRuleGenerator, RuleFormat, TimelineAnalyzer, ThreatEmulator}};
+use crate::{Framework, osint::{OsintAggregator, OsintCache, ThreatIntelligenceFeed, OsintApiConfig, MultiSourceAggregator, CorrelationEngine, GeolocationEngine, AttributionEngine, DetectionRuleGenerator, RuleFormat, TimelineAnalyzer, ThreatEmulator, IncidentMapper}};
 use anyhow::Result;
 
 pub struct OsintCommand {
@@ -798,6 +798,58 @@ impl OsintCommand {
             }
         } else {
             println!("Actor {} not found", actor_id);
+        }
+
+        println!("========================================\n");
+        Ok(())
+    }
+
+    pub fn show_scenario_incidents(&self, actor_id: &str) -> Result<()> {
+        let mapper = IncidentMapper::new();
+        let result = mapper.map_scenarios_to_actor(actor_id);
+
+        match result {
+            Ok(output) => println!("{}", output),
+            Err(err) => println!("Error: {}", err),
+        }
+
+        println!("========================================\n");
+        Ok(())
+    }
+
+    pub fn show_attack_chain(&self, actor_id: &str, target_sector: &str) -> Result<()> {
+        let mapper = IncidentMapper::new();
+        let result = mapper.build_attack_chain(actor_id, target_sector);
+
+        match result {
+            Ok(output) => println!("{}", output),
+            Err(err) => println!("Error: {}", err),
+        }
+
+        println!("========================================\n");
+        Ok(())
+    }
+
+    pub fn show_technique_analysis(&self, actor_id: &str) -> Result<()> {
+        let mapper = IncidentMapper::new();
+        let result = mapper.analyze_technique_usage(actor_id);
+
+        match result {
+            Ok(output) => println!("{}", output),
+            Err(err) => println!("Error: {}", err),
+        }
+
+        println!("========================================\n");
+        Ok(())
+    }
+
+    pub fn show_infrastructure_patterns(&self, actor_id: &str) -> Result<()> {
+        let mapper = IncidentMapper::new();
+        let result = mapper.get_infrastructure_patterns(actor_id);
+
+        match result {
+            Ok(output) => println!("{}", output),
+            Err(err) => println!("Error: {}", err),
         }
 
         println!("========================================\n");
