@@ -228,6 +228,22 @@ enum OsintSubcommand {
         #[arg(default_value = "Government")]
         sector: String,
     },
+    /// List high-value supply chain targets
+    Vendors,
+    /// Plan vendor compromise strategy
+    Compromise {
+        /// Vendor name (SolarWinds, Microsoft, JetBrains, Slack)
+        vendor: String,
+        /// Software name
+        software: String,
+    },
+    /// Analyze compromise impact
+    Impact {
+        /// Vendor to analyze
+        vendor: String,
+    },
+    /// Show supply chain attack surface
+    Surface,
 }
 
 #[derive(Subcommand)]
@@ -762,6 +778,18 @@ async fn handle_osint(subcommand: OsintSubcommand) -> anyhow::Result<()> {
         }
         OsintSubcommand::Detection { actor_id, target_org, sector } => {
             cmd.estimate_detection_timeline(&actor_id, &target_org, &sector)?;
+        }
+        OsintSubcommand::Vendors => {
+            cmd.list_vendor_targets()?;
+        }
+        OsintSubcommand::Compromise { vendor, software } => {
+            cmd.plan_vendor_compromise(&vendor, &software)?;
+        }
+        OsintSubcommand::Impact { vendor } => {
+            cmd.show_compromise_impact(&vendor)?;
+        }
+        OsintSubcommand::Surface => {
+            cmd.show_attack_surface()?;
         }
     }
 

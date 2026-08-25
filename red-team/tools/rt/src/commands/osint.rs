@@ -1,4 +1,4 @@
-use crate::{Framework, osint::{OsintAggregator, OsintCache, ThreatIntelligenceFeed, OsintApiConfig, MultiSourceAggregator, CorrelationEngine, GeolocationEngine, AttributionEngine, DetectionRuleGenerator, RuleFormat, TimelineAnalyzer, ThreatEmulator, IncidentMapper, CampaignPlanner}};
+use crate::{Framework, osint::{OsintAggregator, OsintCache, ThreatIntelligenceFeed, OsintApiConfig, MultiSourceAggregator, CorrelationEngine, GeolocationEngine, AttributionEngine, DetectionRuleGenerator, RuleFormat, TimelineAnalyzer, ThreatEmulator, IncidentMapper, CampaignPlanner, SupplyChainPlanner}};
 use anyhow::Result;
 
 pub struct OsintCommand {
@@ -936,6 +936,93 @@ impl OsintCommand {
 
         println!("\n{}", timeline);
         println!("========================================\n");
+        Ok(())
+    }
+
+    pub fn list_vendor_targets(&self) -> Result<()> {
+        let planner = SupplyChainPlanner;
+        let targets = planner.identify_vendor_targets()?;
+
+        println!("\n=== High-Value Supply Chain Targets ===\n");
+        for target in targets {
+            println!("{}:", target.vendor_name);
+            println!("  Software: {}", target.software_name);
+            println!("  Market Penetration: {:.0}%", target.market_penetration * 100.0);
+            println!("  Affected Customers: ~{:?}", target.customer_count_estimate);
+            println!("  Security Maturity: {}", target.security_maturity);
+            println!("  Exploitation Difficulty: {}", target.exploitation_difficulty);
+            println!("  Impact Score: {:.2}/1.0", target.potential_impact_score);
+            println!("  Target Sectors:");
+            for sector in &target.target_sectors {
+                println!("    • {}", sector);
+            }
+            println!();
+        }
+
+        println!("========================================\n");
+        Ok(())
+    }
+
+    pub fn plan_vendor_compromise(&self, vendor: &str, software: &str) -> Result<()> {
+        let planner = SupplyChainPlanner;
+        let strategy = planner.plan_vendor_compromise(vendor, software)?;
+
+        println!("\n=== Vendor Compromise Strategy ===\n");
+        println!("Target: {} ({})", strategy.vendor_target, strategy.software_target);
+        println!("Attack Vector: {}", strategy.attack_vector);
+        println!("Difficulty: {}\n", strategy.compromise_difficulty);
+
+        println!("Attack Techniques:");
+        for technique in &strategy.techniques {
+            println!("  • {}", technique);
+        }
+
+        println!("\nCompromise Steps:");
+        for (i, step) in strategy.steps.iter().enumerate() {
+            println!("  {}. {}", i + 1, step);
+        }
+
+        println!("\nRequired Capabilities:");
+        for cap in &strategy.required_capabilities {
+            println!("  • {}", cap);
+        }
+
+        println!("\nPersistence Methods:");
+        for method in &strategy.persistence_methods {
+            println!("  • {}", method);
+        }
+
+        println!("\nEvasion Tactics:");
+        for tactic in &strategy.evasion_tactics {
+            println!("  • {}", tactic);
+        }
+
+        println!("\nSuccess Probability: {:.0}%", strategy.success_probability * 100.0);
+        println!("Detection Risk: {:.0}%", strategy.detection_risk * 100.0);
+        println!("Estimated Affected Targets: {:?}\n", strategy.affected_targets_estimate);
+
+        println!("========================================\n");
+        Ok(())
+    }
+
+    pub fn show_compromise_impact(&self, vendor: &str) -> Result<()> {
+        let planner = SupplyChainPlanner;
+        let impact = planner.estimate_compromise_impact(vendor)?;
+
+        println!("\n{}", impact);
+        println!("========================================\n");
+        Ok(())
+    }
+
+    pub fn show_attack_surface(&self) -> Result<()> {
+        let planner = SupplyChainPlanner;
+        let surface = planner.identify_attack_surface()?;
+
+        println!("\n=== Supply Chain Attack Surface ===\n");
+        for (i, vector) in surface.iter().enumerate() {
+            println!("{}. {}", i + 1, vector);
+        }
+        println!("\n========================================\n");
         Ok(())
     }
 
