@@ -136,6 +136,108 @@ impl ThreatIntelligenceFeed {
             },
         );
 
+        actors.insert(
+            "FIN7".to_string(),
+            ThreatActor {
+                actor_id: "FIN7".to_string(),
+                name: "FIN7".to_string(),
+                aliases: vec!["Carbanak".to_string(), "Anunak".to_string()],
+                country: "Russia/Eastern Europe".to_string(),
+                motivation: "Financial theft and credit card fraud".to_string(),
+                techniques: vec![
+                    "T1566".to_string(),
+                    "T1566.002".to_string(),
+                    "T1547".to_string(),
+                    "T1059".to_string(),
+                ],
+                recent_activity: vec![
+                    "2026-08: Retail POS system compromise".to_string(),
+                    "2026-07: Financial institution targeting".to_string(),
+                ],
+                known_targets: vec![
+                    "Financial institutions".to_string(),
+                    "Retail chains".to_string(),
+                    "Hospitality sector".to_string(),
+                ],
+                infrastructure: ThreatFeedData {
+                    c2_ips: vec!["192.0.2.120".to_string()],
+                    malware_hashes: vec!["8c61352c8ff647b7de4a0d8be8f0cf2a".to_string()],
+                    phishing_domains: vec!["update-adobe-reader.ru".to_string()],
+                    exploit_kits: vec!["CVE-2024-0640".to_string()],
+                    attributed_actors: vec!["FIN7".to_string()],
+                    recent_campaigns: vec!["Scattered Spider".to_string()],
+                },
+            },
+        );
+
+        actors.insert(
+            "Conti".to_string(),
+            ThreatActor {
+                actor_id: "Conti".to_string(),
+                name: "Conti".to_string(),
+                aliases: vec!["Wizard Spider".to_string(), "UNC692".to_string()],
+                country: "Russia".to_string(),
+                motivation: "Ransomware extortion and financial gain".to_string(),
+                techniques: vec![
+                    "T1486".to_string(),
+                    "T1491".to_string(),
+                    "T1005".to_string(),
+                    "T1020".to_string(),
+                ],
+                recent_activity: vec![
+                    "2026-08: Critical infrastructure ransomware".to_string(),
+                    "2026-07: Hospital network compromise".to_string(),
+                ],
+                known_targets: vec![
+                    "Critical infrastructure".to_string(),
+                    "Healthcare sector".to_string(),
+                    "Government agencies".to_string(),
+                ],
+                infrastructure: ThreatFeedData {
+                    c2_ips: vec!["203.0.113.99".to_string(), "192.0.2.88".to_string()],
+                    malware_hashes: vec!["f847fd2b8ba9762c3cf8e8f2c5f6c4d2".to_string()],
+                    phishing_domains: vec!["secure-file-sharing.ru".to_string()],
+                    exploit_kits: vec!["CVE-2024-1234".to_string()],
+                    attributed_actors: vec!["Conti".to_string()],
+                    recent_campaigns: vec!["Operation BlackCat".to_string()],
+                },
+            },
+        );
+
+        actors.insert(
+            "Emotet".to_string(),
+            ThreatActor {
+                actor_id: "Emotet".to_string(),
+                name: "Emotet".to_string(),
+                aliases: vec!["Mealybug".to_string(), "TA542".to_string()],
+                country: "Ukraine/Eastern Europe".to_string(),
+                motivation: "Malware distribution and botnet operation".to_string(),
+                techniques: vec![
+                    "T1566".to_string(),
+                    "T1059".to_string(),
+                    "T1566.001".to_string(),
+                    "T1027".to_string(),
+                ],
+                recent_activity: vec![
+                    "2026-08: Large-scale phishing campaign".to_string(),
+                    "2026-07: Banking trojan distribution".to_string(),
+                ],
+                known_targets: vec![
+                    "Financial institutions".to_string(),
+                    "Enterprises".to_string(),
+                    "Government".to_string(),
+                ],
+                infrastructure: ThreatFeedData {
+                    c2_ips: vec!["198.51.100.77".to_string()],
+                    malware_hashes: vec!["3e4c4f5d6e7f8a9b0c1d2e3f4a5b6c7d".to_string()],
+                    phishing_domains: vec!["payment-confirmation-bank.com".to_string()],
+                    exploit_kits: vec!["CVE-2024-2891".to_string()],
+                    attributed_actors: vec!["Emotet".to_string()],
+                    recent_campaigns: vec!["Operation TrickBot".to_string()],
+                },
+            },
+        );
+
         ThreatIntelligenceFeed {
             actors,
             indicators: HashMap::new(),
@@ -210,8 +312,10 @@ mod tests {
     fn test_find_actors_by_country() {
         let feed = ThreatIntelligenceFeed::new();
         let russian_actors = feed.find_actors_by_country("Russia");
-        assert_eq!(russian_actors.len(), 1);
-        assert_eq!(russian_actors[0].actor_id, "APT28");
+        assert!(russian_actors.len() >= 2);
+        let actor_ids: Vec<_> = russian_actors.iter().map(|a| a.actor_id.as_str()).collect();
+        assert!(actor_ids.contains(&"APT28"));
+        assert!(actor_ids.contains(&"Conti"));
     }
 
     #[test]

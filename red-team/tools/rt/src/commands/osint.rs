@@ -1,25 +1,51 @@
-use crate::{Framework, osint::{OsintAggregator, OsintCache, ThreatIntelligenceFeed}};
+use crate::{Framework, osint::{OsintAggregator, OsintCache, ThreatIntelligenceFeed, OsintApiConfig, MultiSourceAggregator}};
 use anyhow::Result;
 
 pub struct OsintCommand {
     framework: Framework,
     aggregator: OsintAggregator,
+    multi_source: Option<MultiSourceAggregator>,
     cache: OsintCache,
     threat_feed: ThreatIntelligenceFeed,
+    config: OsintApiConfig,
 }
 
 impl OsintCommand {
     pub fn new() -> Result<Self> {
+        Self::with_config(OsintApiConfig::from_env())
+    }
+
+    pub fn with_config(config: OsintApiConfig) -> Result<Self> {
         let framework = Framework::new();
-        let aggregator = OsintAggregator::with_mock();
+
+        let aggregator = if config.use_mock_data {
+            OsintAggregator::with_mock()
+        } else if config.haveibeenpwned_enabled {
+            OsintAggregator::with_haveibeenpwned()
+        } else {
+            OsintAggregator::with_mock()
+        };
+
+        let multi_source = if !config.use_mock_data
+            && (config.virustotal_key.is_some() || config.abuseipdb_key.is_some()) {
+            Some(MultiSourceAggregator::new(
+                config.virustotal_key.clone(),
+                config.abuseipdb_key.clone(),
+            ))
+        } else {
+            None
+        };
+
         let cache = OsintCache::new(3600);
         let threat_feed = ThreatIntelligenceFeed::new();
 
         Ok(OsintCommand {
             framework,
             aggregator,
+            multi_source,
             cache,
             threat_feed,
+            config,
         })
     }
 
@@ -32,10 +58,28 @@ impl OsintCommand {
             return Ok(());
         }
 
-        match self.aggregator.analyze_email(entity).await? {
-            Some(result) => {
-                self.cache.set_email(entity.to_string(), result.clone()).await;
-                self.print_osint_result(&result);
+        let result = if let Some(multi) = &self.multi_source {
+            let email_result = multi.analyze_email_comprehensive(entity).await.ok().flatten();
+            email_result
+        } else {
+            self.aggregator.analyze_email(entity).await?
+        };
+
+        match result {
+            Some(osint_result) => {
+                self.cache.set_email(entity.to_string(), osint_result.clone()).await;
+                self.print_osint_result(&osint_result);
+
+                if !self.config.use_mock_data {
+                    println!("\n✓ Data sourced from external APIs");
+                    if self.config.haveibeenpwned_enabled {
+                        print!(" (HaveIBeenPwned)");
+                    }
+                    if self.config.virustotal_key.is_some() {
+                        print!(" (VirusTotal)");
+                    }
+                    println!();
+                }
             }
             None => {
                 println!("No data found for: {}", entity);
