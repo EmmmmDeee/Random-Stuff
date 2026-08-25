@@ -245,6 +245,119 @@ impl DataSource for HaveIBeenPwnedSource {
     }
 }
 
+pub struct VirusTotalSource {
+    client: reqwest::Client,
+    api_key: Option<String>,
+}
+
+impl VirusTotalSource {
+    pub fn new(api_key: Option<String>) -> Self {
+        VirusTotalSource {
+            client: reqwest::Client::new(),
+            api_key,
+        }
+    }
+
+    async fn fetch_domain_report(&self, domain: &str) -> Result<serde_json::Value> {
+        if self.api_key.is_none() {
+            return Ok(serde_json::json!({}));
+        }
+
+        let api_key = self.api_key.as_ref().unwrap();
+        let url = format!("https://www.virustotal.com/api/v3/domains/{}", domain);
+
+        match self
+            .client
+            .get(&url)
+            .header("x-apikey", api_key)
+            .timeout(std::time::Duration::from_secs(10))
+            .send()
+            .await
+        {
+            Ok(resp) => {
+                if resp.status().is_success() {
+                    match resp.json::<serde_json::Value>().await {
+                        Ok(data) => Ok(data),
+                        Err(_) => Ok(serde_json::json!({})),
+                    }
+                } else if resp.status().as_u16() == 404 {
+                    Ok(serde_json::json!({}))
+                } else if resp.status().as_u16() == 429 {
+                    anyhow::bail!("VirusTotal API rate limited (429)")
+                } else {
+                    Ok(serde_json::json!({}))
+                }
+            }
+            Err(_) => Ok(serde_json::json!({})),
+        }
+    }
+}
+
+#[async_trait]
+impl DataSource for VirusTotalSource {
+    async fn query_email(&self, _email: &str) -> Result<Option<OsintResult>> {
+        Ok(None)
+    }
+
+    async fn query_domain(&self, domain: &str) -> Result<Option<DomainReputation>> {
+        let report = self.fetch_domain_report(domain).await?;
+
+        if report.is_null() || report.get("data").is_none() {
+            return Ok(None);
+        }
+
+        let data = &report["data"];
+        let attributes = &data["attributes"];
+
+        let last_analysis_stats = attributes
+            .get("last_analysis_stats")
+            .and_then(|v| v.as_object());
+
+        let (malicious, suspicious) = if let Some(stats) = last_analysis_stats {
+            (
+                stats
+                    .get("malicious")
+                    .and_then(|v| v.as_i64())
+                    .unwrap_or(0) as i32,
+                stats
+                    .get("suspicious")
+                    .and_then(|v| v.as_i64())
+                    .unwrap_or(0) as i32,
+            )
+        } else {
+            (0, 0)
+        };
+
+        let reputation_score = if malicious > 0 {
+            0.0
+        } else if suspicious > 0 {
+            0.3
+        } else {
+            0.9
+        };
+
+        let mut threat_votes = std::collections::HashMap::new();
+        threat_votes.insert("malicious".to_string(), malicious);
+        threat_votes.insert("suspicious".to_string(), suspicious);
+
+        Ok(Some(DomainReputation {
+            domain: domain.to_string(),
+            reputation_score,
+            is_malicious: malicious > 0,
+            threat_votes,
+            last_update: chrono::Utc::now().format("%Y-%m-%d").to_string(),
+        }))
+    }
+
+    async fn query_ip(&self, _ip: &str) -> Result<Option<IPIntelligence>> {
+        Ok(None)
+    }
+
+    async fn query_username(&self, _username: &str) -> Result<Vec<CredentialData>> {
+        Ok(vec![])
+    }
+}
+
 pub struct SourceConfig {
     pub sources_enabled: Vec<DataSourceType>,
     pub cache_ttl_seconds: u64,

@@ -1,5 +1,5 @@
 use crate::osint::models::*;
-use crate::osint::sources::{DataSource, MockDataSource, HaveIBeenPwnedSource};
+use crate::osint::sources::{DataSource, MockDataSource, HaveIBeenPwnedSource, VirusTotalSource};
 use anyhow::Result;
 use std::sync::Arc;
 
@@ -21,6 +21,28 @@ impl OsintAggregator {
     pub fn with_haveibeenpwned() -> Self {
         OsintAggregator {
             source: Arc::new(HaveIBeenPwnedSource::new()),
+        }
+    }
+
+    pub fn with_virustotal(api_key: Option<String>) -> Self {
+        OsintAggregator {
+            source: Arc::new(VirusTotalSource::new(api_key)),
+        }
+    }
+
+    pub fn with_hybrid(hibp_enabled: bool, virustotal_key: Option<String>) -> Self {
+        if hibp_enabled {
+            OsintAggregator {
+                source: Arc::new(HaveIBeenPwnedSource::new()),
+            }
+        } else if virustotal_key.is_some() {
+            OsintAggregator {
+                source: Arc::new(VirusTotalSource::new(virustotal_key)),
+            }
+        } else {
+            OsintAggregator {
+                source: Arc::new(MockDataSource),
+            }
         }
     }
 
