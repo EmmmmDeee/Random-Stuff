@@ -98,6 +98,16 @@ enum OsintSubcommand {
         /// Entities as JSON array string
         entities: String,
     },
+    /// Analyze threat actor from intelligence feed
+    Actor {
+        /// Actor ID (APT28, APT41, Lazarus, etc.)
+        actor_id: String,
+    },
+    /// Search threat feed
+    Search {
+        /// Query (country:Russia, technique:T1566, sector:Finance, indicator:1.2.3.4)
+        query: String,
+    },
 }
 
 #[derive(Subcommand)]
@@ -560,6 +570,12 @@ async fn handle_osint(subcommand: OsintSubcommand) -> anyhow::Result<()> {
         OsintSubcommand::Bulk { entities } => {
             let entity_list: Vec<String> = serde_json::from_str(&entities)?;
             cmd.bulk_analyze(entity_list).await?;
+        }
+        OsintSubcommand::Actor { actor_id } => {
+            cmd.threat_actor_analysis(&actor_id).await?;
+        }
+        OsintSubcommand::Search { query } => {
+            cmd.threat_feed_search(&query).await?;
         }
     }
 

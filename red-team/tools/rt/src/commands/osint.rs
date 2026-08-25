@@ -1,10 +1,11 @@
-use crate::{Framework, osint::{OsintAggregator, OsintCache}};
+use crate::{Framework, osint::{OsintAggregator, OsintCache, ThreatIntelligenceFeed}};
 use anyhow::Result;
 
 pub struct OsintCommand {
     framework: Framework,
     aggregator: OsintAggregator,
     cache: OsintCache,
+    threat_feed: ThreatIntelligenceFeed,
 }
 
 impl OsintCommand {
@@ -12,11 +13,13 @@ impl OsintCommand {
         let framework = Framework::new();
         let aggregator = OsintAggregator::with_mock();
         let cache = OsintCache::new(3600);
+        let threat_feed = ThreatIntelligenceFeed::new();
 
         Ok(OsintCommand {
             framework,
             aggregator,
             cache,
+            threat_feed,
         })
     }
 
@@ -111,6 +114,112 @@ impl OsintCommand {
         println!("  Low: {}", low);
 
         println!("\n=============================\n");
+        Ok(())
+    }
+
+    pub async fn threat_actor_analysis(&self, actor_id: &str) -> Result<()> {
+        println!("\n=== Threat Actor Intelligence ===\n");
+
+        if let Some(actor) = self.threat_feed.get_actor(actor_id) {
+            println!("Actor ID: {}", actor.actor_id);
+            println!("Name: {}", actor.name);
+            println!("Aliases: {}", actor.aliases.join(", "));
+            println!("Country: {}", actor.country);
+            println!("Motivation: {}\n", actor.motivation);
+
+            println!("Known Techniques:");
+            for technique in &actor.techniques {
+                println!("  • {}", technique);
+            }
+            println!();
+
+            println!("Known Targets:");
+            for target in &actor.known_targets {
+                println!("  • {}", target);
+            }
+            println!();
+
+            println!("Recent Activity:");
+            for activity in &actor.recent_activity {
+                println!("  • {}", activity);
+            }
+            println!();
+
+            println!("Known Infrastructure:");
+            if !actor.infrastructure.c2_ips.is_empty() {
+                println!("  C2 IPs: {}", actor.infrastructure.c2_ips.join(", "));
+            }
+            if !actor.infrastructure.phishing_domains.is_empty() {
+                println!(
+                    "  Phishing Domains: {}",
+                    actor.infrastructure.phishing_domains.join(", ")
+                );
+            }
+            if !actor.infrastructure.recent_campaigns.is_empty() {
+                println!(
+                    "  Active Campaigns: {}",
+                    actor.infrastructure.recent_campaigns.join(", ")
+                );
+            }
+
+            println!("\nIndicator Monitoring:");
+            for campaign in &actor.infrastructure.recent_campaigns {
+                println!("  ✓ Monitor for {}", campaign);
+            }
+        } else {
+            println!("Threat actor {} not found in threat intelligence feed", actor_id);
+        }
+
+        println!("\n==============================\n");
+        Ok(())
+    }
+
+    pub async fn threat_feed_search(&self, query: &str) -> Result<()> {
+        println!("\n=== Threat Feed Search ===\n");
+
+        let query_lower = query.to_lowercase();
+
+        if query_lower.starts_with("country:") {
+            let country = query.strip_prefix("country:").unwrap_or("");
+            let actors = self.threat_feed.find_actors_by_country(country);
+            println!("Actors from {}:", country);
+            for actor in actors {
+                println!("  • {} ({})", actor.actor_id, actor.name);
+            }
+        } else if query_lower.starts_with("technique:") {
+            let technique = query.strip_prefix("technique:").unwrap_or("");
+            let actors = self.threat_feed.find_actors_by_technique(technique);
+            println!("Actors using technique {}:", technique);
+            for actor in actors {
+                println!("  • {} ({})", actor.actor_id, actor.name);
+            }
+        } else if query_lower.starts_with("sector:") {
+            let sector = query.strip_prefix("sector:").unwrap_or("");
+            let actors = self.threat_feed.find_actors_targeting_sector(sector);
+            println!("Actors targeting {}:", sector);
+            for actor in actors {
+                println!("  • {} ({})", actor.actor_id, actor.name);
+            }
+        } else if query_lower.starts_with("indicator:") {
+            let indicator = query.strip_prefix("indicator:").unwrap_or("");
+            let matches = self.threat_feed.check_indicator_presence(indicator);
+            if matches.is_empty() {
+                println!("No actors found for indicator: {}", indicator);
+            } else {
+                println!("Indicator {} attributed to:", indicator);
+                for actor_match in matches {
+                    println!("  • {}", actor_match);
+                }
+            }
+        } else {
+            println!("Supported queries:");
+            println!("  country:<country>");
+            println!("  technique:<technique>");
+            println!("  sector:<sector>");
+            println!("  indicator:<ip/domain/hash>");
+        }
+
+        println!("\n=======================\n");
         Ok(())
     }
 
