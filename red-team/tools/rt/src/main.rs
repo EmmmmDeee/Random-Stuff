@@ -268,6 +268,21 @@ enum OsintSubcommand {
         /// Estimated number of successful harvests
         harvest: usize,
     },
+    /// Detect defense environment (enterprise, mid_market, small_business)
+    DefenseDetect {
+        /// Environment type
+        env_type: String,
+    },
+    /// Plan evasion strategy for specific defense tool
+    Evasion {
+        /// Defense tool name (windows_defender, crowdstrike_falcon, splunk_siem)
+        tool: String,
+    },
+    /// Plan comprehensive defense bypass for environment
+    Bypass {
+        /// Environment type (enterprise, mid_market, small_business)
+        env_type: String,
+    },
 }
 
 #[derive(Subcommand)]
@@ -826,6 +841,15 @@ async fn handle_osint(subcommand: OsintSubcommand) -> anyhow::Result<()> {
         }
         OsintSubcommand::ROI { harvest } => {
             cmd.calculate_roi(harvest)?;
+        }
+        OsintSubcommand::DefenseDetect { env_type } => {
+            cmd.detect_defense_environment(&env_type)?;
+        }
+        OsintSubcommand::Evasion { tool } => {
+            cmd.plan_evasion(&tool)?;
+        }
+        OsintSubcommand::Bypass { env_type } => {
+            cmd.plan_defense_bypass(&env_type)?;
         }
     }
 

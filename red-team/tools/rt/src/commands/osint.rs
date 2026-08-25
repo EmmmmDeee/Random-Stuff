@@ -1,4 +1,4 @@
-use crate::{Framework, osint::{OsintAggregator, OsintCache, ThreatIntelligenceFeed, OsintApiConfig, MultiSourceAggregator, CorrelationEngine, GeolocationEngine, AttributionEngine, DetectionRuleGenerator, RuleFormat, TimelineAnalyzer, ThreatEmulator, IncidentMapper, CampaignPlanner, SupplyChainPlanner, SocialEngineer}};
+use crate::{Framework, osint::{OsintAggregator, OsintCache, ThreatIntelligenceFeed, OsintApiConfig, MultiSourceAggregator, CorrelationEngine, GeolocationEngine, AttributionEngine, DetectionRuleGenerator, RuleFormat, TimelineAnalyzer, ThreatEmulator, IncidentMapper, CampaignPlanner, SupplyChainPlanner, SocialEngineer, CounterDefenseStrategist}};
 use anyhow::Result;
 
 pub struct OsintCommand {
@@ -1103,6 +1103,86 @@ impl OsintCommand {
 
         println!("{}", roi);
         println!("========================================\n");
+        Ok(())
+    }
+
+    pub fn detect_defense_environment(&self, env_type: &str) -> Result<()> {
+        let strategist = CounterDefenseStrategist;
+        let env = strategist.detect_defense_environment(env_type)?;
+
+        println!("\n=== Detected Defense Environment: {} ===\n", env_type);
+        println!("Detection Maturity Score: {:.0}%\n", env.detection_maturity_score * 100.0);
+
+        println!("EDR Solutions:");
+        for tool in &env.edr_solutions {
+            println!("  • {}", tool);
+        }
+
+        println!("\nSIEM Systems:");
+        for tool in &env.siem_systems {
+            println!("  • {}", tool);
+        }
+
+        println!("\nHost-Based Detection:");
+        for detection in &env.host_detection {
+            println!("  • {}", detection);
+        }
+
+        println!("\nNetwork-Based Detection:");
+        for detection in &env.network_detection {
+            println!("  • {}", detection);
+        }
+
+        println!("\nIncident Response Capability: {}", env.incident_response_capability);
+        println!("\n========================================\n");
+        Ok(())
+    }
+
+    pub fn plan_evasion(&self, tool: &str) -> Result<()> {
+        let strategist = CounterDefenseStrategist;
+        let strategy = strategist.plan_evasion_strategy(tool)?;
+
+        println!("\n=== Evasion Strategy: {} ===\n", strategy.defense_target);
+        println!("Detection Technique: {}", strategy.detection_technique);
+        println!("Evasion Method: {}", strategy.evasion_method);
+        println!("Implementation Complexity: {}", strategy.implementation_complexity);
+        println!("Effectiveness Score: {:.0}%\n", strategy.effectiveness_score * 100.0);
+        println!("Detection Avoidance Period: {}\n", strategy.detection_avoidance_period);
+
+        println!("Prerequisites:");
+        for (i, prereq) in strategy.prerequisites.iter().enumerate() {
+            println!("  {}. {}", i + 1, prereq);
+        }
+
+        println!("\nImplementation Steps:");
+        for step in &strategy.steps {
+            println!("  • {}", step);
+        }
+
+        println!("\nDetection Risks:");
+        for risk in &strategy.detection_risks {
+            println!("  • {}", risk);
+        }
+
+        println!("\nBehavioral Indicators:");
+        for indicator in &strategy.behavioral_indicators {
+            println!("  • {}", indicator);
+        }
+
+        println!("\nAlternative Methods:");
+        for alt in &strategy.alternative_methods {
+            println!("  • {}", alt);
+        }
+
+        println!("\n========================================\n");
+        Ok(())
+    }
+
+    pub fn plan_defense_bypass(&self, env_type: &str) -> Result<()> {
+        let strategist = CounterDefenseStrategist;
+        let report = strategist.generate_detection_evasion_report(env_type)?;
+
+        println!("{}", report);
         Ok(())
     }
 

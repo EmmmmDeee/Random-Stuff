@@ -15,6 +15,7 @@ pub mod incident_mapping;
 pub mod campaign_planner;
 pub mod supply_chain;
 pub mod social_engineering;
+pub mod counter_defense;
 
 pub use models::{OsintEntity, EntityType, OsintResult, BreachData, ThreatIndicator};
 pub use sources::{DataSource, DataSourceType, MockDataSource, HaveIBeenPwnedSource, VirusTotalSource, IPReputationSource};
@@ -33,3 +34,4 @@ pub use incident_mapping::{IncidentMapper, ScenarioIncident, IncidentChain, Acto
 pub use campaign_planner::{CampaignPlanner, CampaignStrategy, CampaignPhase, AnomalyWindow};
 pub use supply_chain::{SupplyChainPlanner, VendorTarget, CompromiseStrategy, MalwareStaging};
 pub use social_engineering::{SocialEngineer, PersonnelProfile, PhishingTemplate};
+pub use counter_defense::{CounterDefenseStrategist, DefenseEnvironment, EvvasionStrategy, DefenseBypassPlan};
