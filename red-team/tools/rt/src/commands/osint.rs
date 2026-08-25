@@ -1,4 +1,4 @@
-use crate::{Framework, osint::{OsintAggregator, OsintCache, ThreatIntelligenceFeed, OsintApiConfig, MultiSourceAggregator, CorrelationEngine}};
+use crate::{Framework, osint::{OsintAggregator, OsintCache, ThreatIntelligenceFeed, OsintApiConfig, MultiSourceAggregator, CorrelationEngine, GeolocationEngine}};
 use anyhow::Result;
 
 pub struct OsintCommand {
@@ -391,6 +391,97 @@ impl OsintCommand {
         }
 
         println!("\n==========================\n");
+        Ok(())
+    }
+
+    pub async fn analyze_geolocation(&self, ip: &str) -> Result<()> {
+        println!("\n=== IP Geolocation Analysis ===\n");
+
+        let engine = GeolocationEngine::new();
+        if let Some(location) = engine.resolve_ip_location(ip) {
+            println!("IP Address: {}", location.ip_address);
+            println!("Country: {} ({})", location.country, location.country_code);
+            println!("Region/City: {}, {}", location.region, location.city);
+            println!("Coordinates: {}, {}", location.latitude, location.longitude);
+            println!("ISP: {}", location.isp);
+            println!("Organization: {}", location.organization);
+            println!("Threat Level: {}\n", location.threat_level);
+        } else {
+            println!("Geolocation data not available for IP: {}", ip);
+        }
+
+        println!("\n==============================\n");
+        Ok(())
+    }
+
+    pub async fn analyze_breach_stealer_data(&self, email: &str) -> Result<()> {
+        println!("\n=== Breach Stealer Intelligence ===\n");
+
+        let engine = GeolocationEngine::new();
+        let enrichment = engine.find_related_compromises(email);
+
+        println!("Email: {}", email);
+        println!("Geographic Risk Score: {:.2}\n", enrichment.geographic_risk_score);
+
+        if let Some(location) = enrichment.primary_location {
+            println!("Primary Location: {} ({}, {})",
+                     location.country, location.city, location.country_code);
+            println!("Coordinates: {}, {}", location.latitude, location.longitude);
+        }
+
+        if !enrichment.breach_history.is_empty() {
+            println!("\nVictim in {} Breaches:\n", enrichment.breach_history.len());
+
+            for (i, breach) in enrichment.breach_history.iter().enumerate() {
+                println!("{}. {} ({})", i + 1, breach.breach_name, breach.breach_date);
+                println!("   Forum: {}", breach.stealer_forum);
+                println!("   Exposed: {}", breach.exposed_fields.join(", "));
+                println!("   Recoverable: {}", if breach.recovery_possible { "Yes" } else { "No" });
+                println!();
+            }
+        } else {
+            println!("No breach stealer data found for this email");
+        }
+
+        if !enrichment.related_locations.is_empty() {
+            println!("\nRelated Locations:");
+            for location in &enrichment.related_locations {
+                println!("  • {} - {} ({})", location.city, location.country, location.threat_level);
+            }
+            println!();
+        }
+
+        println!("\n==================================\n");
+        Ok(())
+    }
+
+    pub async fn analyze_geographic_patterns(&self, email: &str) -> Result<()> {
+        println!("\n=== Geographic Breach Patterns ===\n");
+
+        let engine = GeolocationEngine::new();
+        let breaches = engine.get_breach_victim_data(email);
+        let patterns = engine.identify_geographic_patterns(&breaches);
+
+        println!("Email: {}\n", email);
+        println!("Breach Geographic Distribution:\n");
+
+        let mut sorted_patterns: Vec<_> = patterns.iter().collect();
+        sorted_patterns.sort_by_key(|&(_, count)| std::cmp::Reverse(*count));
+
+        for (location, count) in sorted_patterns {
+            println!("  • {}: {} breach(es)", location, count);
+        }
+
+        println!("\nGeographic Risk Assessment:");
+        if breaches.len() > 1 {
+            println!("  ⚠️  Multiple breaches across different geographies - HIGH RISK");
+        } else if breaches.len() == 1 {
+            println!("  ⚠️  Single breach - MEDIUM RISK");
+        } else {
+            println!("  ✓ No detected breaches - LOW RISK");
+        }
+
+        println!("\n==================================\n");
         Ok(())
     }
 

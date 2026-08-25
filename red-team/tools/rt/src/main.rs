@@ -119,6 +119,21 @@ enum OsintSubcommand {
         /// Actor ID to analyze
         actor_id: String,
     },
+    /// IP geolocation and threat analysis
+    Geolocation {
+        /// IP address to analyze
+        ip: String,
+    },
+    /// Breach stealer victim data analysis
+    Breach {
+        /// Email address to analyze
+        email: String,
+    },
+    /// Geographic breach patterns
+    Patterns {
+        /// Email address to analyze
+        email: String,
+    },
 }
 
 #[derive(Subcommand)]
@@ -599,6 +614,15 @@ async fn handle_osint(subcommand: OsintSubcommand) -> anyhow::Result<()> {
         }
         OsintSubcommand::Network { actor_id } => {
             cmd.analyze_actor_network(&actor_id).await?;
+        }
+        OsintSubcommand::Geolocation { ip } => {
+            cmd.analyze_geolocation(&ip).await?;
+        }
+        OsintSubcommand::Breach { email } => {
+            cmd.analyze_breach_stealer_data(&email).await?;
+        }
+        OsintSubcommand::Patterns { email } => {
+            cmd.analyze_geographic_patterns(&email).await?;
         }
     }
 
