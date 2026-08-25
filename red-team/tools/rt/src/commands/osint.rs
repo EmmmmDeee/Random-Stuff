@@ -1,4 +1,4 @@
-use crate::{Framework, osint::{OsintAggregator, OsintCache, ThreatIntelligenceFeed, OsintApiConfig, MultiSourceAggregator, CorrelationEngine, GeolocationEngine, AttributionEngine, DetectionRuleGenerator, RuleFormat}};
+use crate::{Framework, osint::{OsintAggregator, OsintCache, ThreatIntelligenceFeed, OsintApiConfig, MultiSourceAggregator, CorrelationEngine, GeolocationEngine, AttributionEngine, DetectionRuleGenerator, RuleFormat, TimelineAnalyzer}};
 use anyhow::Result;
 
 pub struct OsintCommand {
@@ -633,6 +633,49 @@ impl OsintCommand {
         }
 
         println!("\n=========================================\n");
+        Ok(())
+    }
+
+    pub async fn analyze_breach_timeline(&self, email: &str) -> Result<()> {
+        println!("\n=== Attack Timeline Analysis ===\n");
+
+        let analyzer = TimelineAnalyzer::new(self.threat_feed.clone());
+        let engine = crate::osint::GeolocationEngine::new();
+        let breaches = engine.get_breach_victim_data(email);
+
+        let timeline = analyzer.analyze_attack_timeline(email, &breaches);
+
+        println!("Email: {}", email);
+        println!("Total Events: {}", timeline.total_events);
+        println!("Attack Duration: {} days\n", timeline.attack_duration_days);
+
+        if let Some(earliest) = &timeline.earliest_event {
+            println!("Timeline: {} to {}", earliest, timeline.latest_event.as_deref().unwrap_or("Present"));
+        }
+
+        println!("Likely Attack Vector: {}\n", timeline.likely_attack_vector);
+
+        if let Some(country) = &timeline.estimated_attacker_country {
+            println!("Estimated Attacker Country: {}", country);
+        }
+
+        if !timeline.events.is_empty() {
+            println!("\nAttack Progression:");
+            for event in &timeline.events {
+                println!("  {} - {} ({:.0}% confidence)",
+                         event.date,
+                         event.stage.as_str(),
+                         event.confidence * 100.0);
+                println!("    Description: {}", event.description);
+            }
+        }
+
+        println!("\nInferred Attack Stages:");
+        for stage in &timeline.stage_progression {
+            println!("  • {}: {}", stage.as_str(), stage.description());
+        }
+
+        println!("\n==================================\n");
         Ok(())
     }
 

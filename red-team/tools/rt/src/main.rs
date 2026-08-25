@@ -157,6 +157,11 @@ enum OsintSubcommand {
         /// Rule ID to get guidance for
         rule_id: String,
     },
+    /// Analyze attack timeline from breach data
+    Timeline {
+        /// Email address to analyze timeline for
+        email: String,
+    },
 }
 
 #[derive(Subcommand)]
@@ -658,6 +663,9 @@ async fn handle_osint(subcommand: OsintSubcommand) -> anyhow::Result<()> {
         }
         OsintSubcommand::Tuning { rule_id } => {
             cmd.show_tuning_guidance(&rule_id).await?;
+        }
+        OsintSubcommand::Timeline { email } => {
+            cmd.analyze_breach_timeline(&email).await?;
         }
     }
 
