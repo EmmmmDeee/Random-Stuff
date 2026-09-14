@@ -30,7 +30,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
+      - name: Check out PR head commit
+        if: github.event_name == 'pull_request'
+        run: git checkout --quiet "${{ github.event.pull_request.head.sha }}"
 
       # --- 1. Credential scan ------------------------------------------------
       - name: Scan for exposed credentials
@@ -49,7 +52,8 @@ jobs:
           FOUND=0
           SCAN_DEPTH=200
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            RANGE=${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}
+            MERGE_BASE=$(git merge-base "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}")
+            RANGE="$MERGE_BASE..${{ github.event.pull_request.head.sha }}"
             HISTORY_CMD=(git log -p "$RANGE")
             FILES_CMD=(git log --diff-filter=A --name-only --pretty= "$RANGE")
           else
@@ -121,7 +125,8 @@ jobs:
           # rather than recent commits on main. For other events, fall back to
           # the most recent commits on HEAD.
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            RANGE=${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}
+            MERGE_BASE=$(git merge-base "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}")
+            RANGE="$MERGE_BASE..${{ github.event.pull_request.head.sha }}"
             LABEL="commits in $RANGE"
             COMMITS_CMD=(git log --format='%H' "$RANGE")
           else
