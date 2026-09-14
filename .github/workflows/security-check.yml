@@ -15,6 +15,9 @@ concurrency:
   group: security-check-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   # All checks run as sequential steps in ONE job so the whole suite needs only
   # a single runner. Splitting these into 5 parallel jobs requires 5 concurrent
@@ -170,6 +173,7 @@ jobs:
               echo "⚠️  Repository integrity check failed"
               echo "Changes detected:"
               diff .integrity-baseline /tmp/current.txt || true
+              exit 1
             fi
           fi
 
