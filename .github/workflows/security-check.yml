@@ -114,9 +114,11 @@ jobs:
              git rev-parse --verify --quiet origin/${{ github.base_ref }} >/dev/null; then
             RANGE=origin/${{ github.base_ref }}..HEAD
             LABEL="commits in $RANGE"
+            COMMITS_CMD=(git log --format='%H' "$RANGE")
           else
             RANGE=HEAD
             LABEL="last 20 commits on HEAD"
+            COMMITS_CMD=(git log --format='%H' -20 "$RANGE")
           fi
           echo "Checking signatures for $LABEL"
 
@@ -124,19 +126,34 @@ jobs:
           # UNSIGNED set inside the loop persists (a piped `while` runs in a
           # subshell and would discard the assignment).
           UNSIGNED=0
+          INVALID=0
           while read -r commit; do
             status=$(git show --quiet --format='%G?' "$commit")
-            if [ "$status" != "G" ]; then
-              echo "⚠️  Unsigned commit: $commit ($status)"
-              UNSIGNED=1
-            fi
-          done < <(git log --format='%H' -20 "$RANGE")
+            case "$status" in
+              G) ;;
+              N)
+                echo "⚠️  Unsigned commit: $commit"
+                UNSIGNED=1
+                ;;
+              *)
+                echo "⚠️  Commit has invalid or untrusted signature: $commit ($status)"
+                INVALID=1
+                ;;
+            esac
+          done < <("${COMMITS_CMD[@]}")
 
           if [ "$UNSIGNED" -eq 1 ]; then
-            echo "::warning::Some commits are not signed with GPG"
+            echo "::warning::Some commits are not signed"
             echo "Run: git commit -S -m 'message' to sign future commits"
+          fi
+          if [ "$INVALID" -eq 1 ]; then
+            echo "::warning::Some commit signatures are present but invalid or untrusted"
+            echo "Verify signer trust, key validity, or SSH allowed signers configuration."
+          fi
+          if [ "$UNSIGNED" -eq 0 ] && [ "$INVALID" -eq 0 ]; then
+            echo "✅ All checked commits have valid signatures"
           else
-            echo "✅ All recent commits are GPG-signed"
+            true
           fi
 
       # --- 3. Branch protection (advisory) ----------------------------------
