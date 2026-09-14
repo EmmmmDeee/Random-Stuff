@@ -144,37 +144,23 @@ jobs:
       - name: Repository integrity
         if: always()
         run: |
-          echo "📊 Computing repository integrity hashes..."
+          echo "📊 Verifying checked-out repository contents..."
 
-          # Exclude .integrity-baseline itself so it never appears in its own
-          # hash set (which would guarantee a spurious diff every run).
-          hash_files() {
-            find . -type f \
-              -not -path './.git/*' \
-              -not -path './.github/*' \
-              -not -name '.integrity-baseline' \
-              | sort | xargs sha256sum
-          }
+          # Compare the working tree against the checked-out commit rather than
+          # a static committed baseline. That catches unexpected in-run mutation
+          # without failing on ordinary, intentional repository changes in PRs.
+          git update-index -q --refresh
 
-          # The baseline is only meaningful if `.integrity-baseline` is committed
-          # to the repo (or restored from a cache/artifact). A fresh runner
-          # starts without it, so the first run just records a baseline — real
-          # enforcement requires committing that file.
-          if [ ! -f .integrity-baseline ]; then
-            echo "Creating new integrity baseline..."
-            hash_files > .integrity-baseline
-            echo "✅ Baseline created with $(wc -l < .integrity-baseline) files"
-            echo "ℹ️  Commit .integrity-baseline to enable comparison on future runs."
+          if git diff --quiet --ignore-submodules=all -- .; then
+            echo "✅ Repository integrity verified"
           else
-            hash_files > /tmp/current.txt
-            if diff -q .integrity-baseline /tmp/current.txt > /dev/null; then
-              echo "✅ Repository integrity verified"
-            else
-              echo "⚠️  Repository integrity check failed"
-              echo "Changes detected:"
-              diff .integrity-baseline /tmp/current.txt || true
-              exit 1
-            fi
+            echo "⚠️  Repository integrity check failed"
+            echo "Modified tracked files:"
+            git diff --name-status -- . || true
+            echo ""
+            echo "Diff:"
+            git diff -- . || true
+            exit 1
           fi
 
       # --- 5. Unauthorized access -------------------------------------------
