@@ -31,10 +31,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Check out PR head commit
-        if: github.event_name == 'pull_request'
-        run: git checkout --quiet "${{ github.event.pull_request.head.sha }}"
-
       # --- 1. Credential scan ------------------------------------------------
       - name: Scan for exposed credentials
         run: |
