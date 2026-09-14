@@ -30,6 +30,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
 
       # --- 1. Credential scan ------------------------------------------------
       - name: Scan for exposed credentials
@@ -47,6 +48,15 @@ jobs:
           # recent commits to avoid the cost of `git log -p --all`.
           FOUND=0
           SCAN_DEPTH=200
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            RANGE=${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}
+            HISTORY_CMD=(git log -p "$RANGE")
+            FILES_CMD=(git log --diff-filter=A --name-only --pretty= "$RANGE")
+          else
+            RANGE=HEAD
+            HISTORY_CMD=(git log -p -n "$SCAN_DEPTH" "$RANGE")
+            FILES_CMD=(git log -n "$SCAN_DEPTH" --diff-filter=A --name-only --pretty= "$RANGE")
+          fi
 
           # High-signal credential formats that essentially never appear in prose.
           SECRET_RE='AKIA[0-9A-Z]{16}'                                 # AWS access key id
@@ -57,7 +67,7 @@ jobs:
           SECRET_RE="$SECRET_RE"'|-----BEGIN [A-Z ]*PRIVATE KEY-----'  # private key blocks
           SECRET_RE="$SECRET_RE"'|eyJ[0-9A-Za-z_-]{10,}\.[0-9A-Za-z_-]{10,}\.[0-9A-Za-z_-]{10,}'  # JWT
 
-          git log -p -n "$SCAN_DEPTH" | grep -nE "$SECRET_RE" > /tmp/matches.txt
+          "${HISTORY_CMD[@]}" | grep -nE "$SECRET_RE" > /tmp/matches.txt
           status=$?
           if [ "$status" -eq 0 ]; then
             echo "⚠️  WARNING: Potential exposed secret detected!"
@@ -73,7 +83,7 @@ jobs:
 
           # Credential-bearing FILES that were ADDED (not prose that mentions the
           # words) — anchored to real key/secret file extensions and names.
-          git log -n "$SCAN_DEPTH" --diff-filter=A --name-only --pretty= \
+          "${FILES_CMD[@]}" \
             | grep -nE '(^|/)(\.env(\..*)?|id_rsa|id_ed25519|.*\.pem|.*\.p12|.*\.pfx|.*\.pkcs12)$' \
             > /tmp/files.txt
           status=$?
@@ -110,9 +120,8 @@ jobs:
           # For pull requests, inspect the commits introduced by the branch
           # rather than recent commits on main. For other events, fall back to
           # the most recent commits on HEAD.
-          if [ "${{ github.event_name }}" = "pull_request" ] && \
-             git rev-parse --verify --quiet origin/${{ github.base_ref }} >/dev/null; then
-            RANGE=origin/${{ github.base_ref }}..HEAD
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            RANGE=${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}
             LABEL="commits in $RANGE"
             COMMITS_CMD=(git log --format='%H' "$RANGE")
           else
