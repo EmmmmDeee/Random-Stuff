@@ -185,22 +185,22 @@ jobs:
           # without failing on ordinary, intentional repository changes in PRs.
           git update-index -q --refresh
 
-          if git diff --quiet --ignore-submodules=all -- . && \
-             git diff --cached --quiet --ignore-submodules=all -- .; then
+          if git diff --quiet --ignore-submodules=all HEAD -- . && \
+             git diff --cached --quiet --ignore-submodules=all HEAD -- .; then
             echo "✅ Repository integrity verified"
           else
             echo "⚠️  Repository integrity check failed"
-            echo "Modified tracked files in working tree:"
-            git diff --name-status -- . || true
+            echo "Tracked-file drift in working tree versus HEAD:"
+            git diff --name-status HEAD -- . || true
             echo ""
-            echo "Modified tracked files in index:"
-            git diff --cached --name-status -- . || true
+            echo "Tracked-file drift in index versus HEAD:"
+            git diff --cached --name-status HEAD -- . || true
             echo ""
-            echo "Working tree diff:"
-            git diff -- . || true
+            echo "Working tree diff versus HEAD:"
+            git diff HEAD -- . || true
             echo ""
-            echo "Index diff:"
-            git diff --cached -- . || true
+            echo "Index diff versus HEAD:"
+            git diff --cached HEAD -- . || true
             exit 1
           fi
 
