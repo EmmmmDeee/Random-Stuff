@@ -35,6 +35,7 @@ jobs:
       - name: Scan for exposed credentials
         run: |
           set +e
+          set -o pipefail
 
           echo "🔍 Scanning recent git history for exposed secrets..."
 
@@ -56,27 +57,33 @@ jobs:
           SECRET_RE="$SECRET_RE"'|-----BEGIN [A-Z ]*PRIVATE KEY-----'  # private key blocks
           SECRET_RE="$SECRET_RE"'|eyJ[0-9A-Za-z_-]{10,}\.[0-9A-Za-z_-]{10,}\.[0-9A-Za-z_-]{10,}'  # JWT
 
-          git log -p -n "$SCAN_DEPTH" | grep -nE "$SECRET_RE" > /tmp/matches.txt 2>&1
-
-          if [ -s /tmp/matches.txt ]; then
+          git log -p -n "$SCAN_DEPTH" | grep -nE "$SECRET_RE" > /tmp/matches.txt
+          status=$?
+          if [ "$status" -eq 0 ]; then
             echo "⚠️  WARNING: Potential exposed secret detected!"
             echo "Matches:"
             head -20 /tmp/matches.txt
             FOUND=1
-          else
+          elif [ "$status" -eq 1 ]; then
             echo "✅ No high-signal secret formats found in recent history"
+          else
+            echo "::error::Secret history scan failed"
+            exit "$status"
           fi
 
           # Credential-bearing FILES that were ADDED (not prose that mentions the
           # words) — anchored to real key/secret file extensions and names.
           git log -n "$SCAN_DEPTH" --diff-filter=A --name-only --pretty= \
             | grep -nE '(^|/)(\.env(\..*)?|id_rsa|id_ed25519|.*\.pem|.*\.p12|.*\.pfx|.*\.pkcs12)$' \
-            > /tmp/files.txt 2>&1
-
-          if [ -s /tmp/files.txt ]; then
+            > /tmp/files.txt
+          status=$?
+          if [ "$status" -eq 0 ]; then
             echo "⚠️  WARNING: Credential-bearing files were committed:"
             cat /tmp/files.txt
             FOUND=1
+          elif [ "$status" -ne 1 ]; then
+            echo "::error::Credential file history scan failed"
+            exit "$status"
           fi
 
           if [ "$FOUND" -ne 0 ]; then
