@@ -15,6 +15,9 @@ concurrency:
   group: security-check-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   # All checks run as sequential steps in ONE job so the whole suite needs only
   # a single runner. Splitting these into 5 parallel jobs requires 5 concurrent
@@ -49,7 +52,7 @@ jobs:
           SECRET_RE="$SECRET_RE"'|gh[posur]_[0-9A-Za-z]{36}'           # GitHub tokens
           SECRET_RE="$SECRET_RE"'|github_pat_[0-9A-Za-z_]{50,}'        # GitHub fine-grained PAT
           SECRET_RE="$SECRET_RE"'|xox[baprs]-[0-9A-Za-z-]{10,}'        # Slack tokens
-          SECRET_RE="$SECRET_RE"'|AIza[0-9A-Za-z_-]{35}'              # Google API key
+          SECRET_RE="$SECRET_RE"'|AIza[0-9A-Za-z_-]{35}'               # Google API key
           SECRET_RE="$SECRET_RE"'|-----BEGIN [A-Z ]*PRIVATE KEY-----'  # private key blocks
           SECRET_RE="$SECRET_RE"'|eyJ[0-9A-Za-z_-]{10,}\.[0-9A-Za-z_-]{10,}\.[0-9A-Za-z_-]{10,}'  # JWT
 
@@ -170,6 +173,7 @@ jobs:
               echo "⚠️  Repository integrity check failed"
               echo "Changes detected:"
               diff .integrity-baseline /tmp/current.txt || true
+              exit 1
             fi
           fi
 
@@ -183,3 +187,41 @@ jobs:
           echo ""
           echo "⚠️  Review the list above for unexpected authors"
           echo "If you see unfamiliar names, run: git log --all --oneline to investigate."
+
+      # --- 6. Detection & intel proof obligations ---------------------------
+      # Each claim the README makes about the detection content is re-proven on
+      # every run instead of being asserted once and left to go stale.
+      - uses: actions/setup-python@v5
+        if: always()
+        with:
+          python-version: '3.12'
+
+      - name: Install verification tooling
+        if: always()
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q suricata
+          python3 -m pip install yara-python==4.5.4 stix2-patterns==2.1.2 scapy==2.7.0
+
+      - name: "sweep.sh: fast literal-IOC sweep finds known indicators"
+        if: always()
+        run: python3 detection/tests/sweep_check.py
+
+      - name: "ioc-scanner: tests + clippy"
+        if: always()
+        working-directory: tools/ioc-scanner
+        run: |
+          cargo test --locked
+          cargo clippy --all-targets --locked -- -D warnings
+
+      - name: "YARA: compile + no false positives on repo content"
+        if: always()
+        run: python3 detection/tests/yara_check.py
+
+      - name: "Suricata: every SID fires on its indicator traffic, none on benign"
+        if: always()
+        run: python3 detection/tests/suricata_replay.py
+
+      - name: "STIX: bundle in sync with intel/iocs.csv, patterns valid"
+        if: always()
+        run: python3 tools/build_stix.py --check --validate

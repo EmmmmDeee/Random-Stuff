@@ -113,7 +113,9 @@ Tested to match the real samples; see `detection/`.
 ## Layer 3 — Network (Suricata/Snort, Zeek, DNS, egress)
 
 Rules in `detection/droidjack_suricata.rules` (tune SIDs/HOME_NET):
-- **DNS**: lookups of `droidjack.net`, `*.no-ip.*`, `bshades.eu` → alert/sinkhole.
+- **DNS**: lookups of `droidjack.net`, `bshades.eu` → alert/sinkhole. (`*.no-ip.*`
+  has no signature — it is dynamic-DNS, shared with benign users; handle it with
+  the egress policy below.)
 - **HTTP**: `POST …/storeReport.php` and URI `/Access/DJ` with host `droidjack.net`.
 - **TCP**: KryoNet on `1337` carrying the literal token `DJ_GooDbYe:(`.
 - **Plaintext-exfil heuristic**: cleartext HTTP bodies carrying contact/SMS/call-log

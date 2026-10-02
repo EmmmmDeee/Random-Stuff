@@ -8,7 +8,9 @@
 //! `--json`, emits one JSON object per hit (JSON Lines) for SIEM/pipeline intake.
 //! `--min-confidence` drops indicators below the given grade; `--summary` prints a
 //! files/hits/by-malware tally to stderr at the end. Exit code is 1 if any hit was
-//! found (useful in CI/pipelines), 0 if clean, 2 on error.
+//! found (useful in CI/pipelines), 0 if clean, 2 on error. A path that cannot be
+//! walked, read or hashed is an error: without a hit the run exits 2, never 0,
+//! so an incomplete scan is never reported as clean.
 //!
 //! Scanning strategy is chosen by file size (measured, not assumed). Large files
 //! (>= 16 MiB) are streamed in fixed-size chunks, so peak resident memory stays
@@ -109,6 +111,8 @@ fn main() -> ExitCode {
     let stdout = io::stdout();
     let mut out = BufWriter::new(stdout.lock());
     let mut any = false;
+    // Any unreadable path/file makes the scan incomplete; never report "clean".
+    let mut incomplete = false;
 
     // Summary counters (cheap; only reported when `--summary` is set).
     let mut files_scanned = 0usize;
@@ -117,7 +121,15 @@ fn main() -> ExitCode {
     let mut by_malware: BTreeMap<String, usize> = BTreeMap::new();
 
     for root in paths {
-        for entry in WalkDir::new(root).into_iter().filter_map(|e| e.ok()) {
+        for entry in WalkDir::new(root) {
+            let entry = match entry {
+                Ok(entry) => entry,
+                Err(e) => {
+                    eprintln!("error: walking {root}: {e}");
+                    incomplete = true;
+                    continue;
+                }
+            };
             if !entry.file_type().is_file() {
                 continue;
             }
@@ -141,7 +153,10 @@ fn main() -> ExitCode {
                         *by_malware.entry(ind.malware.clone()).or_insert(0) += 1;
                     }
                 }
-                Err(e) => eprintln!("warn: skipping {}: {e}", path.display()),
+                Err(e) => {
+                    eprintln!("error: skipping {}: {e}", path.display());
+                    incomplete = true;
+                }
             }
 
             // 2) SHA-256 hash matching (opt-in) — catches compressed/opaque samples.
@@ -160,7 +175,10 @@ fn main() -> ExitCode {
                             *by_malware.entry(ind.malware.clone()).or_insert(0) += 1;
                         }
                     }
-                    Err(e) => eprintln!("warn: hashing {}: {e}", path.display()),
+                    Err(e) => {
+                        eprintln!("error: hashing {}: {e}", path.display());
+                        incomplete = true;
+                    }
                 }
             }
 
@@ -185,6 +203,8 @@ fn main() -> ExitCode {
 
     if any {
         ExitCode::from(1)
+    } else if incomplete {
+        ExitCode::from(2)
     } else {
         ExitCode::SUCCESS
     }

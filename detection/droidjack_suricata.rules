@@ -12,7 +12,8 @@ alert http $HOME_NET any -> $EXTERNAL_NET any (msg:"MALWARE DroidJack Android RA
 alert dns $HOME_NET any -> any any (msg:"MALWARE DroidJack C2 DNS lookup droidjack.net"; dns.query; content:"droidjack.net"; nocase; classtype:trojan-activity; sid:1000003; rev:1;)
 
 # KryoNet command token observed on the wire (default control port 1337)
-alert tcp $HOME_NET any -> $EXTERNAL_NET any (msg:"MALWARE DroidJack KryoNet disconnect token"; flow:established; content:"DJ_GooDbYe:|3a 28|"; classtype:trojan-activity; sid:1000004; rev:1;)
+alert tcp $HOME_NET any -> $EXTERNAL_NET any (msg:"MALWARE DroidJack KryoNet disconnect token"; flow:established; content:"DJ_GooDbYe|3a 28|"; classtype:trojan-activity; sid:1000004; rev:2;)
 
-# Blackshades dynamic-DNS C2 family (no-ip / bshades.eu)
+# Blackshades C2 host (bshades.eu). Dynamic-DNS (no-ip) is category-level; block it
+# by egress/DNS policy rather than a per-domain signature (see DETECTION_PLAYBOOK.md).
 alert dns $HOME_NET any -> any any (msg:"MALWARE Blackshades C2 DNS lookup bshades.eu"; dns.query; content:"bshades.eu"; nocase; classtype:trojan-activity; sid:1000005; rev:1;)
