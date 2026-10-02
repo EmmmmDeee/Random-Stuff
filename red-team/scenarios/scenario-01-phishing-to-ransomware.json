@@ -1,0 +1,279 @@
+{
+  "metadata": {
+    "name": "Phishing → Credential Theft → Lateral Movement → Ransomware",
+    "scenario_id": "APT-001",
+    "difficulty": "Medium",
+    "estimated_duration_hours": 8,
+    "realistic_success_rate": "40-60%",
+    "industry_targets": ["Finance", "Healthcare", "Manufacturing"],
+    "last_observed_in_wild": "2024-2026 (ongoing)",
+    "average_attacker_dwell_time_days": 14
+  },
+
+  "attack_chain": {
+    "stage_1_initial_access": {
+      "technique": "Phishing",
+      "mitre_id": "T1566.002",
+      "mitre_full": "T1566.002: Phishing - Spearphishing Link",
+      "description": "Attacker sends targeted phishing email with malicious link",
+      "tactics": ["Initial Access"],
+      "implementation": {
+        "method": "Email with credential harvesting form masquerading as O365 login",
+        "detection_evasion": [
+          "Domain typosquatting (o365-verify.com instead of office365.com)",
+          "Hosted on compromised third-party domain",
+          "SSL certificate purchased to bypass browser warnings"
+        ],
+        "success_rate_percent": 15,
+        "time_to_compromise_minutes": 5
+      },
+      "detection_points": [
+        "Email gateway: Suspicious sender, brand impersonation, link reputation",
+        "EDR: Unusual browser process spawning credential manager",
+        "SIEM: Comparison with legitimate O365 login failures"
+      ],
+      "prevention": [
+        "DMARC/SPF/DKIM enforcement (blocks 30% of phishing)",
+        "Email sandbox detonation (catches malicious links/attachments)",
+        "User training (reduces click rate from 10% to 3%)"
+      ],
+      "iocs": [
+        "o365-verify.com (malicious domain)",
+        "harvester-server.ru (C2 backend)"
+      ]
+    },
+
+    "stage_2_credential_access": {
+      "technique": "Credential Harvesting",
+      "mitre_id": "T1598.003",
+      "mitre_full": "T1598.003: Phishing for Information - Spearphishing Link",
+      "description": "User enters credentials on fake login form, attacker captures them",
+      "tactics": ["Credential Access"],
+      "implementation": {
+        "method": "Fake O365 login form that captures username/password",
+        "detection_evasion": [
+          "Form validates credentials against real Azure AD API",
+          "Responds with '2FA required' to appear legitimate",
+          "Stores MFA device registration cookie"
+        ],
+        "success_rate_percent": 85,
+        "time_to_compromise_minutes": 1
+      },
+      "detection_points": [
+        "Azure AD: Impossible travel (login from phishing domain server + user location)",
+        "Email gateway: Unusual device registration from unknown IP",
+        "SIEM: Multiple failed login attempts from credential harvester IP"
+      ],
+      "prevention": [
+        "Hardware 2FA (blocks 99% of credential reuse attacks)",
+        "Conditional access rules (block unknown devices)",
+        "Passwordless authentication (Windows Hello, FIDO2)"
+      ],
+      "iocs": [
+        "User credential database (attacker now has: username, password, sometimes MFA bypass)"
+      ]
+    },
+
+    "stage_3_lateral_movement": {
+      "technique": "Lateral Movement via Stolen Credentials",
+      "mitre_id": "T1021.001",
+      "mitre_full": "T1021.001: Remote Services - RDP",
+      "description": "Attacker uses stolen credentials to pivot to internal systems",
+      "tactics": ["Lateral Movement"],
+      "implementation": {
+        "method": "RDP access from attacker VPS to compromised user's workstation, then to internal servers",
+        "detection_evasion": [
+          "VPN + legitimate IP geolocation spoofing",
+          "Connects during business hours to avoid anomaly detection",
+          "Uses compromised user's credentials (legitimate auth, hard to detect)",
+          "Disables audit logging on compromised system"
+        ],
+        "success_rate_percent": 70,
+        "time_to_compromise_hours": 2
+      },
+      "detection_points": [
+        "EDR: Unusual process spawning (cmd.exe, powershell.exe from explorer.exe)",
+        "Network: RDP connection from public IP to internal systems",
+        "SIEM: Failed authentication attempts across multiple systems from same user account",
+        "Windows Event Log: Account logon from unusual time/location"
+      ],
+      "prevention": [
+        "EDR endpoint detection (95% effectiveness if properly tuned)",
+        "Network segmentation (blocks access to critical servers)",
+        "Disable RDP on user workstations (forces VPN tunnel)",
+        "MFA for RDP (blocks credential replay)"
+      ],
+      "iocs": [
+        "Attacker VPS IP address",
+        "RDP connection attempts from internal network to external servers"
+      ]
+    },
+
+    "stage_4_persistence": {
+      "technique": "Persistence via Scheduled Task",
+      "mitre_id": "T1053.005",
+      "mitre_full": "T1053.005: Scheduled Task/Job - Scheduled Task",
+      "description": "Attacker creates backdoor to maintain access even after credential change",
+      "tactics": ["Persistence"],
+      "implementation": {
+        "method": "Creates hidden scheduled task running reverse shell every 30 minutes",
+        "detection_evasion": [
+          "Task name mimics legitimate system task (e.g., 'Windows Update Scheduler')",
+          "Runs as SYSTEM account (blends in with legitimate tasks)",
+          "Hidden attribute set (tasklist.exe doesn't show it)",
+          "Binary obfuscation + encoded PowerShell payload"
+        ],
+        "success_rate_percent": 60,
+        "time_to_compromise_minutes": 3
+      },
+      "detection_points": [
+        "EDR: Unexpected process spawning from svchost.exe context",
+        "SIEM: Scheduled task creation event (Event ID 106)",
+        "File integrity monitoring: New executable created in System32",
+        "Network: Outbound connection to C2 server at regular intervals"
+      ],
+      "prevention": [
+        "Application whitelisting (99% effective at blocking unauthorized binaries)",
+        "Scheduled task monitoring + alerting",
+        "Disable command-line tools (PowerShell, cmd.exe) unless necessary",
+        "Process injection detection (monitor for unsigned parent/child processes)"
+      ],
+      "iocs": [
+        "C2 server IP/domain (reverse shell callback)",
+        "Malicious scheduled task binary hash"
+      ]
+    },
+
+    "stage_5_defense_evasion": {
+      "technique": "Defense Evasion - Log Deletion",
+      "mitre_id": "T1070.001",
+      "mitre_full": "T1070.001: Indicator Removal - Clear Windows Event Logs",
+      "description": "Attacker clears logs to hide evidence of compromise",
+      "tactics": ["Defense Evasion"],
+      "implementation": {
+        "method": "Clear Security, System, and Application event logs",
+        "detection_evasion": [
+          "Uses wevtutil or PowerShell to clear logs without triggering security audit",
+          "Clears log clearing events if log size permits",
+          "Attempts credential stuffing to access logging infrastructure"
+        ],
+        "success_rate_percent": 50,
+        "time_to_compromise_minutes": 1
+      },
+      "detection_points": [
+        "SIEM: Alert on event log clearing (Event ID 1102 - Log was cleared)",
+        "Windows Event Log: Gap in event sequence (timestamps jump forward)",
+        "EDR: Unusual process calling Event Log API functions",
+        "Centralized logging: If logs copied before clearing, gap would be obvious"
+      ],
+      "prevention": [
+        "Centralized log collection (ships logs off-host before local clearing can hide them)",
+        "Immutable logging (cloud-based, offline backup)",
+        "File integrity monitoring on event log files",
+        "Alert on Log Clear events with automatic incident escalation"
+      ],
+      "iocs": [
+        "Event ID 1102 (Log clearing attempt)",
+        "Unusual log file timestamp discontinuities"
+      ]
+    },
+
+    "stage_6_impact_ransomware": {
+      "technique": "Impact - Data Encrypted for Impact",
+      "mitre_id": "T1486",
+      "mitre_full": "T1486: Data Encrypted for Impact (Ransomware)",
+      "description": "Attacker deploys ransomware to encrypt files and demand payment",
+      "tactics": ["Impact"],
+      "implementation": {
+        "method": "Download and execute Conti/LockBit-variant ransomware binary",
+        "detection_evasion": [
+          "Binary disguised as legitimate software update (teams-update.exe)",
+          "Uses Windows Crypto API (legitimate function, hard to detect)",
+          "Distributed from internal network share (appears legitimate)",
+          "Targets network shares after establishing persistence"
+        ],
+        "success_rate_percent": 85,
+        "time_to_compromise_hours": 0.25,
+        "impact": {
+          "files_encrypted_percent": 60,
+          "recovery_time_days": 3,
+          "business_impact_cost_usd": 500000
+        }
+      },
+      "detection_points": [
+        "EDR: Mass file encryption process (thousands of files in seconds)",
+        "SIEM: Rapid file modification events from unexpected process",
+        "Network: Large data exfiltration before encryption (data theft stage)",
+        "File integrity monitoring: Bulk file extension changes (.docx → .conti)"
+      ],
+      "prevention": [
+        "Offline backups (blocks ransomware impact, enables recovery)",
+        "EDR with behavior-based ransomware detection (95% effective)",
+        "Network segmentation (contains ransomware to initial segment)",
+        "Disable SMB v1 (blocks worm-like propagation)",
+        "Remove admin rights (blocks process-level encryption)"
+      ],
+      "iocs": [
+        "Ransomware binary hash",
+        "Ransom note file (README.txt, HOW-TO-RECOVER.txt)",
+        "Encryption key C2 endpoint"
+      ]
+    }
+  },
+
+  "cross_kill_chain_analysis": {
+    "critical_detection_gaps": [
+      {
+        "gap": "Credential theft not detected for 4-6 hours",
+        "impact": "Attacker can pivot to other systems before alert",
+        "fix": "Impossible travel detection on Azure AD logins"
+      },
+      {
+        "gap": "RDP lateral movement blends in with normal traffic",
+        "impact": "Multiple systems compromised before detection",
+        "fix": "Baseline RDP source IPs per user account"
+      },
+      {
+        "gap": "Persistence task created but not monitored",
+        "impact": "Access maintained even after credential rotation",
+        "fix": "Real-time scheduled task monitoring + alerting"
+      },
+      {
+        "gap": "Log clearing succeeds before centralization",
+        "impact": "Evidence destroyed, investigation impossible",
+        "fix": "Immutable centralized logging (cloud or air-gapped)"
+      }
+    ],
+    "time_to_detection_hours": 6,
+    "time_to_response_hours": 2,
+    "dwell_time_advantage_hours": 4,
+    "success_rate_if_detected_at_stage": {
+      "stage_1": "0% (email blocked)",
+      "stage_2": "15% (credentials stolen but unusable)",
+      "stage_3": "40% (lateral movement detected, partial compromise)",
+      "stage_4": "70% (persistence established, recovery difficult)",
+      "stage_5": "85% (logs cleared, forensics impossible)",
+      "stage_6": "95% (ransomware deployed, recovery from backups)"
+    }
+  },
+
+  "incident_response_drill_objectives": [
+    "Detect phishing email before user clicks (Email security effectiveness)",
+    "Detect credential harvesting form (Email gateway detection)",
+    "Alert on impossible travel login (Azure AD conditional access)",
+    "Block RDP lateral movement (Network segmentation)",
+    "Detect scheduled task creation (EDR/SIEM response time)",
+    "Prevent log clearing (Immutable logging effectiveness)",
+    "Stop ransomware execution (EDR behavior detection)",
+    "Recover from offline backup (RTO measurement)"
+  ],
+
+  "scoring_matrix": {
+    "detection_time_weight": 0.25,
+    "response_time_weight": 0.25,
+    "prevention_success_weight": 0.25,
+    "recovery_time_weight": 0.25,
+    "target_score_percent": 80,
+    "current_score_percent": 35
+  }
+}

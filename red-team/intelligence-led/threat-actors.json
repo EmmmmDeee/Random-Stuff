@@ -1,0 +1,195 @@
+{
+  "_metadata": {
+    "description": "Threat actor profiles for intelligence-led emulation. Built from publicly documented sources (MITRE ATT&CK Groups, CISA advisories, vendor reporting). Snapshot as of 2026-08; TTPs evolve.",
+    "attribution_caution": "Group names overlap across vendors. Profiles support emulation and detection engineering, NOT attribution of real incidents.",
+    "version": "1.0",
+    "generated": "2026-08-06"
+  },
+
+  "threat_actors": [
+    {
+      "id": "APT29",
+      "aliases": ["Cozy Bear", "Nobelium", "Midnight Blizzard", "The Dukes"],
+      "attributed_to": "Russia (SVR) — per public government advisories",
+      "mitre_group_id": "G0016",
+      "sophistication": "State-Sponsored APT",
+      "primary_motivation": "Espionage",
+      "target_sectors": ["Government", "Technology", "Think Tanks", "Healthcare", "Defense"],
+      "notable_campaigns": [
+        "SolarWinds supply chain compromise (2020)",
+        "Cloud/email-focused espionage against Microsoft, HPE (2023-2024)"
+      ],
+      "characteristic_ttps": [
+        {"tactic": "Initial Access", "technique": "T1195.002", "name": "Supply Chain Compromise - Software", "notes": "Signature move: poison trusted software builds"},
+        {"tactic": "Initial Access", "technique": "T1566.002", "name": "Spearphishing Link"},
+        {"tactic": "Credential Access", "technique": "T1528", "name": "Steal Application Access Token", "notes": "OAuth token theft in cloud/M365"},
+        {"tactic": "Defense Evasion", "technique": "T1070.004", "name": "File Deletion"},
+        {"tactic": "Persistence", "technique": "T1098.001", "name": "Additional Cloud Credentials", "notes": "Adds credentials to service principals"},
+        {"tactic": "Collection", "technique": "T1114.002", "name": "Remote Email Collection"}
+      ],
+      "signature_behaviors": [
+        "Patient, low-and-slow operations (long dwell time)",
+        "Heavy focus on cloud identity and email (M365/Azure AD)",
+        "Strong operational security; cleans up artifacts",
+        "Abuses legitimate credentials over malware where possible"
+      ],
+      "emulation_difficulty": "Very High",
+      "detection_priority_for_sectors": ["Government", "Technology", "Defense"]
+    },
+
+    {
+      "id": "FIN7",
+      "aliases": ["Carbanak", "Carbon Spider", "Sangria Tempest"],
+      "attributed_to": "Financially-motivated criminal group",
+      "mitre_group_id": "G0046",
+      "sophistication": "Organized Crime",
+      "primary_motivation": "Financial gain",
+      "target_sectors": ["Retail", "Hospitality", "Finance", "Restaurant"],
+      "notable_campaigns": [
+        "Point-of-sale (POS) malware theft of payment card data",
+        "Pivot to ransomware affiliation (REvil, Darkside, BlackCat)"
+      ],
+      "characteristic_ttps": [
+        {"tactic": "Initial Access", "technique": "T1566.001", "name": "Spearphishing Attachment", "notes": "Weaponized documents, often themed around invoices/complaints"},
+        {"tactic": "Execution", "technique": "T1204.002", "name": "Malicious File", "notes": "User opens attachment"},
+        {"tactic": "Execution", "technique": "T1059.001", "name": "PowerShell"},
+        {"tactic": "Persistence", "technique": "T1053.005", "name": "Scheduled Task/Job"},
+        {"tactic": "Credential Access", "technique": "T1003.001", "name": "LSASS Memory Dumping"},
+        {"tactic": "Collection", "technique": "T1005", "name": "Data from Local System", "notes": "Payment card data from POS memory"},
+        {"tactic": "Impact", "technique": "T1486", "name": "Data Encrypted for Impact", "notes": "Ransomware in later operations"}
+      ],
+      "signature_behaviors": [
+        "Elaborate social engineering (has posed as a fake security company to recruit unwitting testers)",
+        "Custom malware toolset (CARBANAK, GRIFFON, POWERSOURCE)",
+        "Targets payment card data and financial systems specifically",
+        "Evolved from card theft to big-game ransomware"
+      ],
+      "emulation_difficulty": "High",
+      "detection_priority_for_sectors": ["Retail", "Hospitality", "Finance"]
+    },
+
+    {
+      "id": "LAZARUS",
+      "aliases": ["Hidden Cobra", "Diamond Sleet", "ZINC"],
+      "attributed_to": "North Korea (DPRK) — per public government advisories",
+      "mitre_group_id": "G0032",
+      "sophistication": "State-Sponsored APT",
+      "primary_motivation": "Financial gain (state revenue) + Espionage + Disruption",
+      "target_sectors": ["Finance", "Cryptocurrency", "Defense", "Energy", "Technology"],
+      "notable_campaigns": [
+        "SWIFT banking network heists (Bangladesh Bank, 2016)",
+        "WannaCry ransomware (2017)",
+        "Large-scale cryptocurrency exchange thefts (ongoing)",
+        "Fake job-offer campaigns targeting developers"
+      ],
+      "characteristic_ttps": [
+        {"tactic": "Initial Access", "technique": "T1566.003", "name": "Spearphishing via Service", "notes": "Fake recruiter outreach on LinkedIn/social"},
+        {"tactic": "Initial Access", "technique": "T1195.002", "name": "Supply Chain Compromise - Software", "notes": "Trojanized trading/crypto apps"},
+        {"tactic": "Execution", "technique": "T1204.002", "name": "Malicious File"},
+        {"tactic": "Defense Evasion", "technique": "T1027", "name": "Obfuscated Files or Information"},
+        {"tactic": "Command and Control", "technique": "T1071.001", "name": "Web Protocols"},
+        {"tactic": "Exfiltration", "technique": "T1041", "name": "Exfiltration Over C2 Channel"},
+        {"tactic": "Impact", "technique": "T1486", "name": "Data Encrypted for Impact"}
+      ],
+      "signature_behaviors": [
+        "Blends espionage with direct financial theft (unusual for a state actor)",
+        "Fake job-offer social engineering targeting engineers/developers",
+        "Cryptocurrency theft as a state revenue stream",
+        "Destructive capability (wipers, ransomware) alongside theft"
+      ],
+      "emulation_difficulty": "Very High",
+      "detection_priority_for_sectors": ["Finance", "Cryptocurrency", "Defense"]
+    },
+
+    {
+      "id": "APT41",
+      "aliases": ["Wicked Panda", "Barium", "Brass Typhoon"],
+      "attributed_to": "China — per public reporting",
+      "mitre_group_id": "G0096",
+      "sophistication": "State-Sponsored APT",
+      "primary_motivation": "Espionage + Financial gain (dual-use)",
+      "target_sectors": ["Healthcare", "Technology", "Telecommunications", "Gaming", "Government"],
+      "notable_campaigns": [
+        "Software supply chain compromises (game studios, utility software)",
+        "Simultaneous state espionage and personal financial crime"
+      ],
+      "characteristic_ttps": [
+        {"tactic": "Initial Access", "technique": "T1190", "name": "Exploit Public-Facing Application", "notes": "Rapid weaponization of new CVEs"},
+        {"tactic": "Initial Access", "technique": "T1195.002", "name": "Supply Chain Compromise - Software"},
+        {"tactic": "Persistence", "technique": "T1505.003", "name": "Web Shell"},
+        {"tactic": "Privilege Escalation", "technique": "T1068", "name": "Exploitation for Privilege Escalation"},
+        {"tactic": "Lateral Movement", "technique": "T1021.002", "name": "SMB/Windows Admin Shares"},
+        {"tactic": "Command and Control", "technique": "T1071.004", "name": "DNS"}
+      ],
+      "signature_behaviors": [
+        "Fast to weaponize newly disclosed vulnerabilities",
+        "Blurs line between state espionage and personal profit",
+        "Extensive use of web shells for persistence",
+        "Software supply chain as a favored access vector"
+      ],
+      "emulation_difficulty": "Very High",
+      "detection_priority_for_sectors": ["Healthcare", "Technology", "Telecommunications"]
+    },
+
+    {
+      "id": "LOCKBIT",
+      "aliases": ["LockBit affiliates (RaaS)"],
+      "attributed_to": "Ransomware-as-a-Service criminal ecosystem",
+      "mitre_group_id": "G1032",
+      "sophistication": "Organized Crime (RaaS)",
+      "primary_motivation": "Financial gain (extortion)",
+      "target_sectors": ["Healthcare", "Manufacturing", "Finance", "Government", "Education"],
+      "notable_campaigns": [
+        "One of the highest-volume ransomware operations (2020-2024)",
+        "Double-extortion (encrypt + leak stolen data)"
+      ],
+      "characteristic_ttps": [
+        {"tactic": "Initial Access", "technique": "T1078", "name": "Valid Accounts", "notes": "Buys access from Initial Access Brokers"},
+        {"tactic": "Initial Access", "technique": "T1190", "name": "Exploit Public-Facing Application", "notes": "VPN/RDP/edge-device CVEs"},
+        {"tactic": "Execution", "technique": "T1059.001", "name": "PowerShell"},
+        {"tactic": "Defense Evasion", "technique": "T1562.001", "name": "Disable or Modify Tools", "notes": "Kills EDR/AV before encryption"},
+        {"tactic": "Credential Access", "technique": "T1003", "name": "OS Credential Dumping"},
+        {"tactic": "Exfiltration", "technique": "T1567.002", "name": "Exfiltration to Cloud Storage", "notes": "Steal data before encrypting (double extortion)"},
+        {"tactic": "Impact", "technique": "T1486", "name": "Data Encrypted for Impact"}
+      ],
+      "signature_behaviors": [
+        "Affiliate model — TTPs vary by affiliate, but tooling is shared",
+        "Double extortion: exfiltrate then encrypt",
+        "Actively disables security tooling before detonation",
+        "Buys initial access rather than gaining it directly"
+      ],
+      "emulation_difficulty": "Medium",
+      "detection_priority_for_sectors": ["Healthcare", "Manufacturing", "Education", "Government"]
+    },
+
+    {
+      "id": "SCATTERED_SPIDER",
+      "aliases": ["UNC3944", "Octo Tempest", "Scattered Spider"],
+      "attributed_to": "Financially-motivated criminal group (English-speaking)",
+      "mitre_group_id": "G1015",
+      "sophistication": "Organized Crime",
+      "primary_motivation": "Financial gain (extortion)",
+      "target_sectors": ["Technology", "Telecommunications", "Hospitality", "Finance", "Retail"],
+      "notable_campaigns": [
+        "High-profile help-desk social engineering intrusions (2023-2024)",
+        "SIM-swapping and MFA-fatigue campaigns"
+      ],
+      "characteristic_ttps": [
+        {"tactic": "Initial Access", "technique": "T1566.004", "name": "Spearphishing Voice", "notes": "Vishing the help desk to reset credentials/MFA"},
+        {"tactic": "Credential Access", "technique": "T1621", "name": "Multi-Factor Authentication Request Generation", "notes": "MFA fatigue / push bombing"},
+        {"tactic": "Initial Access", "technique": "T1078", "name": "Valid Accounts"},
+        {"tactic": "Persistence", "technique": "T1098.005", "name": "Device Registration", "notes": "Registers own MFA device"},
+        {"tactic": "Defense Evasion", "technique": "T1562.001", "name": "Disable or Modify Tools"},
+        {"tactic": "Impact", "technique": "T1486", "name": "Data Encrypted for Impact", "notes": "Deploys ALPHV/BlackCat ransomware"}
+      ],
+      "signature_behaviors": [
+        "Elite social engineering — targets the human help desk, not the perimeter",
+        "SIM-swapping to defeat SMS-based MFA",
+        "MFA-fatigue push bombing",
+        "Native English speakers; convincing live phone pretexts"
+      ],
+      "emulation_difficulty": "Medium-High",
+      "detection_priority_for_sectors": ["Technology", "Telecommunications", "Finance", "Retail"]
+    }
+  ]
+}

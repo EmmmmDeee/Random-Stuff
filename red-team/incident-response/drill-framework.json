@@ -1,0 +1,273 @@
+{
+  "framework": "Incident Response Drill Framework",
+  "purpose": "Execute automated IR drills based on attack scenarios to measure detection, response, and recovery times",
+  "version": "1.0",
+  "generated": "2026-08-06",
+
+  "drill_types": [
+    {
+      "drill_id": "IR-Drill-001",
+      "name": "Phishing Email Detection & Response",
+      "scenario_source": "APT-001 (Stage 1)",
+      "objectives": [
+        "Email gateway blocks phishing email",
+        "Alert generated within 5 minutes",
+        "Security team acknowledges alert within 15 minutes",
+        "User notified to NOT click link",
+        "Domain added to blocklist"
+      ],
+      "success_criteria": {
+        "email_blocked_percent": 100,
+        "alert_time_minutes": 5,
+        "response_time_minutes": 15,
+        "score": 100
+      },
+      "current_performance": {
+        "email_blocked_percent": 70,
+        "alert_time_minutes": 45,
+        "response_time_minutes": 120,
+        "score": 35,
+        "gap_analysis": "Email gateway not blocking typosquatted domains; SIEM alert tuning needed"
+      },
+      "time_to_run_minutes": 30
+    },
+    {
+      "drill_id": "IR-Drill-002",
+      "name": "Credential Theft Detection & Lockdown",
+      "scenario_source": "APT-001 (Stage 2)",
+      "objectives": [
+        "Impossible travel detection triggers",
+        "Compromised account locked within 5 minutes",
+        "MFA re-registration required",
+        "Password reset forced",
+        "Device removed from trusted list"
+      ],
+      "success_criteria": {
+        "impossible_travel_detected_percent": 100,
+        "account_locked_minutes": 5,
+        "mfa_reregistration_required_percent": 100,
+        "password_reset_enforced_percent": 100,
+        "score": 100
+      },
+      "current_performance": {
+        "impossible_travel_detected_percent": 50,
+        "account_locked_minutes": 120,
+        "mfa_reregistration_required_percent": 0,
+        "password_reset_enforced_percent": 0,
+        "score": 12,
+        "gap_analysis": "Azure AD conditional access not configured; manual remediation only"
+      },
+      "time_to_run_minutes": 45
+    },
+    {
+      "drill_id": "IR-Drill-003",
+      "name": "Lateral Movement Detection & Containment",
+      "scenario_source": "APT-001 (Stage 3)",
+      "objectives": [
+        "RDP connection from external IP detected",
+        "Network segment isolation triggered",
+        "User device quarantined",
+        "Internal server access blocked",
+        "Incident escalated to CISO"
+      ],
+      "success_criteria": {
+        "rdp_connection_detected_minutes": 5,
+        "network_isolation_triggered_minutes": 10,
+        "device_quarantine_minutes": 10,
+        "server_access_blocked_percent": 100,
+        "ciso_notification_minutes": 15,
+        "score": 100
+      },
+      "current_performance": {
+        "rdp_connection_detected_minutes": 120,
+        "network_isolation_triggered_minutes": 480,
+        "device_quarantine_minutes": 0,
+        "server_access_blocked_percent": 0,
+        "ciso_notification_minutes": 240,
+        "score": 5,
+        "gap_analysis": "Network monitoring disabled on many segments; manual containment process"
+      },
+      "time_to_run_minutes": 60
+    },
+    {
+      "drill_id": "IR-Drill-004",
+      "name": "Persistence Mechanism Detection & Removal",
+      "scenario_source": "APT-001 (Stage 4)",
+      "objectives": [
+        "Scheduled task creation detected",
+        "Process behavior anomaly triggered",
+        "Task automatically killed",
+        "Binary quarantined",
+        "Hash added to blocklist",
+        "All systems scanned for similar tasks"
+      ],
+      "success_criteria": {
+        "task_creation_detected_minutes": 3,
+        "process_behavior_alert_triggered_minutes": 2,
+        "task_killed_minutes": 5,
+        "binary_quarantined_minutes": 5,
+        "hash_blocklisted_minutes": 10,
+        "full_scan_complete_hours": 2,
+        "score": 100
+      },
+      "current_performance": {
+        "task_creation_detected_minutes": 0,
+        "process_behavior_alert_triggered_minutes": 0,
+        "task_killed_minutes": 0,
+        "binary_quarantined_minutes": 0,
+        "hash_blocklisted_minutes": 0,
+        "full_scan_complete_hours": 0,
+        "score": 0,
+        "gap_analysis": "EDR not detecting scheduled task creation; no real-time response capability"
+      },
+      "time_to_run_minutes": 90
+    },
+    {
+      "drill_id": "IR-Drill-005",
+      "name": "Log Deletion Attempt Detection & Prevention",
+      "scenario_source": "APT-001 (Stage 5)",
+      "objectives": [
+        "Event log clear attempt detected",
+        "Alert triggered immediately",
+        "Logs backed up to immutable storage",
+        "Account performing clear operation locked",
+        "Investigation initiated"
+      ],
+      "success_criteria": {
+        "clear_attempt_detected_seconds": 10,
+        "alert_triggered_seconds": 10,
+        "backup_to_immutable_seconds": 5,
+        "account_locked_minutes": 5,
+        "investigation_started_minutes": 15,
+        "score": 100
+      },
+      "current_performance": {
+        "clear_attempt_detected_seconds": 0,
+        "alert_triggered_seconds": 0,
+        "backup_to_immutable_seconds": 0,
+        "account_locked_minutes": 0,
+        "investigation_started_minutes": 0,
+        "score": 0,
+        "gap_analysis": "Centralized logging not implemented; local event logs not backed up"
+      },
+      "time_to_run_minutes": 30
+    },
+    {
+      "drill_id": "IR-Drill-006",
+      "name": "Ransomware Deployment & Recovery",
+      "scenario_source": "APT-001 (Stage 6)",
+      "objectives": [
+        "Mass file encryption detected",
+        "All systems quarantined from network",
+        "Attack contained to single segment",
+        "Backup recovery initiated",
+        "Files restored from backup",
+        "Service restoration verified",
+        "Root cause analysis completed"
+      ],
+      "success_criteria": {
+        "encryption_detected_seconds": 30,
+        "systems_quarantined_minutes": 5,
+        "attack_contained_minutes": 10,
+        "backup_recovery_started_minutes": 15,
+        "files_restored_percent": 100,
+        "service_recovery_time_hours": 4,
+        "rca_completed_days": 1,
+        "score": 100
+      },
+      "current_performance": {
+        "encryption_detected_seconds": 0,
+        "systems_quarantined_minutes": 0,
+        "attack_contained_minutes": 0,
+        "backup_recovery_started_minutes": 0,
+        "files_restored_percent": 0,
+        "service_recovery_time_hours": 48,
+        "rca_completed_days": 7,
+        "score": 10,
+        "gap_analysis": "Offline backups exist but recovery procedures not tested; RTO/RPO not validated"
+      },
+      "time_to_run_minutes": 240
+    }
+  ],
+
+  "drill_execution_framework": {
+    "pre_drill_checklist": [
+      "Notify stakeholders of scheduled drill",
+      "Set up isolated lab environment (or production test)",
+      "Ensure IR team availability",
+      "Backup all systems before test",
+      "Prepare scenario injection tools",
+      "Start traffic capture (PCAP, logs)"
+    ],
+    "during_drill": [
+      "Inject attack scenario into environment",
+      "Monitor detection systems (SIEM, EDR, firewalls)",
+      "Record all alerts and timestamps",
+      "Track IR team response (email, chat, tickets)",
+      "Measure time-to-detect, time-to-respond",
+      "Document manual interventions needed"
+    ],
+    "post_drill_analysis": [
+      "Calculate drill scores vs. target metrics",
+      "Identify gaps in detection/response",
+      "Review false positives and tuning opportunities",
+      "Interview IR team for lessons learned",
+      "Generate remediation task list",
+      "Schedule follow-up drills for failed areas"
+    ]
+  },
+
+  "scoring_model": {
+    "detection_score_weight": 0.25,
+    "response_score_weight": 0.25,
+    "containment_score_weight": 0.25,
+    "recovery_score_weight": 0.25,
+    "target_overall_score": 85,
+    "current_overall_score": 12
+  },
+
+  "quarterly_drill_schedule": {
+    "Q1": "IR-Drill-001 & IR-Drill-002 (Initial Access + Credential Access)",
+    "Q2": "IR-Drill-003 & IR-Drill-004 (Lateral Movement + Persistence)",
+    "Q3": "IR-Drill-005 & IR-Drill-006 (Defense Evasion + Impact)",
+    "Q4": "Full kill chain drill combining all stages"
+  },
+
+  "remediation_priorities": [
+    {
+      "priority": "P1",
+      "gap": "EDR not detecting scheduled task creation",
+      "effort": "Medium",
+      "impact": "High",
+      "deadline": "30 days"
+    },
+    {
+      "priority": "P1",
+      "gap": "Centralized immutable logging not implemented",
+      "effort": "High",
+      "impact": "Critical",
+      "deadline": "60 days"
+    },
+    {
+      "priority": "P2",
+      "gap": "Azure AD conditional access not configured",
+      "effort": "Medium",
+      "impact": "High",
+      "deadline": "45 days"
+    },
+    {
+      "priority": "P2",
+      "gap": "Network segmentation incomplete",
+      "effort": "High",
+      "impact": "High",
+      "deadline": "90 days"
+    },
+    {
+      "priority": "P3",
+      "gap": "RDP baseline not established",
+      "effort": "Low",
+      "impact": "Medium",
+      "deadline": "30 days"
+    }
+  ]
+}

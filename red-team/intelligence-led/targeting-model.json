@@ -1,0 +1,86 @@
+{
+  "_metadata": {
+    "description": "Sector-to-adversary targeting model. Scores how likely each documented threat actor is to target a given sector, to prioritize which actor(s) to emulate in an intelligence-led test.",
+    "scoring": "relevance_score 1-10: combines sector targeting history, motivation fit, and recent activity. Higher = emulate first.",
+    "version": "1.0",
+    "generated": "2026-08-06"
+  },
+
+  "sectors": {
+    "finance": {
+      "display_name": "Financial Services / Banking",
+      "top_threats": [
+        {"actor": "LAZARUS", "relevance_score": 10, "rationale": "Direct financial theft is a state revenue stream; SWIFT heists, crypto theft"},
+        {"actor": "FIN7", "relevance_score": 9, "rationale": "Payment card and financial system theft is their core business"},
+        {"actor": "SCATTERED_SPIDER", "relevance_score": 8, "rationale": "Help-desk social engineering + ransomware against financial targets"},
+        {"actor": "LOCKBIT", "relevance_score": 7, "rationale": "High-volume ransomware; finance is a high-value extortion target"}
+      ],
+      "primary_threat_themes": ["Payment fraud", "Wire/SWIFT theft", "Ransomware extortion", "Account takeover"]
+    },
+
+    "healthcare": {
+      "display_name": "Healthcare / Pharma",
+      "top_threats": [
+        {"actor": "LOCKBIT", "relevance_score": 10, "rationale": "Healthcare is a top ransomware target — high urgency, pays to restore care"},
+        {"actor": "APT41", "relevance_score": 8, "rationale": "Espionage against pharma/health research + opportunistic profit"},
+        {"actor": "APT29", "relevance_score": 7, "rationale": "Vaccine/research espionage (documented COVID-era targeting)"}
+      ],
+      "primary_threat_themes": ["Ransomware", "PHI/patient data theft", "Research espionage"]
+    },
+
+    "technology": {
+      "display_name": "Technology / SaaS / Software",
+      "top_threats": [
+        {"actor": "APT29", "relevance_score": 10, "rationale": "Supply chain compromise of software vendors is a signature move (SolarWinds)"},
+        {"actor": "APT41", "relevance_score": 9, "rationale": "Software supply chain attacks + rapid CVE weaponization"},
+        {"actor": "SCATTERED_SPIDER", "relevance_score": 8, "rationale": "Targets tech/telecom via help-desk social engineering"},
+        {"actor": "LAZARUS", "relevance_score": 7, "rationale": "Fake job offers targeting developers; trojanized dev tools"}
+      ],
+      "primary_threat_themes": ["Supply chain compromise", "Source code theft", "Developer targeting", "Cloud identity abuse"]
+    },
+
+    "retail": {
+      "display_name": "Retail / Hospitality / E-commerce",
+      "top_threats": [
+        {"actor": "FIN7", "relevance_score": 10, "rationale": "POS malware and payment card theft is their specialty"},
+        {"actor": "SCATTERED_SPIDER", "relevance_score": 8, "rationale": "Documented intrusions into retail/hospitality"},
+        {"actor": "LOCKBIT", "relevance_score": 6, "rationale": "Opportunistic ransomware"}
+      ],
+      "primary_threat_themes": ["Payment card theft", "POS compromise", "Ransomware"]
+    },
+
+    "government": {
+      "display_name": "Government / Public Sector",
+      "top_threats": [
+        {"actor": "APT29", "relevance_score": 10, "rationale": "Core espionage target set"},
+        {"actor": "APT41", "relevance_score": 8, "rationale": "State espionage against government entities"},
+        {"actor": "LOCKBIT", "relevance_score": 7, "rationale": "Ransomware against municipal/state government"}
+      ],
+      "primary_threat_themes": ["Espionage", "Data theft", "Ransomware disruption"]
+    },
+
+    "critical_infrastructure": {
+      "display_name": "Energy / Utilities / Critical Infrastructure",
+      "top_threats": [
+        {"actor": "LAZARUS", "relevance_score": 9, "rationale": "Documented energy-sector targeting; destructive capability"},
+        {"actor": "APT41", "relevance_score": 8, "rationale": "Telecom/utility targeting for espionage"},
+        {"actor": "LOCKBIT", "relevance_score": 7, "rationale": "Ransomware against manufacturing/utilities"}
+      ],
+      "primary_threat_themes": ["Espionage", "Destructive attacks", "Operational disruption"]
+    }
+  },
+
+  "selection_guidance": {
+    "how_to_use": "Pick your sector, take the top 1-3 actors by relevance_score, and build emulation scenarios from their characteristic_ttps in threat-actors.json. Emulate the highest-scoring actor first — it represents your most probable serious adversary.",
+    "coverage_strategy": [
+      "Emulate the #1 actor to test against your MOST LIKELY threat",
+      "Add a second actor with a DIFFERENT initial-access style (e.g. one supply-chain, one social-engineering) to broaden detection coverage",
+      "Re-run quarterly — actor TTPs and sector targeting shift over time"
+    ],
+    "do_not": [
+      "Do not emulate an actor irrelevant to your sector just because it's famous",
+      "Do not treat the score as attribution — it is a prioritization aid",
+      "Do not skip the purple-team replay — emulation without detection tuning wastes the intel"
+    ]
+  }
+}

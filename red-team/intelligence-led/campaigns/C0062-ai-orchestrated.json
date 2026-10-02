@@ -1,0 +1,74 @@
+{
+  "_metadata": {
+    "description": "Campaign profile for MITRE ATT&CK C0062 (AI-orchestrated Campaign / GTG-1002), for intelligence-led emulation and detection engineering. Built from public MITRE ATT&CK data (https://attack.mitre.org/campaigns/C0062/).",
+    "attribution_caution": "Emulates documented TTPs for defensive testing; not an attribution claim about any specific incident.",
+    "version": "1.0",
+    "generated": "2026-08-24"
+  },
+
+  "campaign": {
+    "id": "C0062",
+    "name": "AI-orchestrated Campaign",
+    "attributed_group": "GTG-1002 (likely China-nexus espionage)",
+    "mitre_url": "https://attack.mitre.org/campaigns/C0062/",
+    "date_range": "September 2025",
+    "targets": "~30 entities across technology, financial, chemical, and government sectors",
+    "summary": "Human operators used AI agents and Model Context Protocol tooling to automate reconnaissance, vulnerability discovery, exploitation, lateral movement, credential harvesting, data analysis, and exfiltration with minimal human involvement — crafted prompts/personas were used to bypass AI guardrails.",
+    "why_it_matters_defensively": "First-class example of AI-orchestrated intrusion: the standard kill chain executed at machine speed and scale. The individual TTPs are largely conventional and detectable; what changes is TEMPO and VOLUME. Defensive implication: shrink detection/response windows and lean on velocity/volume anomalies, because a human-paced playbook assumption no longer holds."
+  },
+
+  "techniques": [
+    {"mitre_id": "T1588.007", "name": "Obtain Capabilities: Artificial Intelligence", "tactic": "Resource Development", "campaign_use": "Obtained access to AI agent tooling to drive the intrusion", "detectable_in_victim_env": false, "defensive_note": "Not visible to the target; the takeaway is to assume commodity AI lowers the barrier to high-tempo intrusions"},
+    {"mitre_id": "T1588.002", "name": "Obtain Capabilities: Tool", "tactic": "Resource Development", "campaign_use": "Obtained open-source pentest tools (scanners, crackers)", "detectable_in_victim_env": false, "defensive_note": "Standard commodity tooling — detect at use, not acquisition"},
+    {"mitre_id": "T1587.004", "name": "Develop Capabilities: Exploits", "tactic": "Resource Development", "campaign_use": "Researched SSRF techniques and built custom exploit chains", "detectable_in_victim_env": false},
+    {"mitre_id": "T1683", "name": "Generate Content", "tactic": "Resource Development", "campaign_use": "Auto-generated attack documentation across phases", "detectable_in_victim_env": false},
+    {"mitre_id": "T1584.004", "name": "Compromise Infrastructure: Server", "tactic": "Resource Development", "campaign_use": "Operated dedicated servers for command execution and state", "detectable_in_victim_env": false},
+
+    {"mitre_id": "T1595.001", "name": "Active Scanning: Scanning IP Blocks", "tactic": "Reconnaissance", "campaign_use": "Scanned target IP ranges", "detectable_in_victim_env": true, "detection_ref": "recon/attack-surface.json R-SCAN-ACTIVE — perimeter IDS/firewall rate anomalies"},
+    {"mitre_id": "T1595.002", "name": "Active Scanning: Vulnerability Scanning", "tactic": "Reconnaissance", "campaign_use": "Scanned to identify vulnerabilities and enumerate services", "detectable_in_victim_env": true, "detection_ref": "recon R-SCAN-ACTIVE — high-rate probing; a blue-team drill target"},
+    {"mitre_id": "T1592.002", "name": "Gather Victim Host Information: Software", "tactic": "Reconnaissance", "campaign_use": "Catalogued services/data on discovered endpoints", "detectable_in_victim_env": true},
+    {"mitre_id": "T1592.004", "name": "Gather Victim Host Information: Client Configurations", "tactic": "Reconnaissance", "campaign_use": "Gathered details of high-value systems (DBs, orchestration platforms)", "detectable_in_victim_env": true},
+    {"mitre_id": "T1590.004", "name": "Gather Victim Network Information: Network Topology", "tactic": "Reconnaissance", "campaign_use": "Mapped complete network topology", "detectable_in_victim_env": true},
+
+    {"mitre_id": "T1190", "name": "Exploit Public-Facing Application", "tactic": "Initial Access", "campaign_use": "Deployed a custom payload against an identified SSRF vulnerability", "detectable_in_victim_env": true, "detection_ref": "hunt-queries H-14 (web server process spawns a shell), H-15 (web-shell drop); WAF/SSRF egress monitoring"},
+
+    {"mitre_id": "T1078", "name": "Valid Accounts", "tactic": "Lateral Movement / Defense Evasion", "campaign_use": "Used harvested credentials against internal APIs, DBs, registries", "detectable_in_victim_env": true, "detection_ref": "correlation C-01 (risky sign-in -> lateral movement); impossible-travel H-05"},
+    {"mitre_id": "T1078.003", "name": "Valid Accounts: Local Accounts", "tactic": "Lateral Movement / Defense Evasion", "campaign_use": "Tested harvested credentials against discovered devices", "detectable_in_victim_env": true, "detection_ref": "auth anomaly: same local account authenticating across many hosts in a short window"},
+
+    {"mitre_id": "T1136.001", "name": "Create Account: Local Account", "tactic": "Persistence", "campaign_use": "Created local backdoor accounts to maintain access", "detectable_in_victim_env": true, "detection_ref": "Windows Event ID 4720 (user account created); alert on new local accounts on servers"},
+
+    {"mitre_id": "T1552.001", "name": "Unsecured Credentials: Credentials In Files", "tactic": "Credential Access", "campaign_use": "Extracted authentication certificates from config files", "detectable_in_victim_env": true, "detection_ref": "file-access to known secret/cert paths by unusual process; this repo's own secret-scan pattern set"},
+
+    {"mitre_id": "T1087", "name": "Account Discovery", "tactic": "Discovery", "campaign_use": "Queried DB user tables to enumerate high-privilege accounts", "detectable_in_victim_env": true, "detection_ref": "DB audit: unusual SELECT against user/privilege tables"},
+    {"mitre_id": "T1046", "name": "Network Service Discovery", "tactic": "Discovery", "campaign_use": "Enumerated internal services via browser automation over MCP", "detectable_in_victim_env": true, "detection_ref": "east-west connection fan-out from a single host (see velocity note)"},
+    {"mitre_id": "T1083", "name": "File and Directory Discovery", "tactic": "Discovery", "campaign_use": "Identified sensitive data for extraction", "detectable_in_victim_env": true},
+    {"mitre_id": "T1082", "name": "System Information Discovery", "tactic": "Discovery", "campaign_use": "Queried DBs for proprietary info and system configs", "detectable_in_victim_env": true},
+    {"mitre_id": "T1016", "name": "System Network Configuration Discovery", "tactic": "Discovery", "campaign_use": "Gathered system network configurations", "detectable_in_victim_env": true},
+    {"mitre_id": "T1049", "name": "System Network Connections Discovery", "tactic": "Discovery", "campaign_use": "Mapped internal architecture and access relationships", "detectable_in_victim_env": true},
+
+    {"mitre_id": "T1119", "name": "Automated Collection", "tactic": "Collection", "campaign_use": "Automatically collected/processed large data volumes without human direction", "detectable_in_victim_env": true, "detection_ref": "correlation A-02 (file-access spike above the account's own baseline) — the KEY AI-tempo signal"},
+    {"mitre_id": "T1213.006", "name": "Data from Information Repositories: Databases", "tactic": "Collection", "campaign_use": "Queried internal DBs to extract proprietary/operational data", "detectable_in_victim_env": true, "detection_ref": "DB audit: bulk/rapid extraction volume anomaly"},
+    {"mitre_id": "T1005", "name": "Data from Local System", "tactic": "Collection", "campaign_use": "Gathered credentials, configs, sensitive data locally", "detectable_in_victim_env": true},
+    {"mitre_id": "T1074.001", "name": "Data Staged: Local Data Staging", "tactic": "Collection", "campaign_use": "Staged extracted data in structured markdown files before exfil", "detectable_in_victim_env": true, "detection_ref": "creation of large aggregated files prior to egress"},
+
+    {"mitre_id": "T1567", "name": "Exfiltration Over Web Service", "tactic": "Exfiltration", "campaign_use": "Exfiltrated data summaries over a web service", "detectable_in_victim_env": true, "detection_ref": "hunt-queries H-13 (cloud exfil); egress volume/destination anomaly"}
+  ],
+
+  "detection_summary": {
+    "detectable_techniques": 20,
+    "resource_development_undetectable": 5,
+    "highest_value_detections": [
+      "T1119 Automated Collection + A-02 baseline spike — the clearest AI-tempo tell (machine-speed bulk collection)",
+      "T1190 SSRF exploit -> H-14/H-15 web-process-spawns-shell / web-shell drop",
+      "T1136.001 local backdoor account -> Event ID 4720 on servers",
+      "T1078 valid accounts -> C-01 risky-signin-to-lateral-movement correlation",
+      "T1567 exfil over web service -> H-13 egress anomaly"
+    ],
+    "ai_orchestration_defensive_takeaways": [
+      "Tempo collapses: recon-to-exfil runs at machine speed, so alert-to-response windows must shrink — automate containment where possible",
+      "Volume anomalies matter more than any single signal: baseline per-entity rates (A-02) catch machine-speed collection that human-paced thresholds miss",
+      "East-west fan-out from one host is a strong tell when discovery is automated (T1046/T1049 in minutes, not days)",
+      "The TTPs are conventional and detectable — AI changes speed/scale, not the fundamentals. Existing detections still work; tighten their latency."
+    ]
+  }
+}
