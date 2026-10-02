@@ -187,3 +187,37 @@ jobs:
           echo ""
           echo "⚠️  Review the list above for unexpected authors"
           echo "If you see unfamiliar names, run: git log --all --oneline to investigate."
+
+      # --- 6. Detection & intel proof obligations ---------------------------
+      # Each claim the README makes about the detection content is re-proven on
+      # every run instead of being asserted once and left to go stale.
+      - uses: actions/setup-python@v5
+        if: always()
+        with:
+          python-version: '3.12'
+
+      - name: Install verification tooling
+        if: always()
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q suricata
+          python3 -m pip install yara-python==4.5.4 stix2-patterns==2.1.2 scapy==2.7.0
+
+      - name: "ioc-scanner: tests + clippy"
+        if: always()
+        working-directory: tools/ioc-scanner
+        run: |
+          cargo test --locked
+          cargo clippy --all-targets --locked -- -D warnings
+
+      - name: "YARA: compile + no false positives on repo content"
+        if: always()
+        run: python3 detection/tests/yara_check.py
+
+      - name: "Suricata: every SID fires on its indicator traffic, none on benign"
+        if: always()
+        run: python3 detection/tests/suricata_replay.py
+
+      - name: "STIX: bundle in sync with intel/iocs.csv, patterns valid"
+        if: always()
+        run: python3 tools/build_stix.py --check --validate
