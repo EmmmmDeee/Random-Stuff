@@ -203,6 +203,10 @@ jobs:
           sudo apt-get install -y -q suricata
           python3 -m pip install yara-python==4.5.4 stix2-patterns==2.1.2 scapy==2.7.0
 
+      - name: "sweep.sh: fast literal-IOC sweep finds known indicators"
+        if: always()
+        run: python3 detection/tests/sweep_check.py
+
       - name: "ioc-scanner: tests + clippy"
         if: always()
         working-directory: tools/ioc-scanner
