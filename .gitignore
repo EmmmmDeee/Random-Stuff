@@ -8,3 +8,9 @@ decompiled/
 tools/ioc-scanner/target/
 __pycache__/
 *.pyc
+
+# Ad-hoc fraud/crime tooling that may be present during analysis but is never
+# part of the defensive repository content.
+*_Gc_Gen.py
+*generator*.py
+!tools/*.py
