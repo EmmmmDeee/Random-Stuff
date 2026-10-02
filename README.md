@@ -52,16 +52,24 @@ and handling guidance.
 |---|---|
 | [`tools/ioc-scanner/`](tools/ioc-scanner/) | Rust Aho-Corasick IOC scanner (typed errors, tests, benchmark) |
 | [`tools/sweep.sh`](tools/sweep.sh) | ripgrep literal-IOC sweep for fast hunting |
+| [`tools/build_stix.py`](tools/build_stix.py) | Generate `intel/iocs_stix.json` from `intel/iocs.csv` (`--check` for drift) |
 | [`tools/mega_folder_dl.py`](tools/mega_folder_dl.py), [`tools/termux_fetch_and_package.sh`](tools/termux_fetch_and_package.sh) | Rebuild the encrypted sample archive on an isolated host |
 
 ## Detection & threat-intel package
 
-- **Host detection:** `detection/droidjack.yar`, `detection/blackshades.yar` —
-  tested to match the real samples and to *not* false-positive on these docs.
-- **Network detection:** `detection/droidjack_suricata.rules` — C2 domain, URIs,
-  KryoNet token, dynamic-DNS family.
-- **Intel feeds:** `intel/iocs.csv` (18 indicators) and `intel/iocs_stix.json`
-  (STIX 2.1 bundle, ready for MISP/TAXII import).
+- **Host detection:** `detection/droidjack.yar`, `detection/blackshades.yar`,
+  `detection/shared_packer.yar` — matched against the real samples during the
+  original analysis (samples are not in git, so that check is not re-run in CI);
+  compilation and *zero* false positives on every file in this repo are re-proven
+  on each CI run by `detection/tests/yara_check.py`.
+- **Network detection:** `detection/droidjack_suricata.rules` — DroidJack C2 DNS,
+  report/access URIs, KryoNet token; Blackshades `bshades.eu` DNS. Each SID is
+  replayed against synthetic indicator + benign traffic on every CI run by
+  `detection/tests/suricata_replay.py`.
+- **Intel feeds:** `intel/iocs.csv` (26 indicators, the source of truth) and
+  `intel/iocs_stix.json` (STIX 2.1 bundle generated from it by
+  `tools/build_stix.py`: 22 indicators; port/regkey/package rows are CSV-only).
+  CI fails if the two drift apart or any STIX pattern is invalid.
 - **Coverage map:** `ATTACK_MAPPING.md` ties every capability to a MITRE ATT&CK ID.
 
 ## Key findings

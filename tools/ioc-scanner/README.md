@@ -16,8 +16,9 @@ cargo build --release
 
 ## Usage
 ```sh
-ioc-scanner intel/iocs.csv path/to/dir [more paths ...]
-# prints:  file:offset \t <malware> \t <kind>=<value>
+ioc-scanner [--json] [--min-confidence low|medium|high] [--summary] [--hashes] \
+            intel/iocs.csv path/to/dir [more paths ...]
+# prints:  file:offset \t <malware> \t <kind>=<value>   (--json: JSON Lines)
 # exit 1 if any hit, 0 if clean, 2 on error  (pipeline-friendly)
 ```
 
@@ -28,6 +29,7 @@ ioc-scanner intel/iocs.csv path/to/dir [more paths ...]
 - **Minimal deps** — `aho-corasick`, `walkdir`, `memchr`; auditable tree.
 - **Tested** — match/no-match, case-insensitivity, offsets, error cases.
 
-Only content-scannable indicator types (domain/url/string/package/filemarker)
-are loaded; hash/imphash/port/regkey rows are matched by other tooling
-(YARA `pe.imphash()`, network rules), not by substring scanning.
+Content-scannable indicator types (domain/url/string/package/section/filemarker)
+are compiled into the automaton. `sha256` rows are matched by file digest when
+`--hashes` is given; md5/imphash/port/regkey rows are matched by other tooling
+(YARA `pe.imphash()`, network rules), not by this scanner.
