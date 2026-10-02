@@ -51,7 +51,7 @@ and handling guidance.
 | Document | Purpose |
 |---|---|
 | [`tools/ioc-scanner/`](tools/ioc-scanner/) | Rust Aho-Corasick IOC scanner (typed errors, tests, benchmark) |
-| [`tools/sweep.sh`](tools/sweep.sh) | ripgrep literal-IOC sweep for fast hunting |
+| [`tools/sweep.sh`](tools/sweep.sh) | ripgrep literal-IOC sweep for fast hunting (re-proven on every CI run) |
 | [`tools/build_stix.py`](tools/build_stix.py) | Generate `intel/iocs_stix.json` from `intel/iocs.csv` (`--check` for drift) |
 | [`tools/mega_folder_dl.py`](tools/mega_folder_dl.py), [`tools/termux_fetch_and_package.sh`](tools/termux_fetch_and_package.sh) | Rebuild the encrypted sample archive on an isolated host |
 
@@ -62,6 +62,9 @@ and handling guidance.
   original analysis (samples are not in git, so that check is not re-run in CI);
   compilation and *zero* false positives on every file in this repo are re-proven
   on each CI run by `detection/tests/yara_check.py`.
+- **Fast hunt:** `tools/sweep.sh` reads `intel/iocs.csv` and sweeps paths with
+  ripgrep; `detection/tests/sweep_check.py` re-proves on every CI run that it
+  detects the documented literals and returns a clean verdict on benign input.
 - **Network detection:** `detection/droidjack_suricata.rules` — DroidJack C2 DNS,
   report/access URIs, KryoNet token; Blackshades `bshades.eu` DNS. Each SID is
   replayed against synthetic indicator + benign traffic on every CI run by
