@@ -31,74 +31,37 @@
     {
       "type": "indicator",
       "spec_version": "2.1",
-      "id": "indicator--738c59da-3292-4c45-8f85-3bcc96ad033d",
-      "created": "2026-06-08T02:28:30.000Z",
-      "modified": "2026-06-08T02:28:30.000Z",
-      "name": "DroidJack APK",
-      "description": "SandroRat.apk",
-      "pattern": "[file:hashes.'SHA-256' = '30aa2eeeb8401e4a312a7e99462432769a7c569114180aaedbfcbef18b6db268']",
-      "pattern_type": "stix",
-      "valid_from": "2026-06-08T02:28:30.000Z",
-      "labels": [
-        "malicious-activity"
-      ]
-    },
-    {
-      "type": "indicator",
-      "spec_version": "2.1",
-      "id": "indicator--54b3d0a5-909d-429b-a00d-5e4861d99143",
-      "created": "2026-06-08T02:28:30.000Z",
-      "modified": "2026-06-08T02:28:30.000Z",
-      "name": "DroidJack dex",
-      "description": "classes.dex",
-      "pattern": "[file:hashes.'SHA-256' = 'fcac2275c833038982ed5bf3f27715bb1991f679d398a125661df15821737a1e']",
-      "pattern_type": "stix",
-      "valid_from": "2026-06-08T02:28:30.000Z",
-      "labels": [
-        "malicious-activity"
-      ]
-    },
-    {
-      "type": "indicator",
-      "spec_version": "2.1",
-      "id": "indicator--79386692-bfc9-455d-b360-6e5d785192a0",
-      "created": "2026-06-08T02:28:30.000Z",
-      "modified": "2026-06-08T02:28:30.000Z",
-      "name": "DroidJack C2 domain",
-      "description": "C2 host",
-      "pattern": "[domain-name:value = 'droidjack.net']",
-      "pattern_type": "stix",
-      "valid_from": "2026-06-08T02:28:30.000Z",
-      "labels": [
-        "malicious-activity"
-      ]
-    },
-    {
-      "type": "indicator",
-      "spec_version": "2.1",
-      "id": "indicator--f662529b-efb0-464a-8af6-2b6db152d812",
-      "created": "2026-06-08T02:28:30.000Z",
-      "modified": "2026-06-08T02:28:30.000Z",
-      "name": "DroidJack exfil URL",
-      "description": "report endpoint",
-      "pattern": "[url:value = 'http://www.droidjack.net/storeReport.php']",
-      "pattern_type": "stix",
-      "valid_from": "2026-06-08T02:28:30.000Z",
-      "labels": [
-        "malicious-activity"
-      ]
-    },
-    {
-      "type": "indicator",
-      "spec_version": "2.1",
       "id": "indicator--f998d653-cbf1-45a0-9cb4-6208859ab93c",
       "created": "2026-06-08T02:28:30.000Z",
-      "modified": "2026-06-08T02:28:30.000Z",
-      "name": "Blackshades client.exe",
-      "description": "controller/builder",
+      "modified": "2026-10-02T10:33:21.000Z",
+      "name": "Blackshades sha256: client.exe (controller/builder)",
+      "description": "intel/iocs.csv sha256 row (malware=Blackshades, confidence=high)",
+      "indicator_types": [
+        "malicious-activity"
+      ],
       "pattern": "[file:hashes.'SHA-256' = '5b239d680aac3e49d722a6859e397d327cd6b9dcbfd8eb09c3ccfaa007bbb95e']",
       "pattern_type": "stix",
       "valid_from": "2026-06-08T02:28:30.000Z",
+      "confidence": 85,
+      "labels": [
+        "malicious-activity"
+      ]
+    },
+    {
+      "type": "indicator",
+      "spec_version": "2.1",
+      "id": "indicator--843ff614-e189-5746-becd-401e83f0d42a",
+      "created": "2026-10-02T10:33:21.000Z",
+      "modified": "2026-10-02T10:33:21.000Z",
+      "name": "Blackshades md5: client.exe",
+      "description": "intel/iocs.csv md5 row (malware=Blackshades, confidence=high)",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "pattern": "[file:hashes.MD5 = '6eff4657d417c4a1393cb8f63849b4e5']",
+      "pattern_type": "stix",
+      "valid_from": "2026-10-02T10:33:21.000Z",
+      "confidence": 85,
       "labels": [
         "malicious-activity"
       ]
@@ -108,12 +71,168 @@
       "spec_version": "2.1",
       "id": "indicator--95359a11-5037-4c76-b7e3-01636c079e1c",
       "created": "2026-06-08T02:28:30.000Z",
-      "modified": "2026-06-08T02:28:30.000Z",
-      "name": "Blackshades imphash",
-      "description": "VB6 build",
+      "modified": "2026-10-02T10:33:21.000Z",
+      "name": "Blackshades imphash: VB6 build import hash",
+      "description": "intel/iocs.csv imphash row (malware=Blackshades, confidence=medium)",
+      "indicator_types": [
+        "malicious-activity"
+      ],
       "pattern": "[file:hashes.'imphash' = 'e22efc208b0220bae4bf4bd600a00c70']",
       "pattern_type": "stix",
       "valid_from": "2026-06-08T02:28:30.000Z",
+      "confidence": 50,
+      "labels": [
+        "malicious-activity"
+      ]
+    },
+    {
+      "type": "indicator",
+      "spec_version": "2.1",
+      "id": "indicator--05fd10c5-9330-5ccd-a122-509831c30304",
+      "created": "2026-10-02T10:33:21.000Z",
+      "modified": "2026-10-02T10:33:21.000Z",
+      "name": "Blackshades sha256: Blackshades.5.5.1.zip",
+      "description": "intel/iocs.csv sha256 row (malware=Blackshades, confidence=high)",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "pattern": "[file:hashes.'SHA-256' = '837d78e992cc53a6f125f486e3991975145d546c5f320e34df2af7c516f61e93']",
+      "pattern_type": "stix",
+      "valid_from": "2026-10-02T10:33:21.000Z",
+      "confidence": 85,
+      "labels": [
+        "malicious-activity"
+      ]
+    },
+    {
+      "type": "indicator",
+      "spec_version": "2.1",
+      "id": "indicator--738c59da-3292-4c45-8f85-3bcc96ad033d",
+      "created": "2026-06-08T02:28:30.000Z",
+      "modified": "2026-10-02T10:33:21.000Z",
+      "name": "DroidJack sha256: SandroRat.apk",
+      "description": "intel/iocs.csv sha256 row (malware=DroidJack, confidence=high)",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "pattern": "[file:hashes.'SHA-256' = '30aa2eeeb8401e4a312a7e99462432769a7c569114180aaedbfcbef18b6db268']",
+      "pattern_type": "stix",
+      "valid_from": "2026-06-08T02:28:30.000Z",
+      "confidence": 85,
+      "labels": [
+        "malicious-activity"
+      ]
+    },
+    {
+      "type": "indicator",
+      "spec_version": "2.1",
+      "id": "indicator--54b3d0a5-909d-429b-a00d-5e4861d99143",
+      "created": "2026-06-08T02:28:30.000Z",
+      "modified": "2026-10-02T10:33:21.000Z",
+      "name": "DroidJack sha256: classes.dex",
+      "description": "intel/iocs.csv sha256 row (malware=DroidJack, confidence=high)",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "pattern": "[file:hashes.'SHA-256' = 'fcac2275c833038982ed5bf3f27715bb1991f679d398a125661df15821737a1e']",
+      "pattern_type": "stix",
+      "valid_from": "2026-06-08T02:28:30.000Z",
+      "confidence": 85,
+      "labels": [
+        "malicious-activity"
+      ]
+    },
+    {
+      "type": "indicator",
+      "spec_version": "2.1",
+      "id": "indicator--d8d0a25b-d84e-5c49-83d0-ebc82d8b5f93",
+      "created": "2026-10-02T10:33:21.000Z",
+      "modified": "2026-10-02T10:33:21.000Z",
+      "name": "DroidJack sha256: DroidJack.4.4.zip",
+      "description": "intel/iocs.csv sha256 row (malware=DroidJack, confidence=high)",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "pattern": "[file:hashes.'SHA-256' = 'ba01b036c8386af1b62263a8e29a47f6898b210efee985e299e8d3e5b79c1bf5']",
+      "pattern_type": "stix",
+      "valid_from": "2026-10-02T10:33:21.000Z",
+      "confidence": 85,
+      "labels": [
+        "malicious-activity"
+      ]
+    },
+    {
+      "type": "indicator",
+      "spec_version": "2.1",
+      "id": "indicator--79386692-bfc9-455d-b360-6e5d785192a0",
+      "created": "2026-06-08T02:28:30.000Z",
+      "modified": "2026-10-02T10:33:21.000Z",
+      "name": "DroidJack domain: C2 report/access host",
+      "description": "intel/iocs.csv domain row (malware=DroidJack, confidence=high)",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "pattern": "[domain-name:value = 'droidjack.net']",
+      "pattern_type": "stix",
+      "valid_from": "2026-06-08T02:28:30.000Z",
+      "confidence": 85,
+      "labels": [
+        "malicious-activity"
+      ]
+    },
+    {
+      "type": "indicator",
+      "spec_version": "2.1",
+      "id": "indicator--f662529b-efb0-464a-8af6-2b6db152d812",
+      "created": "2026-06-08T02:28:30.000Z",
+      "modified": "2026-10-02T10:33:21.000Z",
+      "name": "DroidJack url: exfil report endpoint",
+      "description": "intel/iocs.csv url row (malware=DroidJack, confidence=high)",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "pattern": "[url:value = 'http://www.droidjack.net/storeReport.php']",
+      "pattern_type": "stix",
+      "valid_from": "2026-06-08T02:28:30.000Z",
+      "confidence": 85,
+      "labels": [
+        "malicious-activity"
+      ]
+    },
+    {
+      "type": "indicator",
+      "spec_version": "2.1",
+      "id": "indicator--78774fb8-433a-5461-a334-d3d06d1cb1e7",
+      "created": "2026-10-02T10:33:21.000Z",
+      "modified": "2026-10-02T10:33:21.000Z",
+      "name": "DroidJack url: access endpoint",
+      "description": "intel/iocs.csv url row (malware=DroidJack, confidence=high)",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "pattern": "[url:value = 'http://www.droidjack.net/Access/DJ']",
+      "pattern_type": "stix",
+      "valid_from": "2026-10-02T10:33:21.000Z",
+      "confidence": 85,
+      "labels": [
+        "malicious-activity"
+      ]
+    },
+    {
+      "type": "indicator",
+      "spec_version": "2.1",
+      "id": "indicator--1ed9e04d-05a1-5511-a5bd-11b3d8171d84",
+      "created": "2026-10-02T10:33:21.000Z",
+      "modified": "2026-10-02T10:33:21.000Z",
+      "name": "DroidJack string: server disconnect/kill command token",
+      "description": "intel/iocs.csv string row (malware=DroidJack, confidence=high)",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "pattern": "[artifact:payload_bin MATCHES 'DJ_GooDbYe\\\\:\\\\(']",
+      "pattern_type": "stix",
+      "valid_from": "2026-10-02T10:33:21.000Z",
+      "confidence": 85,
       "labels": [
         "malicious-activity"
       ]
@@ -123,15 +242,249 @@
       "spec_version": "2.1",
       "id": "indicator--3ec4dac7-c8b3-4a7c-9b49-d3509c88a783",
       "created": "2026-06-08T02:28:30.000Z",
-      "modified": "2026-06-08T02:28:30.000Z",
-      "name": "Blackshades C2 domain",
-      "description": "vendor/C2 host",
+      "modified": "2026-10-02T10:33:21.000Z",
+      "name": "Blackshades domain: vendor/C2 host",
+      "description": "intel/iocs.csv domain row (malware=Blackshades, confidence=medium)",
+      "indicator_types": [
+        "malicious-activity"
+      ],
       "pattern": "[domain-name:value = 'bshades.eu']",
       "pattern_type": "stix",
       "valid_from": "2026-06-08T02:28:30.000Z",
+      "confidence": 50,
       "labels": [
         "malicious-activity"
       ]
+    },
+    {
+      "type": "indicator",
+      "spec_version": "2.1",
+      "id": "indicator--c01ed991-2626-5e74-ba71-f205faea36ec",
+      "created": "2026-10-02T10:33:21.000Z",
+      "modified": "2026-10-02T10:33:21.000Z",
+      "name": "Blackshades domain: dynamic-DNS C2 family (sample test subdomains)",
+      "description": "intel/iocs.csv domain row (malware=Blackshades, confidence=low)",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "pattern": "[domain-name:value = 'no-ip.info']",
+      "pattern_type": "stix",
+      "valid_from": "2026-10-02T10:33:21.000Z",
+      "confidence": 15,
+      "labels": [
+        "malicious-activity"
+      ]
+    },
+    {
+      "type": "indicator",
+      "spec_version": "2.1",
+      "id": "indicator--32254537-22c7-5aae-9c93-35c8e09b6d43",
+      "created": "2026-10-02T10:33:21.000Z",
+      "modified": "2026-10-02T10:33:21.000Z",
+      "name": "Blackshades filemarker: stub/config artifact",
+      "description": "intel/iocs.csv filemarker row (malware=Blackshades, confidence=medium)",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "pattern": "[artifact:payload_bin MATCHES 'DownloadExecute\\\\.bss']",
+      "pattern_type": "stix",
+      "valid_from": "2026-10-02T10:33:21.000Z",
+      "confidence": 50,
+      "labels": [
+        "malicious-activity"
+      ]
+    },
+    {
+      "type": "indicator",
+      "spec_version": "2.1",
+      "id": "indicator--990a0849-e8f1-5e82-9e3d-231d52488136",
+      "created": "2026-10-02T10:33:21.000Z",
+      "modified": "2026-10-02T10:33:21.000Z",
+      "name": "Blackshades sha256: BlackShades Emulator.exe (license crack)",
+      "description": "intel/iocs.csv sha256 row (malware=Blackshades, confidence=high)",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "pattern": "[file:hashes.'SHA-256' = '9cf361a5e3f8e3176ba3e3002316753d635d0c674abf40cccfda708a0496eb1f']",
+      "pattern_type": "stix",
+      "valid_from": "2026-10-02T10:33:21.000Z",
+      "confidence": 85,
+      "labels": [
+        "malicious-activity"
+      ]
+    },
+    {
+      "type": "indicator",
+      "spec_version": "2.1",
+      "id": "indicator--4ab9e237-187c-51ff-9f09-5ecdc2e24f98",
+      "created": "2026-10-02T10:33:21.000Z",
+      "modified": "2026-10-02T10:33:21.000Z",
+      "name": "Blackshades sha256: Registrator.exe (OCX registrar)",
+      "description": "intel/iocs.csv sha256 row (malware=Blackshades, confidence=medium)",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "pattern": "[file:hashes.'SHA-256' = '71894e21a2d7ecd52ed8ee06c8634b5565cbe2cd7ca16305772c00af3a4e7efb']",
+      "pattern_type": "stix",
+      "valid_from": "2026-10-02T10:33:21.000Z",
+      "confidence": 50,
+      "labels": [
+        "malicious-activity"
+      ]
+    },
+    {
+      "type": "indicator",
+      "spec_version": "2.1",
+      "id": "indicator--6fda35a4-8f30-5ea7-9732-73ee30ba4669",
+      "created": "2026-10-02T10:33:21.000Z",
+      "modified": "2026-10-02T10:33:21.000Z",
+      "name": "CrackBundledMalware sha256: vcscore.exe (crack w/ injection imports)",
+      "description": "intel/iocs.csv sha256 row (malware=CrackBundledMalware, confidence=high)",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "pattern": "[file:hashes.'SHA-256' = '1573c2646f63d27dba8686205ae3343a5d3786768241557ea36d11cb45c5ea49']",
+      "pattern_type": "stix",
+      "valid_from": "2026-10-02T10:33:21.000Z",
+      "confidence": 85,
+      "labels": [
+        "malicious-activity"
+      ]
+    },
+    {
+      "type": "indicator",
+      "spec_version": "2.1",
+      "id": "indicator--1583c343-3057-531a-ad62-90d517208edb",
+      "created": "2026-10-02T10:33:21.000Z",
+      "modified": "2026-10-02T10:33:21.000Z",
+      "name": "PiratedSoftware sha256: VCS_Diamond installer",
+      "description": "intel/iocs.csv sha256 row (malware=PiratedSoftware, confidence=medium)",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "pattern": "[file:hashes.'SHA-256' = 'caf8652a1f1b1ec1a58b35a446271f9255d7c3133ea76a339a11f7235c860193']",
+      "pattern_type": "stix",
+      "valid_from": "2026-10-02T10:33:21.000Z",
+      "confidence": 50,
+      "labels": [
+        "malicious-activity"
+      ]
+    },
+    {
+      "type": "indicator",
+      "spec_version": "2.1",
+      "id": "indicator--9090f048-298d-587a-aa95-d91f3839fb1a",
+      "created": "2026-10-02T10:33:21.000Z",
+      "modified": "2026-10-02T10:33:21.000Z",
+      "name": "FakeIDTool sha256: AIDC Enterprise Setup.exe",
+      "description": "intel/iocs.csv sha256 row (malware=FakeIDTool, confidence=medium)",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "pattern": "[file:hashes.'SHA-256' = '72e443e0127649a840d22b2ae1223ff47019117d8402e65349514bd111dbb5a4']",
+      "pattern_type": "stix",
+      "valid_from": "2026-10-02T10:33:21.000Z",
+      "confidence": 50,
+      "labels": [
+        "malicious-activity"
+      ]
+    },
+    {
+      "type": "indicator",
+      "spec_version": "2.1",
+      "id": "indicator--070cbf5b-2a7a-5691-92e2-8f981abad63f",
+      "created": "2026-10-02T10:33:21.000Z",
+      "modified": "2026-10-02T10:33:21.000Z",
+      "name": "FakeIDTool sha256: Advanced ID Creator.exe (cracked)",
+      "description": "intel/iocs.csv sha256 row (malware=FakeIDTool, confidence=medium)",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "pattern": "[file:hashes.'SHA-256' = '11c03bdb2a8ea3cfd45c6f96da2032ecc8329b23e14cf6ebebb4e3a0d9ac83f1']",
+      "pattern_type": "stix",
+      "valid_from": "2026-10-02T10:33:21.000Z",
+      "confidence": 50,
+      "labels": [
+        "malicious-activity"
+      ]
+    },
+    {
+      "type": "indicator",
+      "spec_version": "2.1",
+      "id": "indicator--befcabb5-302f-52d5-a34b-97b09978335b",
+      "created": "2026-10-02T10:33:21.000Z",
+      "modified": "2026-10-02T10:33:21.000Z",
+      "name": "FakeIDTool sha256: CLiPW.exe (crack/patcher)",
+      "description": "intel/iocs.csv sha256 row (malware=FakeIDTool, confidence=medium)",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "pattern": "[file:hashes.'SHA-256' = '6ff90c64e5ad9386071857fd6edf429a6d7d92e4276d8def57173a1e44b586d0']",
+      "pattern_type": "stix",
+      "valid_from": "2026-10-02T10:33:21.000Z",
+      "confidence": 50,
+      "labels": [
+        "malicious-activity"
+      ]
+    },
+    {
+      "type": "indicator",
+      "spec_version": "2.1",
+      "id": "indicator--24650743-6dad-598b-bae1-5a06739310e4",
+      "created": "2026-10-02T10:33:21.000Z",
+      "modified": "2026-10-02T10:33:21.000Z",
+      "name": "SharedProtector section: non-standard PE section shared by RAT + crack",
+      "description": "intel/iocs.csv section row (malware=SharedProtector, confidence=medium)",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "pattern": "[file:extensions.'windows-pebinary-ext'.sections[*].name = '.mackt']",
+      "pattern_type": "stix",
+      "valid_from": "2026-10-02T10:33:21.000Z",
+      "confidence": 50,
+      "labels": [
+        "malicious-activity"
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--0a155bf3-641b-4b17-9c2a-1a7925666bc7",
+      "created": "2026-06-08T02:28:30.000Z",
+      "modified": "2026-06-08T02:28:30.000Z",
+      "relationship_type": "indicates",
+      "source_ref": "indicator--f998d653-cbf1-45a0-9cb4-6208859ab93c",
+      "target_ref": "malware--6a913a17-5ff4-45aa-b6d5-8b468a173902"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--1e879789-428b-50f0-9715-7a7dc491f82a",
+      "created": "2026-10-02T10:33:21.000Z",
+      "modified": "2026-10-02T10:33:21.000Z",
+      "relationship_type": "indicates",
+      "source_ref": "indicator--843ff614-e189-5746-becd-401e83f0d42a",
+      "target_ref": "malware--6a913a17-5ff4-45aa-b6d5-8b468a173902"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--7241cd24-d6a5-49a4-a455-e79a0ccaf8ba",
+      "created": "2026-06-08T02:28:30.000Z",
+      "modified": "2026-06-08T02:28:30.000Z",
+      "relationship_type": "indicates",
+      "source_ref": "indicator--95359a11-5037-4c76-b7e3-01636c079e1c",
+      "target_ref": "malware--6a913a17-5ff4-45aa-b6d5-8b468a173902"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--98131603-5953-5504-a76d-4df98636127d",
+      "created": "2026-10-02T10:33:21.000Z",
+      "modified": "2026-10-02T10:33:21.000Z",
+      "relationship_type": "indicates",
+      "source_ref": "indicator--05fd10c5-9330-5ccd-a122-509831c30304",
+      "target_ref": "malware--6a913a17-5ff4-45aa-b6d5-8b468a173902"
     },
     {
       "type": "relationship",
@@ -151,6 +504,16 @@
       "modified": "2026-06-08T02:28:30.000Z",
       "relationship_type": "indicates",
       "source_ref": "indicator--54b3d0a5-909d-429b-a00d-5e4861d99143",
+      "target_ref": "malware--c13e895f-c1f6-4bbe-93a9-9ef642962c44"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--ffe28f4b-ac41-5188-8f85-43fd32bcaa0e",
+      "created": "2026-10-02T10:33:21.000Z",
+      "modified": "2026-10-02T10:33:21.000Z",
+      "relationship_type": "indicates",
+      "source_ref": "indicator--d8d0a25b-d84e-5c49-83d0-ebc82d8b5f93",
       "target_ref": "malware--c13e895f-c1f6-4bbe-93a9-9ef642962c44"
     },
     {
@@ -176,22 +539,22 @@
     {
       "type": "relationship",
       "spec_version": "2.1",
-      "id": "relationship--0a155bf3-641b-4b17-9c2a-1a7925666bc7",
-      "created": "2026-06-08T02:28:30.000Z",
-      "modified": "2026-06-08T02:28:30.000Z",
+      "id": "relationship--6d7c3ea5-332b-5278-bd4c-7a825a1f8e27",
+      "created": "2026-10-02T10:33:21.000Z",
+      "modified": "2026-10-02T10:33:21.000Z",
       "relationship_type": "indicates",
-      "source_ref": "indicator--f998d653-cbf1-45a0-9cb4-6208859ab93c",
-      "target_ref": "malware--6a913a17-5ff4-45aa-b6d5-8b468a173902"
+      "source_ref": "indicator--78774fb8-433a-5461-a334-d3d06d1cb1e7",
+      "target_ref": "malware--c13e895f-c1f6-4bbe-93a9-9ef642962c44"
     },
     {
       "type": "relationship",
       "spec_version": "2.1",
-      "id": "relationship--7241cd24-d6a5-49a4-a455-e79a0ccaf8ba",
-      "created": "2026-06-08T02:28:30.000Z",
-      "modified": "2026-06-08T02:28:30.000Z",
+      "id": "relationship--f8023233-5b24-5402-acf3-6782ad436c9b",
+      "created": "2026-10-02T10:33:21.000Z",
+      "modified": "2026-10-02T10:33:21.000Z",
       "relationship_type": "indicates",
-      "source_ref": "indicator--95359a11-5037-4c76-b7e3-01636c079e1c",
-      "target_ref": "malware--6a913a17-5ff4-45aa-b6d5-8b468a173902"
+      "source_ref": "indicator--1ed9e04d-05a1-5511-a5bd-11b3d8171d84",
+      "target_ref": "malware--c13e895f-c1f6-4bbe-93a9-9ef642962c44"
     },
     {
       "type": "relationship",
@@ -201,6 +564,46 @@
       "modified": "2026-06-08T02:28:30.000Z",
       "relationship_type": "indicates",
       "source_ref": "indicator--3ec4dac7-c8b3-4a7c-9b49-d3509c88a783",
+      "target_ref": "malware--6a913a17-5ff4-45aa-b6d5-8b468a173902"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--16526dfd-13c4-53c1-b849-43550ad49c6b",
+      "created": "2026-10-02T10:33:21.000Z",
+      "modified": "2026-10-02T10:33:21.000Z",
+      "relationship_type": "indicates",
+      "source_ref": "indicator--c01ed991-2626-5e74-ba71-f205faea36ec",
+      "target_ref": "malware--6a913a17-5ff4-45aa-b6d5-8b468a173902"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--6cd4ad99-6894-57cd-ad72-ad3accb8ebf1",
+      "created": "2026-10-02T10:33:21.000Z",
+      "modified": "2026-10-02T10:33:21.000Z",
+      "relationship_type": "indicates",
+      "source_ref": "indicator--32254537-22c7-5aae-9c93-35c8e09b6d43",
+      "target_ref": "malware--6a913a17-5ff4-45aa-b6d5-8b468a173902"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--b340c71a-2a13-5b27-9de3-ccb6b5ef5f59",
+      "created": "2026-10-02T10:33:21.000Z",
+      "modified": "2026-10-02T10:33:21.000Z",
+      "relationship_type": "indicates",
+      "source_ref": "indicator--990a0849-e8f1-5e82-9e3d-231d52488136",
+      "target_ref": "malware--6a913a17-5ff4-45aa-b6d5-8b468a173902"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--a342583d-113d-5856-8de9-b1eebc6efc5c",
+      "created": "2026-10-02T10:33:21.000Z",
+      "modified": "2026-10-02T10:33:21.000Z",
+      "relationship_type": "indicates",
+      "source_ref": "indicator--4ab9e237-187c-51ff-9f09-5ecdc2e24f98",
       "target_ref": "malware--6a913a17-5ff4-45aa-b6d5-8b468a173902"
     }
   ]
