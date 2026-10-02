@@ -143,25 +143,28 @@ def add_arguments(p):
         help="Confirm you own or are authorized to test this system",
     )
     p.add_argument("-o", "--output", help="Write simulation log to this path")
-
     sub = p.add_subparsers(dest="action", required=True)
 
-    drop = sub.add_parser("drop-decoy", help="Drop a benign file with a malware-like name")
+    def _add_output(sp):
+        sp.add_argument("-o", "--output", help="Write simulation log to this path")
+        return sp
+
+    drop = _add_output(sub.add_parser("drop-decoy", help="Drop a benign file with a malware-like name"))
     drop.add_argument("--dir", help="Directory to drop decoy into")
 
-    spawn = sub.add_parser("office-spawn", help="Spawn a benign interpreter to simulate Office→shell")
+    spawn = _add_output(sub.add_parser("office-spawn", help="Spawn a benign interpreter to simulate Office→shell"))
     spawn.add_argument("--interpreter", help="Interpreter executable to spawn")
 
-    task = sub.add_parser("scheduled-task", help="Create a harmless scheduled task")
+    task = _add_output(sub.add_parser("scheduled-task", help="Create a harmless scheduled task"))
     task.add_argument("--name", help="Task name")
 
-    dns = sub.add_parser("dns-queries", help="Emit DNS lookups for decoy C2 domains")
+    dns = _add_output(sub.add_parser("dns-queries", help="Emit DNS lookups for decoy C2 domains"))
     dns.add_argument("--domains", help="Comma-separated decoy domains")
 
-    reg = sub.add_parser("registry-run", help="Write a benign Run-key marker (Windows)")
+    reg = _add_output(sub.add_parser("registry-run", help="Write a benign Run-key marker (Windows)"))
     reg.add_argument("--name", help="Registry value name")
 
-    chain = sub.add_parser("chain", help="Run a short chain of simulations")
+    chain = _add_output(sub.add_parser("chain", help="Run a short chain of simulations"))
     chain.add_argument("--delay", type=float, default=1.0, help="Seconds between actions")
     chain.add_argument("--dir", help="Directory to drop decoy into")
     chain.add_argument("--interpreter", help="Interpreter executable to spawn")

@@ -20,6 +20,9 @@ import navigator
 import operator_mod
 import simulate
 import purple
+import intel_builder
+import report_generator
+import crosscheck
 
 
 def main():
@@ -28,7 +31,7 @@ def main():
         description="Unified CLI for the intelligence-led red-team framework.",
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
-    for module in (scenario, derive, recon, navigator, operator_mod, simulate, purple):
+    for module in (scenario, derive, recon, navigator, operator_mod, simulate, purple, intel_builder, report_generator, crosscheck):
         module.register(subparsers)
 
     args = parser.parse_args()
